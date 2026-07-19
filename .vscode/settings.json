@@ -6,5 +6,6 @@
   },
   "editor.organizeImports": false,
   "eslint.useFlatConfig": true,
-  "prettier.prettierPath": "./node_modules/prettier"
+  "prettier.prettierPath": "./node_modules/prettier",
+  "css.lint.unknownAtRules": "ignore"
 }

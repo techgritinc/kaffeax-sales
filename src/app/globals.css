@@ -1,26 +1,93 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+/* ─── Design Tokens (single source of truth) ─── */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand */
+  --midnight: #0f2345;
+  --dark-blue: #223970;
+  --bright-blue: #1f519f;
+  --light-blue: #4d78bc;
+  --pale-blue: #9db9d4;
+
+  /* Accent */
+  --green: #41bb93;
+  --green-deep: #35a07d;
+  --mustard: #a4812d;
+  --rust: #a13323;
+  --dark-teal: #29494d;
+
+  /* Neutral */
+  --cream: #e7e3d0;
+  --tan: #c2b27f;
+  --dark-brown: #343123;
+  --white: #fff;
+  --text: #1e1e1e;
+  --muted: #6b6b67;
+
+  /* Border */
+  --border: #e4ddce;
+  --border-strong: #c4bba6;
+  --border-warm: #e4ddce;
+
+  /* Surface */
+  --page-bg: #f5f3ee;
+  --card-bg: #fff;
+  --sidebar-bg: #223970;
+  --sidebar-text: #d4dae8;
+  --chat-bg-start: #f5f3ee;
+  --chat-bg-end: #ebe7da;
 }
+
+/* ─── Tailwind v4 Theme Registration ─── */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Brand */
+  --color-midnight: var(--midnight);
+  --color-dark-blue: var(--dark-blue);
+  --color-bright-blue: var(--bright-blue);
+  --color-light-blue: var(--light-blue);
+  --color-pale-blue: var(--pale-blue);
+
+  /* Accent */
+  --color-green: var(--green);
+  --color-green-deep: var(--green-deep);
+  --color-mustard: var(--mustard);
+  --color-rust: var(--rust);
+  --color-dark-teal: var(--dark-teal);
+
+  /* Neutral */
+  --color-cream: var(--cream);
+  --color-tan: var(--tan);
+  --color-dark-brown: var(--dark-brown);
+  --color-white: var(--white);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+
+  /* Border */
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-border-warm: var(--border-warm);
+
+  /* Surface */
+  --color-page-bg: var(--page-bg);
+  --color-card-bg: var(--card-bg);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-chat-bg-start: var(--chat-bg-start);
+  --color-chat-bg-end: var(--chat-bg-end);
+
+  /* Typography */
+  --font-sans: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: var(--color-background);
-    --foreground: var(--color-foreground);
-  }
-}
+/* ─── Base Styles ─── */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--page-bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
