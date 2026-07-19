@@ -1,0 +1,3943 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kaffea-X POC — Meeting Summary to CRM</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --midnight:#0F2345; --dark-blue:#223970; --bright-blue:#1F519F; --light-blue:#4D78BC;
+    --green:#41BB93; --green-deep:#35A07D; --mustard:#A4812D; --cream:#E7E3D0; --tan:#C2B27F;
+    --dark-brown:#343123; --rust:#A13323; --dark-teal:#29494D; --pale-blue:#9DB9D4;
+    --white:#fff; --text:#1E1E1E; --muted:#6B6B67; --border:#E4DDCE; --border-strong:#C4BBA6; --border-warm:#E4DDCE;
+    --page-bg:#F5F3EE; --card-bg:#fff; --sidebar-bg:#223970; --sidebar-text:#D4DAE8;
+    --chat-bg-start:#F5F3EE; --chat-bg-end:#EBE7DA;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+    color: var(--text);
+    background: var(--page-bg);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    height: 100vh;
+  }
+  #root { height: 100vh; overflow: hidden; }
+  input, textarea, button, select { font-family: inherit; }
+  h1, h2, h3, h4 { margin: 0; }
+
+  /* ---- Header ---- */
+  .kx-header {
+    background: #fff; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px;
+    border-bottom: 1px solid var(--border-strong);
+    box-shadow: 0 1px 2px rgba(15,35,69,0.04);
+    gap: 12px;
+  }
+  .kx-header-left {
+    display: flex; align-items: center; gap: 14px;
+    min-width: 0; flex: 1 1 auto;
+  }
+  .kx-header-logo { height: 34px; display: block; opacity: 1; flex-shrink: 0; }
+  .kx-header-logo-mini {
+    display: none;
+    height: 32px; width: 32px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    object-fit: cover;
+  }
+  .kx-header-divider { width: 1px; height: 26px; background: var(--border-strong); flex-shrink: 0; }
+  .kx-header-app {
+    font-family: 'Figtree', sans-serif;
+    font-size: 13px; font-weight: 500;
+    color: var(--midnight); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+    min-width: 0;
+  }
+  .kx-header-right {
+    display: flex; align-items: center; gap: 12px;
+    flex-shrink: 0;
+  }
+  .kx-header-user { text-align: right; min-width: 0; }
+  .kx-header-name {
+    font-size: 13px; font-weight: 700; color: var(--midnight); line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;
+  }
+  .kx-header-email {
+    font-size: 11px; color: var(--muted); line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;
+  }
+  .kx-header-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--green); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Figtree', sans-serif;
+    font-size: 13px; font-weight: 800;
+    flex-shrink: 0;
+  }
+  @media (max-width: 900px) {
+    .kx-header { padding: 0 16px; }
+    .kx-header-logo { display: none; }
+    .kx-header-logo-mini { display: block; }
+    .kx-header-divider { height: 22px; }
+    .kx-header-app { font-size: 12.5px; }
+    .kx-header-name, .kx-header-email { max-width: 140px; }
+  }
+  @media (max-width: 560px) {
+    .kx-header { padding: 0 12px; gap: 8px; }
+    .kx-header-left { gap: 8px; }
+    .kx-header-app { font-size: 11.5px; }
+    .kx-header-email { display: none; }
+    .kx-header-user { display: none; }
+    .kx-header-avatar { width: 32px; height: 32px; font-size: 12px; }
+  }
+  @media (max-width: 400px) {
+    .kx-header-divider { display: none; }
+    .kx-header-app { font-size: 11px; }
+  }
+
+  /* ---- Breadcrumb (replaces the old numbered stepper) ---- */
+  .kx-main-breadcrumb {
+    padding: 12px 40px 4px;
+    background: transparent;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: flex-start;
+    gap: 16px;
+    z-index: 6;
+  }
+  .kx-breadcrumb {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 14.5px;
+    color: var(--muted);
+  }
+  .kx-crumb {
+    background: none; border: none; padding: 2px 0;
+    font-family: inherit; font-size: inherit;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.15s;
+    letter-spacing: 0.01em;
+  }
+  .kx-crumb:hover:not(:disabled):not(.active) { color: var(--midnight); }
+  .kx-crumb.active {
+    color: var(--midnight);
+    font-weight: 700;
+    cursor: default;
+  }
+  .kx-crumb:disabled { cursor: not-allowed; opacity: 0.5; }
+  .kx-crumb-sep {
+    color: var(--border-strong);
+    font-size: 11px;
+    user-select: none;
+  }
+
+  /* ---- Sticky action footer (Review) ---- */
+  .kx-main-actions {
+    flex-shrink: 0;
+    background: #fff;
+    border-top: 1px solid var(--border-strong);
+    padding: 12px 40px;
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 10px;
+    box-shadow: 0 -4px 12px rgba(15,35,69,0.04);
+    z-index: 6;
+  }
+
+  /* ---- App shell ---- */
+  .kx-shell {
+    display: grid;
+    grid-template-columns: 260px minmax(0,1fr) 340px;
+    height: calc(100vh - 56px);
+  }
+  .kx-shell.no-chat { grid-template-columns: 260px minmax(0,1fr); }
+  /* When the sidebar is collapsed, keep a narrow rail column in its place. */
+  .kx-shell.no-sidebar { grid-template-columns: 56px minmax(0,1fr) 340px; }
+  .kx-shell.no-sidebar.no-chat { grid-template-columns: 56px minmax(0,1fr); }
+  .kx-shell > .kx-sidebar { min-height: 0; overflow-y: auto; }
+  .kx-shell > .kx-sidebar-rail { min-height: 0; overflow: hidden; }
+  .kx-shell > .kx-main { min-height: 0; min-width: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .kx-shell > .kx-chat { min-height: 0; overflow: hidden; }
+  @media (max-width: 1100px) {
+    .kx-shell { grid-template-columns: 220px minmax(0,1fr) 300px; }
+    .kx-shell.no-chat { grid-template-columns: 220px minmax(0,1fr); }
+    .kx-shell.no-sidebar { grid-template-columns: 56px minmax(0,1fr) 300px; }
+    .kx-shell.no-sidebar.no-chat { grid-template-columns: 56px minmax(0,1fr); }
+  }
+  @media (max-width: 900px) {
+    /* Sidebar open: rail is not rendered — main takes the full width, drawer floats over. */
+    .kx-shell,
+    .kx-shell.no-chat {
+      grid-template-columns: minmax(0,1fr);
+    }
+    /* Sidebar closed: the 56px navy rail column stays on the extreme left, same as desktop. */
+    .kx-shell.no-sidebar,
+    .kx-shell.no-sidebar.no-chat {
+      grid-template-columns: 56px minmax(0,1fr);
+    }
+    /* Chat becomes a full-screen takeover below the header on small screens.
+       Rendered when chatVisible is true — a big X in its header closes it.
+       Height is derived from top/bottom (not the desktop height:100%) so the
+       input bar stays inside the viewport instead of being pushed past the
+       fold. Higher z-index than the sidebar drawer so the newer surface wins. */
+    .kx-shell > .kx-chat {
+      position: fixed;
+      top: 56px; left: 0; right: 0; bottom: 0;
+      height: auto;
+      z-index: 50;
+      border-left: none;
+      padding: 16px 16px 14px;
+      animation: kx-chat-slide-up 0.22s ease-out;
+    }
+    /* Trim the header block so more room is left for messages + input. */
+    .kx-shell > .kx-chat .kx-chat-title { font-size: 18px; margin-bottom: 4px; }
+    .kx-shell > .kx-chat .kx-chat-eyebrow { margin-bottom: 4px; }
+    /* Input bar stays pinned at the bottom, comfortably tappable. */
+    .kx-shell > .kx-chat .kx-chat-input-bar {
+      margin-top: 10px;
+      padding-top: 10px;
+      flex-shrink: 0;
+    }
+    .kx-shell > .kx-chat .kx-chat-input {
+      padding: 12px 14px;
+      font-size: 14px;
+      min-width: 0;
+    }
+    .kx-shell > .kx-chat .kx-chat-send { width: 44px; height: 44px; flex-shrink: 0; }
+    /* Let messages, bubbles, and chips shrink inside the fixed overlay so
+       nothing bleeds past the right edge. */
+    .kx-shell > .kx-chat .kx-chat-messages { min-width: 0; }
+    .kx-shell > .kx-chat .kx-chat-bubble-ai { min-width: 0; }
+    .kx-shell > .kx-chat .kx-chat-bubble-user { max-width: 82%; }
+    .kx-shell > .kx-chat .kx-chat-chips { margin-left: 42px; margin-right: 0; }
+    .kx-shell > .kx-sidebar {
+      position: fixed;
+      top: 56px; left: 0; bottom: 0;
+      width: min(300px, 85vw);
+      z-index: 45;
+      box-shadow: 0 12px 32px rgba(15,35,69,0.28);
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    .kx-sidebar-backdrop {
+      display: block;
+      position: fixed; inset: 56px 0 0 0;
+      background: rgba(15,35,69,0.4);
+      z-index: 44;
+      animation: kx-fade-in 0.15s ease-out;
+    }
+  }
+  .kx-sidebar-backdrop { display: none; }
+
+  /* ---- Collapsed sidebar rail (56px column, navy, hosts the expand button) ---- */
+  .kx-sidebar-rail {
+    background: var(--sidebar-bg);
+    border-right: 1px solid rgba(255,255,255,0.06);
+    padding: 18px 0;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+
+  /* ---- Sidebar collapse control (chevron in header) ---- */
+  .kx-side-collapse {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.7);
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    padding: 0;
+  }
+  .kx-side-collapse:hover {
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    border-color: rgba(255,255,255,0.24);
+  }
+
+  /* ---- Expand-sidebar button, hosted inside the collapsed navy rail column.
+     Sits at the top of the rail — clicking restores the full 260px sidebar. ---- */
+  .kx-side-peek {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.10);
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+    padding: 0;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .kx-side-peek:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.22);
+  }
+  .kx-side-peek-label {
+    position: absolute; left: 46px; top: 50%;
+    transform: translateY(-50%);
+    background: var(--sidebar-bg); color: #fff;
+    font-family: 'Figtree', sans-serif;
+    font-size: 12px; font-weight: 600;
+    padding: 6px 10px; border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.15s;
+    box-shadow: 0 2px 8px rgba(15,35,69,0.25);
+    z-index: 20;
+  }
+  .kx-side-peek:hover .kx-side-peek-label { opacity: 1; }
+  .kx-side-peek-label::before {
+    content: "";
+    position: absolute; left: -4px; top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 8px; height: 8px;
+    background: var(--sidebar-bg);
+  }
+
+  /* ---- Chat panel header + close button ---- */
+  .kx-chat-header-row {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px;
+  }
+  .kx-chat-close {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--muted);
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    padding: 0;
+  }
+  .kx-chat-close:hover {
+    background: var(--page-bg);
+    color: var(--midnight);
+    border-color: var(--midnight);
+  }
+  /* Bigger, more tappable close on the mobile takeover. */
+  @media (max-width: 900px) {
+    .kx-chat-close {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: #fff;
+      border-color: var(--border);
+      color: var(--midnight);
+    }
+  }
+
+  /* ---- Floating "open chat" FAB, visible when chat is collapsed ---- */
+  .kx-chat-fab {
+    position: fixed; right: 24px; bottom: 24px;
+    z-index: 40;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--midnight);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 18px rgba(15,35,69,0.35);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  .kx-chat-fab:hover {
+    transform: translateY(-2px);
+    background: #182b4a;
+    box-shadow: 0 8px 22px rgba(15,35,69,0.42);
+  }
+  .kx-chat-fab-dot {
+    position: absolute; top: 10px; right: 12px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--mustard);
+    border: 2px solid var(--midnight);
+    box-sizing: content-box;
+  }
+  .kx-chat-fab-label {
+    position: absolute; right: 68px; top: 50%;
+    transform: translateY(-50%);
+    background: var(--midnight); color: #fff;
+    font-family: 'Figtree', sans-serif;
+    font-size: 12px; font-weight: 600;
+    padding: 6px 10px; border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.15s;
+    box-shadow: 0 2px 8px rgba(15,35,69,0.25);
+  }
+  .kx-chat-fab:hover .kx-chat-fab-label { opacity: 1; }
+  .kx-chat-fab-label::after {
+    content: "";
+    position: absolute; right: -4px; top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 8px; height: 8px;
+    background: var(--midnight);
+  }
+
+  /* ---- Sidebar ---- */
+  .kx-sidebar {
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    padding: 22px 0 24px;
+    overflow-y: auto;
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+  .kx-side-title {
+    font-size: 16px; font-weight: 800; color: #fff;
+  }
+  .kx-side-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px 12px;
+  }
+  .kx-side-new {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(65,187,147,0.14);
+    border: 1px solid rgba(65,187,147,0.35);
+    color: #E8F6F0;
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px; font-weight: 700;
+    padding: 4px 8px; border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+  }
+  .kx-side-new:hover { background: rgba(65,187,147,0.24); border-color: rgba(65,187,147,0.55); }
+  .kx-side-group-wrap { margin-bottom: 6px; }
+  .kx-side-group-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 18px 4px;
+  }
+  .kx-side-group-count {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.06em;
+    color: #6B7A99;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 6px; border-radius: 10px;
+  }
+  .kx-side-empty {
+    font-size: 11px; color: #6B7A99;
+    padding: 4px 18px 8px; font-style: italic;
+  }
+  .kx-side-status {
+    font-size: 8.5px; font-weight: 800; letter-spacing: 0.06em;
+    padding: 2px 6px; border-radius: 3px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .kx-side-status.saved  { background: rgba(65,187,147,0.18); color: #A6E6CA; border: 1px solid rgba(65,187,147,0.35); }
+  .kx-side-status.draft  { background: rgba(164,129,45,0.18); color: #E6C778; border: 1px solid rgba(164,129,45,0.4); }
+  .kx-side-search-wrap {
+    position: relative; margin: 0 12px 14px;
+  }
+  .kx-side-search {
+    width: 100%; padding: 8px 12px 8px 32px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    color: #E8EAF0; font-size: 12px; outline: none;
+  }
+  .kx-side-search::placeholder { color: #8090B0; }
+  .kx-side-search-icon {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    color: #8090B0; pointer-events: none;
+  }
+  .kx-side-group {
+    font-size: 10px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: #8090B0;
+    padding: 10px 18px 4px;
+  }
+  .kx-side-item {
+    padding: 9px 12px; margin: 2px 8px;
+    border-radius: 6px; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    transition: background 0.15s, border-color 0.15s;
+    border: 1px solid transparent;
+    background: transparent;
+    color: inherit; text-align: left;
+    font-family: inherit;
+    width: calc(100% - 16px);
+  }
+  .kx-side-item:hover { background: rgba(255,255,255,0.06); }
+  .kx-side-item.active {
+    background: rgba(65,187,147,0.15);
+    border-color: rgba(65,187,147,0.3);
+  }
+  .kx-side-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-top: 5px; flex-shrink: 0; background: var(--muted);
+  }
+  .kx-side-item.active .kx-side-dot {
+    box-shadow: 0 0 8px currentColor;
+  }
+  .kx-side-item-title {
+    font-size: 13px; font-weight: 700; color: #E8EAF0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .kx-side-item-meta { font-size: 11px; color: #8090B0; margin-top: 2px; }
+
+  /* ---- Main content ---- */
+  .kx-main-body {
+    flex: 1; min-height: 0; min-width: 0;
+    overflow-y: auto; overflow-x: hidden;
+    padding: 12px 40px 40px;
+  }
+  .kx-eyebrow {
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px; font-weight: 800;
+    color: var(--mustard);
+    text-transform: uppercase; letter-spacing: 0.14em;
+    margin-bottom: 10px;
+  }
+  .kx-h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 32px; font-weight: 900;
+    color: var(--midnight);
+    letter-spacing: -0.03em; line-height: 1.1;
+  }
+  .kx-h1.sm { font-size: 28px; }
+  .kx-accent-bar {
+    width: 112px; height: 10px; border-radius: 2px;
+    background: var(--midnight);
+    margin: 12px 0 16px;
+  }
+  .kx-sub {
+    font-size: 14px; color: var(--muted);
+    line-height: 1.55; max-width: none;
+    margin-bottom: 24px;
+  }
+
+  /* ---- Cards ---- */
+  .kx-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-warm);
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(15,35,69,0.05), 0 4px 16px rgba(15,35,69,0.03);
+  }
+  .kx-card.navy {
+    background: var(--midnight); color: #fff;
+    border: none;
+  }
+  .kx-section-title {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px; font-weight: 800;
+    color: var(--mustard);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .kx-section-title.on-navy { color: var(--mustard); }
+
+  /* ---- Buttons ---- */
+  .kx-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Figtree', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: filter 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+  .kx-btn-primary {
+    background: var(--green); color: #fff; border: none;
+    padding: 10px 20px;
+    font-size: 12.5px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    box-shadow: 0 1px 2px rgba(15,35,69,0.08);
+  }
+  .kx-btn-primary:hover { filter: brightness(0.92); box-shadow: 0 2px 6px rgba(65,187,147,0.32); }
+  .kx-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; filter: none; box-shadow: none; }
+  .kx-btn-approve {
+    background: var(--green-deep); color: #fff; border: none;
+    padding: 10px 20px;
+    font-size: 12.5px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(15,35,69,0.08);
+  }
+  .kx-btn-approve:hover { filter: brightness(0.92); }
+  .kx-btn-approve:disabled { opacity: 0.5; cursor: not-allowed; filter: none; box-shadow: none; }
+  .kx-btn-approve:disabled:hover { filter: none; }
+  .kx-btn-reject {
+    background: #fff; color: var(--rust);
+    border: 2px solid var(--rust);
+    padding: 8px 18px;
+    font-size: 12.5px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    border-radius: 8px;
+  }
+  .kx-btn-reject:hover { background: #FBEAE7; }
+  .kx-btn-send {
+    background: #fff; color: var(--midnight);
+    border: 1px solid var(--midnight);
+    padding: 10px 18px;
+    font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    border-radius: 8px;
+  }
+  .kx-btn-send:hover { background: var(--page-bg); }
+  /* Compact size modifier — used in tight clusters (top-right of Review) so a long title never collides */
+  .kx-btn.kx-btn-sm {
+    padding: 6px 10px;
+    font-size: 10.5px;
+    gap: 5px;
+    letter-spacing: 0.02em;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .kx-btn.kx-btn-sm.kx-btn-reject { padding: 4px 10px; }
+  .kx-btn-ghost {
+    background: #fff; color: var(--midnight);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    font-size: 12px; font-weight: 500;
+    border-radius: 8px;
+  }
+  .kx-btn-ghost:hover { background: #F5F3EE; border-color: var(--border-strong); }
+  .kx-btn-primary-wide { width: 100%; justify-content: center; }
+
+  /* ---- Inputs ---- */
+  .kx-input {
+    width: 100%; padding: 8px 10px;
+    border: 1px solid var(--border-warm);
+    border-radius: 6px; background: #fff;
+    font-size: 12px; color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .kx-input:focus { border-color: var(--green); }
+  .kx-input.warn { border-color: var(--rust); background: #FDF3F1; }
+  .kx-textarea {
+    width: 100%; padding: 12px;
+    border: 1px solid var(--border-warm);
+    border-radius: 8px; background: #fff;
+    font-family: 'Figtree', sans-serif;
+    font-size: 12px; line-height: 1.55; color: var(--text);
+    outline: none; resize: vertical;
+  }
+  .kx-textarea:focus { border-color: var(--green); }
+  .kx-textarea.mono {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 11.5px; line-height: 1.5;
+  }
+
+  /* ---- Badges ---- */
+  .kx-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 20px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .kx-badge.hot { background: var(--green); color: #fff; }
+  .kx-badge.warm { background: var(--mustard); color: #fff; }
+  .kx-badge.cold { background: var(--dark-teal); color: var(--cream); }
+
+  /* ---- Signal chips ---- */
+  .kx-chip {
+    display: inline-flex; align-items: center;
+    background: #F0EDE5;
+    border: 1px solid var(--tan);
+    color: var(--midnight);
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px; font-weight: 600;
+    padding: 5px 12px; border-radius: 20px;
+  }
+
+  /* ---- Chat panel ---- */
+  .kx-chat {
+    background: linear-gradient(180deg, var(--chat-bg-start) 0%, var(--chat-bg-end) 100%);
+    border-left: 1px solid var(--border);
+    padding: 20px 18px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+  }
+  .kx-chat-eyebrow {
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px; font-weight: 800;
+    color: var(--mustard);
+    text-transform: uppercase; letter-spacing: 0.14em;
+    margin-bottom: 6px;
+  }
+  .kx-chat-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 20px; font-weight: 700;
+    color: var(--midnight);
+    margin-bottom: 6px;
+  }
+  .kx-chat-messages {
+    flex: 1; display: flex; flex-direction: column; overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-right: 2px;
+    scroll-behavior: smooth;
+  }
+  .kx-chat-messages::-webkit-scrollbar { display: none; width: 0; height: 0; }
+  .kx-chat-row-ai {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .kx-chat-row-user {
+    display: flex; justify-content: flex-end;
+    margin-bottom: 14px;
+  }
+  .kx-chat-bubble-ai {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 2px 12px 12px 12px;
+    padding: 12px 14px;
+    font-size: 13px; line-height: 1.55; color: var(--text);
+    flex: 1; min-width: 0;
+  }
+  .kx-chat-bubble-user {
+    background: var(--midnight); color: #fff;
+    border-radius: 12px 2px 12px 12px;
+    padding: 10px 14px;
+    font-size: 13px; line-height: 1.55;
+    max-width: 85%;
+  }
+  .kx-chat-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    overflow: hidden; flex-shrink: 0;
+    background: #fff;
+  }
+  .kx-chat-avatar img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .kx-chat-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin: 2px 0 14px 42px; /* aligned with the AI bubble (32 avatar + 10 gap) */
+  }
+  .kx-chat-chips-eyebrow {
+    font-family: 'Figtree', sans-serif;
+    font-size: 9.5px; font-weight: 800; letter-spacing: 0.12em;
+    color: var(--muted); text-transform: uppercase;
+    margin: 0 0 6px 42px;
+  }
+  .kx-chat-chip {
+    background: rgba(255,255,255,0.72);
+    border: 1px solid var(--tan);
+    color: var(--midnight);
+    font-family: 'Figtree', sans-serif;
+    font-size: 11.5px; font-weight: 600;
+    padding: 6px 12px; border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .kx-chat-chip:hover {
+    border-color: var(--green);
+    background: #E8F6F0;
+    color: var(--green-deep);
+  }
+  .kx-chat-input-bar {
+    margin-top: 14px; padding-top: 12px;
+    display: flex; gap: 8px;
+    border-top: 1px solid var(--border-warm);
+  }
+  .kx-chat-input {
+    flex: 1; padding: 10px 12px;
+    border: 1px solid var(--border-warm);
+    border-radius: 4px; background: #fff;
+    font-size: 12.5px; outline: none;
+  }
+  .kx-chat-input:focus { border-color: var(--green); }
+  .kx-chat-send {
+    width: 38px; height: 38px; border-radius: 2px;
+    background: var(--midnight); border: none;
+    color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .kx-chat-send:hover { background: #1A3562; }
+
+  /* ---- Misc ---- */
+  .kx-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .kx-2col { grid-template-columns: 1fr; } }
+  .kx-divider { border-top: 1px solid var(--border-warm); margin: 12px 0; }
+  .kx-footnote {
+    font-size: 10.5px; color: var(--muted);
+    text-align: center; margin: 20px 0 8px;
+  }
+  /* ---- Capture screen ---- */
+  .kx-capture-shell {
+    display: flex; flex-direction: column;
+    height: 100%;
+    gap: 16px;
+  }
+  .kx-capture-hero-copy > div { margin-bottom: 0 !important; }
+  .kx-capture-hero .kx-h1 { font-size: 26px; }
+  .kx-capture-hero .kx-accent-bar { margin: 10px 0 10px; }
+  .kx-capture-hero .kx-sub { margin-bottom: 0; font-size: 13px; }
+  .kx-capture-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1; min-height: 0;
+    width: 100%;
+  }
+  .kx-capture-col {
+    display: flex; flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    flex: 1;
+  }
+
+  /* ---- Rubric assistant (top of capture, opposite the hero heading) ---- */
+  .kx-capture-hero {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 20px; flex-wrap: nowrap;
+  }
+  .kx-capture-hero-copy { min-width: 0; flex: 1 1 auto; }
+  .kx-rubric-fab {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px;
+    background: var(--midnight);
+    color: #fff;
+    border: none; border-radius: 999px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 11.5px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(15,35,69,0.22), 0 0 0 2px rgba(65,187,147,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+    margin-top: 4px;
+    white-space: nowrap;
+  }
+  .kx-rubric-fab:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 28px rgba(15,35,69,0.32), 0 0 0 2px var(--green);
+  }
+  .kx-rubric-fab .kx-rubric-fab-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 8px var(--green);
+  }
+  .kx-rubric-fab-label { display: inline; }
+  @media (max-width: 720px) {
+    .kx-rubric-fab { padding: 9px 12px; gap: 6px; letter-spacing: 0.04em; }
+    .kx-rubric-fab-label { display: none; }
+  }
+
+  /* ---- Responsive capture-screen tightening ---- */
+  @media (max-width: 900px) {
+    .kx-main-body { padding: 10px 20px 28px; }
+    .kx-main-breadcrumb { padding: 12px 20px 4px; }
+    .kx-main-actions { padding: 12px 20px; }
+    .kx-capture-hero .kx-h1 { font-size: 24px; }
+    .kx-capture-hero .kx-accent-bar { width: 96px; height: 8px; }
+    .kx-transcript-card { padding: 16px 16px; }
+  }
+  @media (max-width: 560px) {
+    .kx-main-body { padding: 8px 14px 24px; }
+    .kx-main-breadcrumb { padding: 10px 14px 4px; }
+    .kx-main-actions {
+      padding: 10px 14px;
+      flex-wrap: wrap;
+      justify-content: stretch;
+    }
+    .kx-capture-hero { gap: 12px; }
+    .kx-capture-hero .kx-h1 { font-size: 22px; }
+    .kx-capture-hero .kx-accent-bar { width: 72px; height: 6px; margin: 8px 0; }
+    .kx-capture-hero .kx-sub { font-size: 12.5px; }
+    .kx-transcript-card { padding: 14px 14px; }
+    .kx-transcript-head, .kx-transcript-foot {
+      gap: 8px;
+    }
+    .kx-transcript-textarea { padding: 12px; font-size: 12px; }
+  }
+  .kx-rubric-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,35,69,0.42);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 55;
+    display: flex; align-items: center; justify-content: center;
+    padding: 32px;
+  }
+  .kx-rubric-modal {
+    width: 100%;
+    max-width: 1080px;
+    height: auto;
+    max-height: calc(100vh - 64px);
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15,35,69,0.35);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .kx-rubric-body-2col {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .kx-rubric-body-left {
+    background: linear-gradient(180deg, #FDFBF5 0%, #FBF9F2 100%);
+    border-right: 1px solid var(--border-warm);
+    padding: 20px 22px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .kx-rubric-body-left-help {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border-warm);
+    font-size: 11.5px;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+  .kx-rubric-body-left-help b {
+    color: var(--midnight);
+    font-weight: 700;
+  }
+  .kx-rubric-body-left .kx-band-pills {
+    display: flex; flex-direction: column;
+    gap: 10px;
+    padding: 0;
+    background: transparent;
+    border-bottom: none;
+  }
+  .kx-rubric-body-left .kx-band-pill {
+    padding: 12px 14px;
+  }
+  .kx-rubric-body-left .kx-band-pill-label {
+    font-size: 11px;
+  }
+  .kx-rubric-body-left .kx-band-pill-rule {
+    font-size: 12px;
+  }
+  .kx-rubric-body-right {
+    padding: 20px 24px 22px;
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+    min-height: 0;
+  }
+  .kx-rubric-body-right .kx-rubric-section-row {
+    margin-bottom: 10px;
+  }
+  .kx-rubric-body-right .kx-signal-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 8px;
+    grid-auto-flow: row dense;
+  }
+  .kx-rubric-body-left-title {
+    font-family: 'Figtree', sans-serif;
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
+  @media (max-width: 900px) {
+    .kx-rubric-body-2col { grid-template-columns: 1fr; }
+    .kx-rubric-body-left { border-right: none; border-bottom: 1px solid var(--border-warm); }
+    .kx-rubric-body-right .kx-signal-list { grid-template-columns: 1fr; }
+  }
+  .kx-rubric-modal-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: rgba(15,35,69,0.06);
+    border: none;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--midnight);
+    transition: background 0.15s;
+  }
+  .kx-rubric-modal-close:hover { background: rgba(15,35,69,0.12); }
+  .kx-transcript-card {
+    padding: 18px 20px;
+    display: flex; flex-direction: column;
+    flex: 1; min-height: 0;
+  }
+  .kx-transcript-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px; gap: 12px; flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+  .kx-transcript-textarea {
+    width: 100%;
+    min-width: 0;
+    flex: 1;
+    min-height: 180px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    background: #FAFAF6;
+    font-family: 'Consolas', 'SF Mono', 'Courier New', monospace;
+    font-size: 12.5px; line-height: 1.6; color: var(--text);
+    outline: none; resize: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .kx-transcript-textarea:focus { border-color: var(--green); background: #fff; }
+  .kx-transcript-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 12px;
+    gap: 12px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  .kx-transcript-actions {
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+
+  /* ---- Rubric card (modernized) ---- */
+  .kx-rubric-card {
+    padding: 0;
+    display: flex; flex-direction: column;
+    flex: 1; min-height: 0;
+    overflow: hidden;
+  }
+  .kx-rubric-head {
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid var(--border-warm);
+    flex-shrink: 0;
+    background: linear-gradient(180deg, #FDFBF5 0%, #FFFFFF 100%);
+  }
+  .kx-rubric-title-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 8px;
+  }
+  .kx-rubric-note {
+    font-size: 11px; color: var(--muted);
+    margin-top: 4px; line-height: 1.45;
+  }
+  .kx-rubric-note b.client { color: var(--green-deep); }
+  .kx-rubric-note b.proposed { color: var(--mustard); }
+  .kx-band-pills {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 12px 18px;
+    background: #FBF9F2;
+    border-bottom: 1px solid var(--border-warm);
+    flex-shrink: 0;
+  }
+  .kx-band-pill {
+    display: flex; flex-direction: column;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    position: relative; overflow: hidden;
+    min-width: 0;
+  }
+  .kx-band-pill::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  }
+  .kx-band-pill.hot::before { background: var(--green-deep); }
+  .kx-band-pill.warm::before { background: var(--mustard); }
+  .kx-band-pill.cold::before { background: var(--dark-teal); }
+  .kx-band-pill-label {
+    font-family: 'Figtree', sans-serif;
+    font-size: 9.5px; font-weight: 800;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .kx-band-pill.hot .kx-band-pill-label { color: var(--green-deep); }
+  .kx-band-pill.warm .kx-band-pill-label { color: var(--mustard); }
+  .kx-band-pill.cold .kx-band-pill-label { color: var(--dark-teal); }
+  .kx-band-pill-rule {
+    font-size: 10.5px; line-height: 1.35; color: var(--muted);
+  }
+  .kx-rubric-body {
+    padding: 12px 18px 14px;
+    overflow-y: auto;
+    flex: 1; min-height: 0;
+  }
+  .kx-rubric-section-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+    gap: 12px;
+  }
+  .kx-rubric-section-label {
+    font-size: 10px; font-weight: 800;
+    color: var(--midnight);
+    text-transform: uppercase; letter-spacing: 0.12em;
+  }
+  .kx-rubric-section-count {
+    font-size: 10px; color: var(--muted); font-weight: 600;
+  }
+  .kx-btn-add-signal {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    background: var(--green);
+    color: #fff;
+    border: none; border-radius: 6px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 11.5px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(65,187,147,0.25);
+    transition: filter 0.15s, box-shadow 0.15s;
+    flex-shrink: 0;
+  }
+  .kx-btn-add-signal:hover {
+    filter: brightness(0.94);
+    box-shadow: 0 2px 6px rgba(65,187,147,0.35);
+  }
+  .kx-signal-list {
+    display: flex; flex-direction: column;
+    gap: 8px;
+  }
+  .kx-signal-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px 8px;
+    transition: box-shadow 0.15s, border-color 0.15s;
+    position: relative;
+  }
+  .kx-signal-card:hover {
+    box-shadow: 0 2px 6px rgba(15,35,69,0.06);
+  }
+  .kx-signal-card.hot  { border-left-color: var(--green-deep); }
+  .kx-signal-card.warm { border-left-color: var(--mustard); }
+  .kx-signal-card.cold { border-left-color: var(--dark-teal); }
+  .kx-signal-card-input {
+    width: 100%;
+    border: none; outline: none; background: transparent;
+    font-family: 'Figtree', sans-serif;
+    font-size: 12.5px; line-height: 1.4;
+    font-weight: 600;
+    color: var(--midnight);
+    padding: 2px 0 4px;
+    resize: none;
+    overflow: hidden;
+    display: block;
+  }
+  .kx-signal-card-input::placeholder { color: var(--muted); font-weight: 500; }
+  .kx-signal-card-input:focus {
+    box-shadow: inset 0 -1px 0 var(--green);
+  }
+  .kx-signal-card-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 4px;
+    gap: 8px;
+  }
+  .kx-signal-card-remove {
+    background: none; border: none; padding: 4px;
+    color: var(--muted); cursor: pointer;
+    opacity: 0; transition: opacity 0.15s, color 0.15s;
+    display: inline-flex; flex-shrink: 0;
+    border-radius: 4px;
+  }
+  .kx-signal-card:hover .kx-signal-card-remove { opacity: 0.85; }
+  .kx-signal-card-remove:hover { color: var(--rust); background: #FDF3F1; opacity: 1; }
+
+  /* segmented weight picker */
+  .kx-weight-seg {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .kx-weight-seg-btn {
+    padding: 4px 10px;
+    border: none;
+    background: transparent;
+    font-family: 'Figtree', sans-serif;
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+    transition: background 0.12s, color 0.12s;
+  }
+  .kx-weight-seg-btn:last-child { border-right: none; }
+  .kx-weight-seg-btn:hover:not(.active) { background: #FBF9F2; color: var(--midnight); }
+  .kx-weight-seg-btn.active.hot  { background: var(--green-deep); color: #fff; }
+  .kx-weight-seg-btn.active.warm { background: var(--mustard);    color: #fff; }
+  .kx-weight-seg-btn.active.cold { background: var(--dark-teal);  color: #fff; }
+
+  /* inline compose card for a new signal */
+  .kx-signal-card.compose {
+    border: 1px solid var(--green);
+    border-left: 3px solid var(--green);
+    background: #F6FCF9;
+    box-shadow: 0 2px 8px rgba(65,187,147,0.15);
+  }
+  .kx-compose-actions {
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .kx-btn-mini {
+    font-family: 'Figtree', sans-serif;
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 5px 10px; border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: filter 0.12s, background 0.12s, border-color 0.12s;
+  }
+  .kx-btn-mini.ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid transparent;
+  }
+  .kx-btn-mini.ghost:hover { color: var(--midnight); background: #fff; border-color: var(--border); }
+  .kx-btn-mini.primary {
+    background: var(--green); color: #fff; border: none;
+  }
+  .kx-btn-mini.primary:hover { filter: brightness(0.92); }
+  .kx-btn-mini.primary:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
+
+  .kx-rubric-add {
+    margin-top: 10px;
+    width: 100%; justify-content: center;
+    padding: 10px 12px; font-size: 11.5px;
+    background: #fff; color: var(--midnight);
+    border: 1px dashed var(--border-strong);
+    border-radius: 8px;
+    display: inline-flex; align-items: center; gap: 6px;
+    cursor: pointer;
+    font-family: 'Figtree', sans-serif; font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+  }
+  .kx-rubric-add:hover {
+    background: #F6FCF9;
+    border-color: var(--green);
+    color: var(--green-deep);
+  }
+
+  /* ---- Commit / CRM screen ---- */
+  .kx-commit-wrap { width: 100%; }
+  .kx-commit-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(15,35,69,0.05), 0 4px 14px rgba(15,35,69,0.03);
+    transition: box-shadow 0.15s;
+  }
+  .kx-commit-card:hover { box-shadow: 0 2px 6px rgba(15,35,69,0.08), 0 8px 22px rgba(15,35,69,0.05); }
+  .kx-commit-card-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px; margin-bottom: 6px;
+  }
+  .kx-commit-card-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 20px; font-weight: 700; color: var(--midnight); margin: 0;
+  }
+  .kx-commit-card-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-top: 12px;
+    padding-top: 10px; border-top: 1px dashed var(--border);
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px; color: var(--muted);
+  }
+  .kx-commit-id {
+    letter-spacing: 0.04em;
+    color: var(--midnight);
+    background: #F5F3EE;
+    padding: 3px 8px; border-radius: 4px;
+    border: 1px solid var(--border);
+    font-family: 'Consolas', monospace;
+  }
+  .kx-commit-id b { color: var(--bright-blue); }
+
+  /* ---- Review editorial dossier ---- */
+  .kx-review { width: 100%; }
+  /* Title, band chip, and score all flow inline inside the same <h1> so the
+     badge + score always trail the LAST line of the title — no matter whether
+     the title wraps to one line or two. */
+  .kx-review-hero-row {
+    display: block;
+  }
+  .kx-review-hero-row .kx-h1 {
+    font-size: 24px; letter-spacing: -0.02em;
+    line-height: 1.2;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  /* Wrap band chip + numeric score in a single nowrap island so the two
+     tokens always sit shoulder-to-shoulder — never split across lines on
+     narrow viewports. The island itself may drop to the next line under
+     the title, but its internal pieces stay together. */
+  .kx-h1-scorepack {
+    display: inline-block;
+    white-space: nowrap;
+    margin-left: 12px;
+    vertical-align: 0.14em;
+  }
+  .kx-review-hero-row .kx-h1 .kx-h1-scorepack .kx-badge {
+    vertical-align: baseline;
+  }
+  .kx-review-hero-row .kx-h1 .kx-h1-scorepack .kx-score-num {
+    margin-left: 10px;
+    vertical-align: baseline;
+  }
+
+  /* Inline attendees + date meta row (single icon representing attendees) */
+  .kx-meta-inline {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 10px 12px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 13px; color: var(--muted);
+    margin: 8px 0 14px;
+  }
+  .kx-meta-attendees {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--muted);
+    font-family: 'Figtree', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .kx-meta-attendees .kx-meta-attendee-names {
+    color: var(--muted);
+  }
+  .kx-meta-dot {
+    width: 3px; height: 3px; border-radius: 50%;
+    background: var(--border-strong);
+    display: inline-block;
+  }
+  .kx-meta-date {
+    font-family: 'Figtree', sans-serif;
+    font-size: 13px; color: var(--muted);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  /* Inline prospect email — mandatory input threaded into the meta row.
+     Matches meta typography exactly so the row reads as one strip.
+     Required-ness is signalled by a small rust asterisk (universal convention)
+     and enforced by disabling the Approve button until filled. */
+  .kx-meta-email {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 13px;
+  }
+  .kx-meta-email .kx-meta-email-icon { color: var(--muted); flex-shrink: 0; }
+  .kx-meta-email-star {
+    color: var(--rust);
+    font-family: 'Figtree', sans-serif;
+    font-size: 13px; font-weight: 700;
+    line-height: 1; margin-left: -1px; margin-right: 1px;
+    user-select: none;
+  }
+  .kx-meta-email-input {
+    background: transparent; border: none;
+    border-bottom: 1px dashed var(--border-strong);
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--midnight);
+    padding: 1px 2px;
+    min-width: 200px;
+    transition: border-color 0.15s;
+  }
+  .kx-meta-email-input:focus { border-color: var(--green); }
+  .kx-meta-email-input::placeholder { color: var(--border-strong); font-style: italic; opacity: 1; }
+
+  /* Compact contact strip — single row, minimal footprint */
+  .kx-contact-compact {
+    display: inline-flex; align-items: center; flex-wrap: wrap;
+    gap: 6px 14px;
+    background: #FBF9F2;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 14px;
+    margin: 4px 0 20px;
+  }
+  .kx-contact-item {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 13px; color: var(--midnight);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+  .kx-contact-item.name { font-weight: 700; }
+  .kx-contact-item .kx-contact-icon { color: var(--muted); flex-shrink: 0; }
+  .kx-contact-item a { color: var(--bright-blue); text-decoration: none; }
+  .kx-contact-item a:hover { text-decoration: underline; }
+  .kx-contact-item-muted { color: var(--muted); }
+  .kx-contact-item-empty {
+    color: var(--rust); font-style: italic; cursor: pointer;
+    font-size: 12.5px;
+  }
+  .kx-contact-item-empty:hover { text-decoration: underline; }
+  .kx-contact-sep {
+    color: var(--border-strong);
+    font-size: 11px;
+    user-select: none;
+  }
+  .kx-contact-inline-input {
+    background: transparent; border: none;
+    border-bottom: 1px dashed var(--border-strong);
+    outline: none;
+    font-family: inherit; font-size: inherit; color: var(--midnight);
+    padding: 1px 4px;
+    min-width: 120px;
+    transition: border-color 0.15s;
+  }
+  .kx-contact-inline-input:focus { border-color: var(--green); }
+  .kx-contact-inline-input.warn { border-color: var(--rust); }
+  .kx-review-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 20px;
+    background: rgba(65,187,147,0.14);
+    border: 1px solid rgba(65,187,147,0.4);
+    color: var(--green-deep);
+    font-family: 'Figtree', sans-serif;
+    font-size: 10.5px; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .kx-bar-h1 {
+    width: 112px; height: 10px; border-radius: 2px;
+    background: var(--midnight);
+    margin: 14px 0 12px;
+  }
+  .kx-bar-h2 {
+    width: 72px; height: 6px; border-radius: 2px;
+    background: var(--bright-blue);
+    margin: 8px 0 16px;
+  }
+
+  /* ---- Banding tiles ---- */
+  .kx-band-stack {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-top: 10px;
+  }
+  .kx-band-tile {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #FCFAF4;
+    position: relative;
+    overflow: hidden;
+  }
+  .kx-band-tile::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  }
+  .kx-band-tile.hot::before { background: var(--green-deep); }
+  .kx-band-tile.warm::before { background: var(--mustard); }
+  .kx-band-tile.cold::before { background: var(--dark-teal); }
+  .kx-band-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700; font-size: 13px;
+    color: #fff;
+  }
+  .kx-band-tile.hot .kx-band-dot { background: var(--green-deep); }
+  .kx-band-tile.warm .kx-band-dot { background: var(--mustard); }
+  .kx-band-tile.cold .kx-band-dot { background: var(--dark-teal); }
+  .kx-band-body { min-width: 0; }
+  .kx-band-label {
+    font-family: 'Figtree', sans-serif;
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--midnight);
+    margin-bottom: 3px;
+  }
+  .kx-band-rule {
+    font-size: 12px; line-height: 1.45; color: var(--muted);
+  }
+  .kx-band-edit-row {
+    display: flex; justify-content: flex-end; margin-top: 6px;
+  }
+  .kx-band-edit-btn {
+    background: none; border: none; padding: 4px 6px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--bright-blue); cursor: pointer;
+  }
+  .kx-band-edit-btn:hover { text-decoration: underline; }
+  .kx-meta {
+    font-family: 'Figtree', sans-serif;
+    font-size: 13px; color: var(--muted);
+    margin-bottom: 22px;
+  }
+  .kx-eyebrow-inline {
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px; font-weight: 800;
+    color: var(--mustard);
+    text-transform: uppercase; letter-spacing: 0.14em;
+    margin-bottom: 4px;
+  }
+  .kx-h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px; font-weight: 700; color: var(--midnight);
+    letter-spacing: -0.01em; margin: 2px 0 0;
+  }
+  /* Unified small section title — mustard/golden to match the "MEETING SUMMARY" eyebrow.
+     Same font/size/color everywhere; no bar underline. */
+  .kx-h2-sm {
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px; font-weight: 800;
+    color: var(--mustard);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 0 0 8px;
+  }
+
+  /* Review hero block — SUMMARY eyebrow + meeting title live in the left column;
+     action buttons pin to the top-right. When the title is long it wraps within
+     the left column and extends under the button row without pushing the eyebrow
+     down or opening a gap between it and the title. */
+  .kx-review-hero-block-wrap {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 6px;
+  }
+  .kx-review-hero-block-main {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .kx-review-hero-block-main .kx-eyebrow {
+    margin: 0 0 6px;
+    line-height: 1;
+  }
+  .kx-review-hero-block-main .kx-review-hero-row {
+    margin-top: 0;
+  }
+  .kx-review-actions {
+    display: inline-flex; align-items: center; gap: 6px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  /* Review hero — scaling for narrow viewports so the title + score island
+     fit without collision. Action buttons drop under the title on the tightest
+     widths, giving the h1 the full row to itself. */
+  @media (max-width: 900px) {
+    .kx-review-hero-row .kx-h1 { font-size: 22px; }
+    .kx-h1-scorepack { margin-left: 10px; }
+    .kx-review-hero-row .kx-h1 .kx-h1-scorepack .kx-score-num { margin-left: 8px; }
+  }
+  @media (max-width: 640px) {
+    .kx-review-hero-block-wrap {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    .kx-review-actions {
+      justify-content: flex-start;
+    }
+    .kx-review-hero-row .kx-h1 { font-size: 20px; line-height: 1.25; }
+  }
+  @media (max-width: 400px) {
+    .kx-review-hero-row .kx-h1 { font-size: 18px; }
+    .kx-h1-scorepack { margin-left: 8px; }
+    .kx-review-hero-row .kx-h1 .kx-h1-scorepack .kx-score-num { margin-left: 6px; }
+  }
+
+  /* Score numeric — colored by band, no chip, no background, no border */
+  .kx-score-num {
+    display: inline-flex; align-items: baseline; gap: 1px;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .kx-score-num b {
+    font-size: 22px; font-weight: 700;
+  }
+  .kx-score-num .kx-score-total {
+    font-size: 13px; font-weight: 500;
+    color: var(--muted);
+    margin-left: 1px;
+  }
+  .kx-score-num.hot  b { color: var(--green-deep); }
+  .kx-score-num.warm b { color: var(--mustard);    }
+  .kx-score-num.cold b { color: var(--dark-teal);  }
+  @media (max-width: 900px) {
+    .kx-score-num b { font-size: 20px; }
+  }
+  @media (max-width: 640px) {
+    .kx-score-num b { font-size: 18px; }
+    .kx-score-num .kx-score-total { font-size: 12px; }
+  }
+  @media (max-width: 400px) {
+    .kx-score-num b { font-size: 16px; }
+    .kx-score-num .kx-score-total { font-size: 11px; }
+  }
+
+  .kx-contact-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 4px; padding: 16px 20px;
+    margin-bottom: 28px;
+    box-shadow: 0 1px 3px rgba(15,35,69,0.05);
+  }
+  @media (max-width: 720px) { .kx-contact-strip { grid-template-columns: repeat(2, 1fr); } }
+  .kx-contact-cell { min-width: 0; }
+  .kx-contact-label {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 10px; font-weight: 800;
+    color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .kx-contact-value {
+    font-family: 'Figtree', sans-serif;
+    font-size: 14px; font-weight: 500; color: var(--midnight);
+    line-height: 1.35;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .kx-conf-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    display: inline-block;
+  }
+  .kx-conf-high { background: var(--green-deep); }
+  .kx-conf-medium { background: var(--mustard); }
+  .kx-conf-low { background: var(--rust); }
+  .kx-confirm-pill {
+    display: inline-block;
+    font-size: 12px; font-weight: 600; color: var(--mustard);
+    background: rgba(164,129,45,0.08);
+    border: 1px dashed var(--mustard);
+    padding: 3px 10px; border-radius: 2px;
+    cursor: pointer;
+  }
+  .kx-confirm-pill:hover { background: rgba(164,129,45,0.14); }
+
+  .kx-review-section { margin-top: 32px; }
+  .kx-section-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 2px;
+    margin-left: 3px;
+  }
+  .kx-section-actions { display: flex; gap: 12px; margin-top: 4px; }
+  .kx-link-btn {
+    background: none; border: none; padding: 0; cursor: pointer;
+    font-family: 'Figtree', sans-serif;
+    font-size: 12px; font-weight: 600;
+    color: var(--green-deep);
+    text-transform: none; letter-spacing: 0;
+  }
+  .kx-link-btn:hover { color: var(--green); text-decoration: underline; }
+
+  .kx-signal-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 12px;
+  }
+  .kx-signal-chip {
+    display: inline-flex; align-items: center;
+    background: #F0EDE5;
+    border: 1px solid var(--tan);
+    color: var(--midnight);
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px; font-weight: 600;
+    padding: 5px 12px; border-radius: 20px;
+  }
+  .kx-rationale {
+    font-size: 13px; color: var(--text); line-height: 1.6;
+    margin: 0; max-width: 620px;
+  }
+
+  .kx-doc-list { margin: 0; padding: 0; list-style: none; }
+  .kx-doc-list li {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 13.5px; line-height: 1.55; color: var(--text);
+    padding: 6px 0;
+  }
+  .kx-doc-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--mustard);
+    margin-top: 8px; flex-shrink: 0;
+  }
+  .kx-doc-check { color: var(--green-deep); margin-top: 2px; flex-shrink: 0; }
+
+  .kx-attendee-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+  }
+  .kx-attendee-row:last-child { border-bottom: none; }
+  .kx-side-chip {
+    font-family: 'Figtree', sans-serif;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px; border-radius: 2px;
+    color: #fff;
+  }
+  .kx-side-chip.kaffea { background: var(--mustard); }
+  .kx-side-chip.prospect { background: var(--green); }
+
+  .kx-nextstep-card {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 4px; padding: 12px 16px;
+    margin-bottom: 8px; gap: 12px;
+  }
+  .kx-nextstep-owner {
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: rgba(164,129,45,0.14); color: var(--mustard);
+    padding: 4px 10px; border-radius: 2px;
+  }
+  .kx-due-pill {
+    font-size: 11px; font-weight: 600; color: var(--midnight);
+    background: #F0EDE5; border: 1px solid var(--tan);
+    padding: 3px 10px; border-radius: 20px;
+    margin-left: 6px;
+  }
+
+  .kx-question-card {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: rgba(164,129,45,0.08);
+    border: 1px solid rgba(164,129,45,0.35);
+    border-radius: 4px; padding: 10px 14px;
+    margin-bottom: 6px;
+    font-size: 13px; color: var(--midnight); line-height: 1.5;
+  }
+
+  .kx-letter {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 24px 28px;
+    box-shadow: 0 2px 8px rgba(15,35,69,0.05);
+    max-width: 640px;
+  }
+  .kx-letter-subject {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 16px; font-weight: 700; color: var(--midnight);
+    margin-bottom: 12px;
+  }
+  .kx-letter-rule {
+    border: none; border-top: 1px solid var(--border);
+    margin: 0 0 16px;
+  }
+  .kx-letter-body {
+    white-space: pre-wrap;
+    font-family: 'Figtree', sans-serif;
+    font-size: 13.5px; line-height: 1.7; color: var(--text);
+  }
+
+  .kx-review-note {
+    font-size: 13px; color: var(--muted);
+    max-width: none;
+    line-height: 1.5;
+  }
+
+  /* ---- Top action bar (opposite the hero heading) ---- */
+  .kx-review-hero-block {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 20px; flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .kx-review-hero-left { min-width: 0; flex: 1 1 240px; }
+  .kx-review-hero-right {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  /* ---- Narrative summary block ---- */
+  .kx-narrative {
+    font-family: 'Figtree', sans-serif;
+    font-size: 15px; line-height: 1.7; color: var(--text);
+    padding: 20px 24px;
+    background: linear-gradient(180deg, #FDFBF5 0%, #FFFFFF 100%);
+    border-left: 3px solid var(--midnight);
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 1px 3px rgba(15,35,69,0.04);
+    margin-top: 4px;
+  }
+
+  /* ---- Metrics chips (weight-coloured) ---- */
+  .kx-metric-chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 4px;
+  }
+  .kx-metric-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 14px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 6px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 12.5px; font-weight: 600; color: var(--midnight);
+    cursor: default;
+    transition: transform 0.12s, box-shadow 0.12s;
+  }
+  .kx-metric-chip:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(15,35,69,0.08); }
+  .kx-metric-chip.hot  { border-left-color: var(--green-deep); }
+  .kx-metric-chip.warm { border-left-color: var(--mustard); }
+  .kx-metric-chip.cold { border-left-color: var(--dark-teal); }
+  .kx-metric-chip-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .kx-metric-chip.hot  .kx-metric-chip-dot { background: var(--green-deep); }
+  .kx-metric-chip.warm .kx-metric-chip-dot { background: var(--mustard); }
+  .kx-metric-chip.cold .kx-metric-chip-dot { background: var(--dark-teal); }
+
+  /* ---- Attendee grid (org badge sits inline with name) ---- */
+  .kx-attendee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .kx-attendee-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .kx-attendee-card:hover { box-shadow: 0 2px 8px rgba(15,35,69,0.06); }
+  .kx-attendee-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Figtree', sans-serif;
+    font-size: 12px; font-weight: 800;
+    color: #fff; flex-shrink: 0;
+  }
+  .kx-attendee-avatar.kaffea   { background: var(--midnight); }
+  .kx-attendee-avatar.prospect { background: var(--green-deep); }
+  .kx-attendee-body { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .kx-attendee-name {
+    font-size: 14px; font-weight: 600; color: var(--midnight);
+    line-height: 1.2;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .kx-attendee-org {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .kx-attendee-org.kaffea   { color: var(--midnight); }
+  .kx-attendee-org.prospect { color: var(--green-deep); }
+  .kx-attendee-org-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* ---- Two-column bullet grid for topics & decisions ---- */
+  .kx-bullet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px 24px;
+    margin-top: 4px;
+  }
+  .kx-bullet-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13.5px; line-height: 1.55; color: var(--midnight);
+  }
+  .kx-bullet-item.decision { border-left: 3px solid var(--green-deep); }
+  .kx-bullet-item.topic    { border-left: 3px solid var(--mustard); }
+  .kx-bullet-item-icon { flex-shrink: 0; margin-top: 2px; }
+
+  /* ---- Side-by-side card pair for topics + decisions (Option B treatment) ---- */
+  .kx-b-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 2px;
+  }
+  @media (max-width: 900px) { .kx-b-pair { grid-template-columns: 1fr; } }
+  .kx-b-pair-col { min-width: 0; display: flex; flex-direction: column; }
+  .kx-b-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 6px 18px;
+    box-shadow: 0 1px 2px rgba(15,35,69,0.06);
+    flex: 1;
+  }
+  .kx-b-card ul { list-style: none; margin: 0; padding: 0; }
+  .kx-b-card li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px; line-height: 1.55;
+    color: #1B2E4E;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .kx-b-card li:last-child { border-bottom: none; }
+  .kx-b-num {
+    flex-shrink: 0;
+    width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Consolas', 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    margin-top: 1px;
+  }
+  .kx-b-num.topic    { background: rgba(65,187,147,0.18); color: var(--green-deep); }
+  .kx-b-num.decision { background: rgba(15,35,69,0.10);   color: var(--midnight);   }
+  .kx-b-num.action   { background: rgba(214,168,54,0.22); color: #6C4A00;           }
+  /* Action-item rows read a bit larger than topics/decisions — they are the
+     "do this next" of the meeting, so the type earns a little more weight.
+     The due-date chip sits inline right after the statement, not pushed to the edge. */
+  .kx-action-body {
+    display: block;
+    font-size: 15px; line-height: 1.6;
+    color: var(--midnight);
+    min-width: 0;
+  }
+  .kx-action-text { color: var(--midnight); }
+  .kx-action-owner {
+    color: var(--midnight); font-weight: 700;
+    margin-right: 2px;
+  }
+  .kx-action-due-chip {
+    margin-left: 8px;
+    vertical-align: 1px;
+  }
+  .kx-b-empty { padding: 14px 2px; font-size: 13px; color: var(--muted); font-style: italic; }
+
+  /* ---- Small inline signal chips (rendered under the narrative summary) ---- */
+  .kx-signal-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 12px;
+  }
+  .kx-signal-chip {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border-radius: 20px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 11.5px; font-weight: 700;
+    white-space: nowrap;
+  }
+  .kx-signal-chip.hot  { background: rgba(183,91,52,0.14);  color: var(--rust); }
+  .kx-signal-chip.warm { background: rgba(164,129,45,0.14); color: var(--mustard); }
+  .kx-signal-chip.cold { background: rgba(15,35,69,0.06);   color: var(--midnight); }
+
+  /* ---- "What we heard" — signals grouped by weight (Option D).
+     Three columns spatially encode HOT / WARM / COLD. Each row reveals
+     the transcript snippet that fired the signal via a hover popover. */
+  .kx-heard-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px;
+  }
+  .kx-heard-tally {
+    font-family: 'Figtree', sans-serif;
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .kx-heard-tally b { font-weight: 800; margin-left: 4px; }
+  .kx-heard-tally b.hot  { color: var(--green-deep); }
+  .kx-heard-tally b.warm { color: var(--mustard); }
+  .kx-heard-tally b.cold { color: var(--dark-teal); }
+
+  .kx-heard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .kx-heard-col {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--midnight);
+    border-radius: 6px;
+    padding: 10px 12px 12px;
+    min-width: 0;
+    box-shadow: 0 1px 2px rgba(15,35,69,0.04);
+  }
+  .kx-heard-col.hot  { border-top-color: var(--green-deep); }
+  .kx-heard-col.warm { border-top-color: var(--mustard); }
+  .kx-heard-col.cold { border-top-color: var(--dark-teal); }
+
+  .kx-heard-col-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .kx-heard-col-title {
+    font-family: 'Figtree', sans-serif;
+    font-size: 10.5px; font-weight: 800;
+    letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .kx-heard-col.hot  .kx-heard-col-title { color: var(--green-deep); }
+  .kx-heard-col.warm .kx-heard-col-title { color: var(--mustard); }
+  .kx-heard-col.cold .kx-heard-col-title { color: var(--dark-teal); }
+  .kx-heard-col-count {
+    font-family: 'Figtree', sans-serif;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  .kx-heard-col ul { list-style: none; padding: 0; margin: 0; }
+  .kx-heard-item {
+    font-family: 'Figtree', sans-serif;
+    font-size: 12.5px; font-weight: 500;
+    color: var(--midnight);
+    line-height: 1.35;
+    padding: 6px 0;
+    border-bottom: 1px dotted rgba(196,187,166,0.5);
+    cursor: help;
+    position: relative;
+  }
+  .kx-heard-item:last-child { border-bottom: none; }
+  .kx-heard-item.empty {
+    color: var(--muted);
+    font-style: italic;
+    cursor: default;
+  }
+  .kx-heard-item:hover:not(.empty) {
+    color: var(--dark-blue);
+  }
+
+  .kx-heard-evidence {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    min-width: 220px;
+    max-width: 320px;
+    padding: 10px 12px;
+    background: var(--midnight);
+    color: #fff;
+    border-radius: 6px;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 13px; line-height: 1.5;
+    box-shadow: 0 6px 20px rgba(15,35,69,0.22);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.14s, visibility 0.14s;
+    z-index: 20;
+    white-space: normal;
+  }
+  .kx-heard-evidence::after {
+    content: "";
+    position: absolute;
+    top: 100%; left: 18px;
+    border: 6px solid transparent;
+    border-top-color: var(--midnight);
+  }
+  .kx-heard-item:hover .kx-heard-evidence {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .kx-heard-reason {
+    margin: 2px 0 12px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 13px; line-height: 1.55;
+    color: var(--midnight);
+  }
+
+  @media (max-width: 720px) {
+    .kx-heard-grid { grid-template-columns: 1fr; gap: 8px; }
+    .kx-heard-evidence { max-width: none; right: 0; }
+  }
+
+  /* ---- Individual item cards for next-steps + commitments (Option B card-per-item) ---- */
+  .kx-b-items { display: flex; flex-direction: column; gap: 10px; }
+  .kx-b-item-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 2px rgba(15,35,69,0.05);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .kx-b-item-card.step   { border-left-color: var(--green-deep); }
+  .kx-b-item-card.commit-kaffea   { border-left-color: var(--midnight); }
+  .kx-b-item-card.commit-prospect { border-left-color: var(--green-deep); }
+  .kx-b-item-text {
+    font-size: 13.5px; line-height: 1.5;
+    color: #1B2E4E;
+  }
+  .kx-b-item-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    align-items: center;
+  }
+
+  /* ---- Table for next-steps + commitments ---- */
+  .kx-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .kx-data-table thead {
+    background: #FBF9F2;
+  }
+  .kx-data-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .kx-data-table td {
+    padding: 12px 14px;
+    font-size: 13.5px; color: var(--midnight);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .kx-data-table tr:last-child td { border-bottom: none; }
+  .kx-data-table tr:hover td { background: #FDFBF5; }
+  .kx-owner-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 20px;
+    background: rgba(15,35,69,0.06);
+    font-family: 'Figtree', sans-serif;
+    font-size: 11.5px; font-weight: 700;
+    color: var(--midnight);
+    white-space: nowrap;
+  }
+  .kx-owner-pill-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green-deep);
+  }
+  .kx-side-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 20px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 10.5px; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .kx-side-tag.kaffea   { background: rgba(15,35,69,0.08);   color: var(--midnight); }
+  .kx-side-tag.prospect { background: rgba(65,187,147,0.14); color: var(--green-deep); }
+  .kx-due-tag {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border-radius: 20px;
+    background: rgba(164,129,45,0.14);
+    color: var(--mustard);
+    font-family: 'Figtree', sans-serif;
+    font-size: 11.5px; font-weight: 700;
+    white-space: nowrap;
+  }
+  .kx-empty-cell {
+    color: var(--muted); font-style: italic; font-size: 12.5px;
+  }
+
+  /* ---- Processing modal ---- */
+  .kx-proc-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,35,69,0.35);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 60;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .kx-proc-card {
+    background: #fff;
+    border-radius: 4px;
+    padding: 32px 36px;
+    width: 460px; max-width: 92vw;
+    box-shadow: 0 20px 60px rgba(15,35,69,0.2);
+  }
+  .kx-proc-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-top: 16px;
+  }
+  .kx-proc-row:first-of-type { margin-top: 4px; }
+  .kx-proc-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .kx-proc-icon.pending { background: var(--card-bg); border: 1.5px solid var(--border-strong); color: var(--muted); }
+  .kx-proc-icon.active {
+    background: #FBEED0; border: 1.5px solid var(--mustard); color: var(--mustard);
+    animation: kx-spin 1.4s linear infinite;
+  }
+  .kx-proc-icon.done { background: var(--green); border: 1.5px solid var(--green); color: #fff; }
+  .kx-proc-label {
+    flex: 1;
+    font-family: 'Figtree', sans-serif;
+    font-size: 13.5px; font-weight: 500;
+    color: var(--muted);
+  }
+  .kx-proc-label.active { color: var(--midnight); font-weight: 700; }
+  .kx-proc-label.done { color: var(--midnight); font-weight: 500; }
+  .kx-proc-status { min-width: 46px; text-align: right; }
+  .kx-proc-shimmers {
+    margin: 12px 0 4px 40px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .kx-shimmer {
+    height: 8px; border-radius: 2px;
+    background: linear-gradient(90deg, #EDE7D8 0%, #FAF6EA 50%, #EDE7D8 100%);
+    background-size: 200% 100%;
+    animation: kx-shimmer-slide 1.4s linear infinite;
+  }
+  @keyframes kx-shimmer-slide {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  @keyframes kx-toast-in {
+    from { opacity: 0; transform: translate(-50%, -8px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+  @keyframes kx-spin { to { transform: rotate(360deg); } }
+  .kx-spin { animation: kx-spin 1s linear infinite; }
+  @keyframes kx-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes kx-chat-slide-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react" data-type="module">
+
+/* ---------------- self-contained icon set (inline SVG, lucide-style strokes — no external icon dependency) ---------------- */
+function Icon({ children, size = 16, color = "currentColor", style, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style} className={className}>
+      {children}
+    </svg>
+  );
+}
+const FileText = (p) => <Icon {...p}><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></Icon>;
+const Sparkles = (p) => <Icon {...p}><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M19 15l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></Icon>;
+const UserCheck = (p) => <Icon {...p}><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7"/><path d="M17 12l2 2 3-4"/></Icon>;
+const UploadCloud = (p) => <Icon {...p}><path d="M7 18a5 5 0 0 1-1-9.9A6 6 0 0 1 17.7 8H18a4 4 0 0 1 1 7.9"/><path d="M12 12v7"/><path d="M9 15l3-3 3 3"/></Icon>;
+const History = (p) => <Icon {...p}><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/></Icon>;
+const SlidersHorizontal = (p) => <Icon {...p}><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2"/><line x1="4" y1="14" x2="20" y2="14"/><circle cx="16" cy="14" r="2"/><line x1="4" y1="21" x2="20" y2="21"/><circle cx="11" cy="21" r="2"/></Icon>;
+const Building2 = (p) => <Icon {...p}><rect x="4" y="3" width="16" height="18"/><line x1="9" y1="8" x2="9" y2="8"/><line x1="9" y1="12" x2="9" y2="12"/><line x1="9" y1="16" x2="9" y2="16"/><line x1="15" y1="8" x2="15" y2="8"/><line x1="15" y1="12" x2="15" y2="12"/><line x1="15" y1="16" x2="15" y2="16"/></Icon>;
+const Mail = (p) => <Icon {...p}><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></Icon>;
+const Flag = (p) => <Icon {...p}><path d="M5 3v18"/><path d="M5 4h13l-3 4 3 4H5"/></Icon>;
+const AlertTriangle = (p) => <Icon {...p}><path d="M12 3L2 20h20z"/><line x1="12" y1="9" x2="12" y2="14"/><line x1="12" y1="17.2" x2="12" y2="17.2"/></Icon>;
+const CheckCircle2 = (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 5-5.5"/></Icon>;
+const Check = (p) => <Icon {...p}><polyline points="5 12 10 17 20 7"/></Icon>;
+const XCircle = (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></Icon>;
+const X = (p) => <Icon {...p}><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></Icon>;
+const Plus = (p) => <Icon {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></Icon>;
+const Trash2 = (p) => <Icon {...p}><line x1="4" y1="6" x2="20" y2="6"/><path d="M6 6V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></Icon>;
+const Loader2 = (p) => <Icon {...p}><path d="M12 3a9 9 0 1 0 9 9"/></Icon>;
+const ChevronDown = (p) => <Icon {...p}><polyline points="6 9 12 15 18 9"/></Icon>;
+const ChevronUp = (p) => <Icon {...p}><polyline points="6 15 12 9 18 15"/></Icon>;
+const ShieldCheck = (p) => <Icon {...p}><path d="M12 3l7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V6z"/><path d="M9 12l2 2 4-4"/></Icon>;
+const User = (p) => <Icon {...p}><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></Icon>;
+const Users = (p) => <Icon {...p}><circle cx="9" cy="8" r="3.5"/><path d="M2.5 21c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><circle cx="17" cy="7" r="2.5"/><path d="M15 13.2c3.3-.2 6 2.3 6 5.6"/></Icon>;
+const Send = (p) => <Icon {...p}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></Icon>;
+const Search = (p) => <Icon {...p}><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></Icon>;
+const RefreshCw = (p) => <Icon {...p}><path d="M3 12a9 9 0 0 1 15.5-6.4L21 8"/><polyline points="21 3 21 8 16 8"/><path d="M21 12a9 9 0 0 1-15.5 6.4L3 16"/><polyline points="3 21 3 16 8 16"/></Icon>;
+const ChevronLeft = (p) => <Icon {...p}><polyline points="15 6 9 12 15 18"/></Icon>;
+const ChevronRight = (p) => <Icon {...p}><polyline points="9 6 15 12 9 18"/></Icon>;
+const MessageSquare = (p) => <Icon {...p}><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></Icon>;
+const PanelLeft = (p) => <Icon {...p}><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></Icon>;
+
+const { useState, useRef, useEffect } = React;
+
+/* ---------------- band styling ---------------- */
+const BAND = {
+  hot:  { label: "HOT",  cls: "hot",  bar: "var(--green)"   },
+  warm: { label: "WARM", cls: "warm", bar: "var(--mustard)" },
+  cold: { label: "COLD", cls: "cold", bar: "var(--dark-teal)" },
+};
+
+/* ---------------- Seed library (mock CRM + Drafts) ----------------
+   These populate the Recent sidebar so the demo has history to click into.
+   Each entry is a full draft record + a `committed` flag telling us whether
+   it's already in the Zoho sandbox or still awaiting review. */
+function buildMeetingTitle(band, company) {
+  const c = company || "prospect";
+  if (band === "hot")  return `Discovery call — ${c}`;
+  if (band === "warm") return `Intro conversation — ${c}`;
+  return `Intro touchpoint — ${c}`;
+}
+
+function makeSeed({ id, company, name, title, email, band, when, committed, detected, rationale, meetingTitle }) {
+  const contact = {
+    name:    { value: name    || "",      confidence: name    ? "high" : "low" },
+    company: { value: company || "",      confidence: "high" },
+    title:   { value: title   || "",      confidence: title   ? "medium" : "low" },
+    email:   { value: email   || "",      confidence: email   ? "medium" : "low" },
+  };
+  return {
+    id, when, committed: !!committed, band,
+    contact,
+    summary: {
+      meeting_title: meetingTitle || buildMeetingTitle(band, company),
+      narrative: band === "hot"
+        ? `${company} presented a strong buying case in this conversation, with the founder speaking openly about what isn't working in their current channel. The team walked through concrete pain around distribution and wholesale pricing visibility, describing the exact friction Kaffea-X is built to close. The discussion moved past introductions quickly and into specifics about how listings, benchmarks, and buyer discovery would work. A concrete 30-minute follow-up was agreed for next week, with the onboarding walkthrough and sample listings to land beforehand. Scored HOT because multiple qualifying signals fired against the rubric and a committed next step landed on the call.`
+        : band === "warm"
+        ? `${company} is exploring the space with real intent, though the buying case isn't fully framed yet. Signals around timing and evaluation windows came up naturally, and the team took time to describe how they work today. Kaffea-X shared what a fit would look like without leaning into a hard pitch, and the conversation had genuine give-and-take on both sides. A lighter-touch follow-up was agreed — an overview to review at their own pace, with the door open to a deeper walkthrough later. Scored WARM because the interest is real but the top-tier buying trigger hasn't fired yet.`
+        : `${company} joined the conversation but no qualifying signals surfaced against the rubric. The team isn't in an active evaluation window right now, and the discussion stayed at the level of general orientation to the Kaffea-X platform. Kaffea-X shared context on how the product works without pushing for a commitment, and the tone remained informational throughout. No next step was agreed on the call and no follow-up material was requested. Scored COLD — worth keeping the relationship warm through occasional updates, but not worth active pursuit at this time.`,
+      attendees: [
+        { name: "Mohan", side: "kaffea_x" },
+        { name: `Prospect (${company})`, side: "prospect" },
+      ],
+      topics: [
+        `${company} — profile and current channel`,
+        "Distribution and go-to-market friction discussed",
+        "Wholesale pricing visibility raised",
+      ],
+      decisions: [
+        `Kaffea-X to share onboarding walkthrough with ${company}`,
+        "Follow-up scheduled next week",
+      ],
+      open_questions: ["Volume commitments not yet confirmed"],
+      next_steps: [
+        { description: "Send the onboarding walkthrough deck along with three sample listings that mirror their product mix, so the team can see exactly how their catalog would surface to wholesale buyers", owner: "Mohan", due_date: "by Tuesday" },
+        { description: "Book a 30-minute follow-up call to walk through the sample listings together and address any wholesale-pricing questions before they commit.", owner: "Mohan", due_date: "next week" },
+      ],
+      commitments: [
+        { side: "kaffea_x", description: "Share the pricing benchmarks deck and send a calendar invite with two suggested time windows in their timezone for the follow-up conversation" },
+        { side: "prospect", description: "Review the onboarding walkthrough and sample listings before Thursday, then flag any concerns around volume commitments so we can address them live on the call" },
+      ],
+    },
+    lead_score: {
+      band,
+      detected_signals: detected || [],
+      rationale: rationale || `Detected ${(detected || []).length} qualifying signal(s); scored ${band.toUpperCase()} per the banding rule.`,
+    },
+    recap_email: buildRecap(band, company),
+  };
+}
+
+const SEED_LIBRARY = [
+  makeSeed({
+    id: "ZOHO-421089", company: "Cascade Ember", name: "", title: "Owner / Founder", email: "",
+    meetingTitle: "Discovery call — Cascade Ember distribution & Cascade Ember distribution",
+    band: "hot", when: "Today · just now", committed: true,
+    detected: [
+      { id: "distribution_pipeline_challenge", label: "Challenge distributing / building a pipeline of buyers", evidence: "…don't have a channel — right now it's farmers markets and a trickle of online orders…" },
+      { id: "price_transparency_pain", label: "Price-transparency pain", evidence: "…no visibility on wholesale pricing, no idea what other roasters charge…" },
+      { id: "listing_frustration", label: "Frustration listing their coffee for lack of a channel", evidence: "…just list our lots and have buyers find us…" },
+    ],
+    rationale: "Detected 3 hot signals and a next step was agreed → scored HOT per the banding rule.",
+  }),
+  makeSeed({
+    id: "ZOHO-338502", company: "Blue Ridge Roasters", name: "Jesse Hart", title: "Head of Sales", email: "jesse@blueridge.co",
+    meetingTitle: "Evaluation call — Blue Ridge Roasters",
+    band: "warm", when: "Yesterday · 4:22 PM", committed: true,
+    detected: [
+      { id: "budget_confirmed", label: "Budget or willingness to spend mentioned", evidence: "…we've set aside some budget for this, nothing huge but we're serious…" },
+      { id: "timeline_named", label: "Specific evaluation timeline mentioned", evidence: "…we'd want something in place before the fall buying season, realistically the next six to eight weeks…" },
+    ],
+    rationale: "Detected 2 warm signals with no cold-overriding signals → scored WARM per the banding rule.",
+  }),
+  makeSeed({
+    id: "DRF-portland-pour", company: "Portland Pour Coffee", name: "Kai Ferreira", title: "Owner", email: "",
+    meetingTitle: "Intro call — Portland Pour Coffee",
+    band: "warm", when: "3 days ago", committed: false,
+    detected: [
+      { id: "timeline_named", label: "Specific evaluation timeline mentioned", evidence: "…we'd want to be up on a marketplace before next quarter…" },
+    ],
+    rationale: "Detected 1 warm signal with no cold-overriding signals → scored WARM per the banding rule.",
+  }),
+];
+
+const SAMPLE = `[Zoom call — June 24, 2026 · 28 min]
+
+Mohan (Kaffea-X): Thanks for making time. Tell me where things stand for you right now.
+
+Prospect: Sure. We're a small roastery out of Portland — Cascade Ember, going about four years. Single-origin, mostly Ethiopian and Colombian. The coffee's good, that's not the problem. The problem is getting it in front of buyers. We just don't have a channel — right now it's farmers markets and a trickle of online orders.
+
+Mohan: Distribution is the wall a lot of roasters hit. You've tried wholesale?
+
+Prospect: We've tried. Cold-emailing cafes, showing up with samples. It's brutal and it doesn't scale. And honestly we have no idea what other roasters charge wholesale, so we're either too expensive or leaving money on the table. No visibility on pricing at all.
+
+Mohan: So if there were a marketplace where you could list your coffee, see where you sit on price, and get in front of buyers who are looking — is that what you're after?
+
+Prospect: A hundred percent. If I could just list our lots and have buyers find us, that changes everything for us.
+
+Mohan: What do the next few months look like — evaluating now, or just exploring?
+
+Prospect: We want something in place before the fall buying season, so realistically the next six to eight weeks. We've set aside some budget — nothing huge, but we're serious.
+
+Mohan: Perfect. Let me put together a short onboarding walkthrough with some sample listings. Can we do 30 minutes Thursday next week?
+
+Prospect: Thursday works. Send it across.
+
+Mohan: Will do — I'll email the deck and a calendar invite.`;
+
+const DEFAULT_RUBRIC = {
+  signals: [
+    { id: "distribution_pipeline_challenge", label: "Challenge distributing / building a pipeline of buyers", weight: "hot", source: "client", hints: ["no channel", "distribution", "in front of buyers", "doesn't scale", "get it in front"] },
+    { id: "listing_frustration", label: "Frustration listing their coffee for lack of a channel", weight: "hot", source: "client", hints: ["list our lots", "list our coffee", "just list", "have buyers find us"] },
+    { id: "price_transparency_pain", label: "Price-transparency pain", weight: "hot", source: "client", hints: ["no idea what other", "charge wholesale", "no visibility", "pricing", "leaving money"] },
+    { id: "logistics_issue", label: "Logistics / fulfillment issues", weight: "hot", source: "client", hints: ["shipping", "warehouse", "fulfillment", "logistics"] },
+    { id: "budget_confirmed", label: "Budget or willingness to spend mentioned", weight: "warm", source: "proposed", hints: ["budget", "set aside", "willing to spend", "we're serious"] },
+    { id: "timeline_named", label: "Specific evaluation timeline mentioned", weight: "warm", source: "proposed", hints: ["six to eight weeks", "next few months", "before the fall", "weeks"] },
+    { id: "just_browsing", label: "Explicit 'just looking' / no near-term need", weight: "cold", source: "proposed", hints: ["just looking", "just exploring", "no near-term", "not right now", "maybe later"] },
+  ],
+  banding:
+    "≥1 HOT signal AND a next step agreed → hot. ≥1 WARM signal and no cold-overriding signal → warm. Otherwise → cold.",
+};
+
+/* ---------------- Mocked processing engine (no external calls) ----------------
+   Curated extraction for the demo transcript; signal detection and banding run
+   locally against the rubric, so editing the rubric changes the score live.    */
+
+const CURATED = {
+  contact: {
+    name:    { value: "", confidence: "low" },
+    company: { value: "Cascade Ember", confidence: "high" },
+    title:   { value: "Owner / Founder", confidence: "medium" },
+    email:   { value: "", confidence: "low" },
+  },
+  summary: {
+    meeting_title: "Discovery call — Cascade Ember distribution",
+    narrative: "Cascade Ember, a small Portland roastery, walked the team through the shape of their business and where growth is stuck. The founder was direct: the coffee sells fine at farmers markets, but there is no wholesale channel, no visibility into what other roasters charge, and no way to get lots in front of buyers systematically. Kaffea-X's marketplace matched what they were describing almost line for line, budget is set aside for the next six to eight weeks, and a walkthrough is booked for Thursday.",
+    attendees: [
+      { name: "Mohan", side: "kaffea_x" },
+      { name: "Prospect (Cascade Ember)", side: "prospect" },
+    ],
+    topics: [
+      "Small Portland roastery — single-origin Ethiopian & Colombian",
+      "No distribution channel beyond farmers markets and online",
+      "No visibility on wholesale pricing",
+      "Wants a marketplace to list lots and reach buyers",
+    ],
+    decisions: [
+      "Kaffea-X to share an onboarding walkthrough with sample listings",
+      "Follow-up meeting set for Thursday next week",
+    ],
+    open_questions: ["Prospect contact name and email not captured on the call"],
+    next_steps: [
+      { description: "Send the onboarding walkthrough deck plus three sample listings that reflect Cascade Ember's product mix, so they can see how their catalog would appear to wholesale buyers on the platform", owner: "Mohan", due_date: "by Monday" },
+      { description: "Schedule a 30-minute follow-up call to review the sample listings together and answer any pricing-visibility questions before they commit to a pilot", owner: "Mohan", due_date: "Thursday next week" },
+    ],
+    commitments: [
+      { side: "kaffea_x", description: "Email the pricing benchmarks deck along with a calendar invite offering two time windows in their timezone for the Thursday follow-up" },
+      { side: "prospect", description: "Attend the Thursday follow-up after reviewing the walkthrough materials, and share any concerns about wholesale volume commitments ahead of the call" },
+    ],
+  },
+};
+
+const HINT_FALLBACK = (label) =>
+  label.toLowerCase().replace(/[^a-z ]/g, " ").split(" ").filter((w) => w.length > 4);
+
+function snippet(text, hint) {
+  const i = text.toLowerCase().indexOf(hint.toLowerCase());
+  if (i < 0) return "";
+  const start = Math.max(0, i - 28), end = Math.min(text.length, i + hint.length + 28);
+  return (start > 0 ? "…" : "") + text.slice(start, end).replace(/\s+/g, " ").trim() + (end < text.length ? "…" : "");
+}
+
+function detectSignals(transcript, rubric) {
+  const lc = transcript.toLowerCase();
+  const out = [];
+  rubric.signals.forEach((sig) => {
+    const hints = sig.hints && sig.hints.length ? sig.hints : HINT_FALLBACK(sig.label);
+    const hit = hints.find((h) => lc.includes(h.toLowerCase()));
+    if (hit) out.push({ id: sig.id, label: sig.label, weight: sig.weight, evidence: snippet(transcript, hit) });
+  });
+  return out;
+}
+
+function detectNextStep(transcript) {
+  return /(monday|tuesday|wednesday|thursday|friday|next week)[^.]*(work|good|fine|sure|great)|send (it|the deck|across)|calendar invite/i.test(transcript);
+}
+
+function applyBanding(detected, nextStep) {
+  const hot = detected.filter((d) => d.weight === "hot").length;
+  const warm = detected.filter((d) => d.weight === "warm").length;
+  const cold = detected.filter((d) => d.weight === "cold").length;
+  if (hot >= 1 && nextStep) return "hot";
+  if (warm >= 1 && cold === 0) return "warm";
+  if (hot >= 1) return "warm";
+  return "cold";
+}
+
+function buildRationale(detected, band, nextStep) {
+  const hot = detected.filter((d) => d.weight === "hot").map((d) => d.label);
+  const warm = detected.filter((d) => d.weight === "warm").map((d) => d.label);
+  const parts = [];
+  if (hot.length) parts.push(`${hot.length} hot signal${hot.length > 1 ? "s" : ""} (${hot.join("; ")})`);
+  if (warm.length) parts.push(`${warm.length} warm signal${warm.length > 1 ? "s" : ""}`);
+  const base = parts.length ? parts.join(" and ") : "no qualifying signals";
+  return `Detected ${base}; ${nextStep ? "a next step was agreed" : "no next step agreed"} → scored ${band.toUpperCase()} per the banding rule.`;
+}
+
+function buildNarrative(band, company, detected, hasNextStep) {
+  const c = company || "the roastery";
+  const hot = detected.filter((d) => d.weight === "hot").map((d) => d.label.toLowerCase());
+  const warm = detected.filter((d) => d.weight === "warm").map((d) => d.label.toLowerCase());
+  if (band === "hot") {
+    const painLine = hot.length
+      ? `The founder walked through their current channel and where it's breaking down, describing clear pain around ${hot.slice(0, 2).join(" and ")}.`
+      : `The founder walked through their current channel and where it's breaking down, describing several pain points the platform is built to address.`;
+    const nextLine = hasNextStep
+      ? `A concrete 30-minute follow-up was agreed for next week, with the onboarding walkthrough and sample listings to land beforehand.`
+      : `The team is close to a follow-up commitment, though nothing was placed on the calendar yet.`;
+    return `${c} presented a strong buying case in this conversation, with the founder speaking openly about what isn't working today. ${painLine} Kaffea-X mapped its onboarding motion to the gaps raised, and the discussion moved past introductions into specifics quickly. ${nextLine} Scored HOT because multiple qualifying signals fired against the rubric and a committed next step landed on the call.`;
+  }
+  if (band === "warm") {
+    const sigLine = warm.length
+      ? `Signals around ${warm.slice(0, 2).join(" and ")} came up naturally, and the team took time to describe how they work today.`
+      : `A handful of secondary signals came up, and the team took time to describe how they work today.`;
+    const nextLine = hasNextStep
+      ? `A lighter-touch follow-up was agreed — an overview to review at their own pace, with an open door to a deeper walkthrough later.`
+      : `No firm follow-up was set, but the door was left open for the team to reconnect on their own timing.`;
+    return `${c} is exploring the space with real intent, though the buying case isn't fully framed yet. ${sigLine} Kaffea-X shared what a fit would look like without leaning into a hard pitch, and the conversation had genuine give-and-take. ${nextLine} Scored WARM because the interest is real but the top-tier buying trigger hasn't fired.`;
+  }
+  return `${c} joined the conversation but no qualifying signals surfaced against the rubric. The team isn't in an active evaluation window right now, and the discussion stayed at the level of general orientation to the platform. Kaffea-X shared context on how the product works without pushing for a commitment, and the tone remained informational throughout. No next step was agreed on the call and no material was requested in follow-up. Scored COLD — worth keeping the relationship warm through occasional updates, but not worth active pursuit at this time.`;
+}
+
+function buildRecap(band, company) {
+  const c = company || "your roastery";
+  if (band === "hot")
+    return {
+      subject: `Next steps for ${c} on Kaffea-X`,
+      body: `Hi,\n\nGreat speaking today — the distribution and pricing-visibility gaps you described are exactly what Kaffea-X is built to close. As promised, I'll send a short onboarding walkthrough with sample listings so you can see how ${c}'s lots would appear to buyers.\n\nI've got us down for 30 minutes Thursday next week — calendar invite to follow.\n\nBest,\nMohan`,
+    };
+  if (band === "warm")
+    return {
+      subject: `${c} × Kaffea-X — a quick overview`,
+      body: `Hi,\n\nThanks for the conversation today. I'm attaching an overview of how Kaffea-X helps roasters like ${c} reach buyers and benchmark pricing. Have a look when it's convenient and let me know if a walkthrough would help.\n\nBest,\nMohan`,
+    };
+  return {
+    subject: `Keeping in touch — Kaffea-X for ${c}`,
+    body: `Hi,\n\nThanks for your time today. No rush at all — I'll add you to our occasional updates so ${c} stays in the loop, and I'm here whenever the timing is right.\n\nBest,\nMohan`,
+  };
+}
+
+async function runProcessing(transcript, rubric) {
+  // Simulated model latency — no external request is made.
+  await new Promise((r) => setTimeout(r, 900 + Math.random() * 500));
+  const detected = detectSignals(transcript, rubric);
+  const nextStep = detectNextStep(transcript);
+  const band = applyBanding(detected, nextStep);
+  const company = CURATED.contact.company.value;
+  return normalize({
+    contact: CURATED.contact,
+    summary: {
+      ...CURATED.summary,
+      narrative: buildNarrative(band, company, detected, nextStep),
+    },
+    lead_score: {
+      band,
+      detected_signals: detected.map(({ id, label, evidence, weight }) => ({ id, label, evidence, weight })),
+      rationale: buildRationale(detected, band, nextStep),
+    },
+    recap_email: buildRecap(band, company),
+  });
+}
+
+function normalize(p) {
+  const cf = (o) => ({ value: o?.value || "", confidence: o?.confidence || "low" });
+  return {
+    contact: {
+      name: cf(p.contact?.name), company: cf(p.contact?.company),
+      title: cf(p.contact?.title), email: cf(p.contact?.email),
+    },
+    summary: {
+      meeting_title: p.summary?.meeting_title || "",
+      narrative: p.summary?.narrative || "",
+      attendees: p.summary?.attendees || [],
+      topics: p.summary?.topics || [],
+      decisions: p.summary?.decisions || [],
+      open_questions: p.summary?.open_questions || [],
+      next_steps: p.summary?.next_steps || [],
+      commitments: p.summary?.commitments || [],
+    },
+    lead_score: {
+      band: BAND[p.lead_score?.band] ? p.lead_score.band : "cold",
+      detected_signals: p.lead_score?.detected_signals || [],
+      rationale: p.lead_score?.rationale || "",
+    },
+    recap_email: { subject: p.recap_email?.subject || "", body: p.recap_email?.body || "" },
+  };
+}
+
+/* ---------------- Sidebar ---------------- */
+const BAND_DOT = { hot: "var(--green)", warm: "var(--mustard)", cold: "var(--dark-teal)" };
+
+function Sidebar({ library, activeId, onSelect, onNew, onCollapse }) {
+  const [q, setQ] = useState("");
+  const drafts = library.filter((r) => !r.committed);
+  const saved = library.filter((r) => r.committed);
+  const match = (r) => !q || (r.contact.company.value || "").toLowerCase().includes(q.toLowerCase());
+
+  const groups = [
+    { label: "Drafts", tone: "draft", entries: drafts.filter(match), empty: "No drafts pending." },
+    { label: "Saved to CRM", tone: "saved", entries: saved.filter(match), empty: "Nothing committed yet." },
+  ];
+
+  return (
+    <aside className="kx-sidebar">
+      <div className="kx-side-header">
+        <div className="kx-side-title">Recent</div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <button className="kx-side-new" onClick={onNew} title="New capture">
+            <Plus size={14} /> New
+          </button>
+          {onCollapse && (
+            <button
+              className="kx-side-collapse"
+              onClick={onCollapse}
+              title="Collapse sidebar"
+              aria-label="Collapse sidebar"
+            >
+              <ChevronLeft size={14} />
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="kx-side-search-wrap">
+        <span className="kx-side-search-icon"><Search size={14} /></span>
+        <input
+          className="kx-side-search" type="text" placeholder="Search meetings…"
+          value={q} onChange={(e) => setQ(e.target.value)}
+        />
+      </div>
+      {groups.map((g, gi) => (
+        <div key={gi} className="kx-side-group-wrap">
+          <div className="kx-side-group-row">
+            <span className="kx-side-group">{g.label}</span>
+            <span className="kx-side-group-count">{g.entries.length}</span>
+          </div>
+          {g.entries.length === 0 && (
+            <div className="kx-side-empty">{g.empty}</div>
+          )}
+          {g.entries.map((r) => {
+            const active = r.id === activeId;
+            const title = r.contact.company.value || "Untitled meeting";
+            const meta = `${r.band.toUpperCase()} · ${r.when}`;
+            return (
+              <button
+                key={r.id}
+                className={"kx-side-item" + (active ? " active" : "")}
+                onClick={() => onSelect(r)}
+                title={`Open ${title}`}
+              >
+                <span className="kx-side-dot" style={{ background: BAND_DOT[r.band] || "var(--muted)", color: BAND_DOT[r.band] }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="kx-side-item-title">{title}</div>
+                  <div className="kx-side-item-meta">{meta}</div>
+                </div>
+                {g.tone === "saved" && <span className="kx-side-status saved" title="Written to Zoho">CRM</span>}
+                {g.tone === "draft" && <span className="kx-side-status draft" title="Draft — not yet written">Draft</span>}
+              </button>
+            );
+          })}
+        </div>
+      ))}
+    </aside>
+  );
+}
+
+/* ---------------- Chat panel with mock canned-response engine ---------------- */
+function ChatPanel({ context, onClose }) {
+  const initial = [{
+    role: "ai",
+    text: `I've analyzed the meeting. ${context.company || "This lead"} shows ${context.signals || "distribution and pricing-transparency signals"}. What would you like to know?`,
+  }];
+  const [messages, setMessages] = useState(initial);
+  const [text, setText] = useState("");
+  const [pending, setPending] = useState(false);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [messages, pending]);
+
+  function cannedResponse(q) {
+    const lc = q.toLowerCase();
+    if (lc.includes("pric")) return "They said they have no visibility on wholesale pricing — cold-emailing cafes without benchmarks means they're either too expensive or leaving money on the table. That's a wholesale-gap Kaffea-X closes directly with the marketplace pricing view.";
+    if (lc.includes("next") || lc.includes("step") || lc.includes("follow")) return "Two commitments landed on the call: Mohan will send the onboarding walkthrough with sample listings, and the follow-up is a 30-min call Thursday next week. The calendar invite is Mohan's action to send.";
+    if (lc.includes("competitor") || lc.includes("compet")) return "No competing platforms named on the call. Their current 'channel' is farmers markets and a trickle of online orders — the pain is the absence of a channel, not competition between channels.";
+    if (lc.includes("budget") || lc.includes("spend")) return "Budget was mentioned but not sized — 'set aside some budget, nothing huge, but we're serious.' That's a WARM signal in the rubric, not HOT. Worth confirming a number before the Thursday call.";
+    if (lc.includes("timeline") || lc.includes("when")) return "They want something in place before the fall buying season — 'realistically the next six to eight weeks.' Concrete enough to score as a warm timeline signal.";
+    return "Let me check the transcript… based on what was said, the strongest signals are distribution pain, price-transparency pain, and a listing/marketplace need. Anything specific you want me to pull evidence for?";
+  }
+
+  function send(msg) {
+    const q = (msg ?? text).trim();
+    if (!q || pending) return;
+    setMessages((m) => [...m, { role: "user", text: q }]);
+    setText("");
+    setPending(true);
+    window.setTimeout(() => {
+      setMessages((m) => [...m, { role: "ai", text: cannedResponse(q) }]);
+      setPending(false);
+    }, 600);
+  }
+
+  const chips = [
+    "What pricing did they mention?",
+    "Any competitor references?",
+    "Summarize next steps",
+  ];
+
+  return (
+    <aside className="kx-chat">
+      <div className="kx-chat-header-row">
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div className="kx-chat-eyebrow">Follow-up</div>
+          <div className="kx-chat-title">Ask about this lead</div>
+          <div style={{ width: 72, height: 6, background: "var(--bright-blue)", borderRadius: 2, marginBottom: 16 }} />
+        </div>
+        {onClose && (
+          <button
+            className="kx-chat-close"
+            onClick={onClose}
+            title="Close chat"
+            aria-label="Close chat"
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
+      <div className="kx-chat-messages" ref={scrollRef}>
+        {messages.map((m, i) => (
+          <React.Fragment key={i}>
+            {m.role === "ai" ? (
+              <div className="kx-chat-row-ai">
+                <div className="kx-chat-avatar">
+                  <img src="favicon.png" alt="Kaffea-X" />
+                </div>
+                <div className="kx-chat-bubble-ai">{m.text}</div>
+              </div>
+            ) : (
+              <div className="kx-chat-row-user">
+                <div className="kx-chat-bubble-user">{m.text}</div>
+              </div>
+            )}
+            {/* Suggested prompts appear inline right after the first AI greeting.
+                They scroll away naturally once the conversation grows. */}
+            {i === 0 && m.role === "ai" && (
+              <>
+                <div className="kx-chat-chips-eyebrow">Suggested</div>
+                <div className="kx-chat-chips">
+                  {chips.map((c, ci) => (
+                    <button key={ci} className="kx-chat-chip" onClick={() => send(c)}>{c}</button>
+                  ))}
+                </div>
+              </>
+            )}
+          </React.Fragment>
+        ))}
+        {pending && (
+          <div className="kx-chat-row-ai">
+            <div className="kx-chat-avatar">
+              <img src="favicon.png" alt="Kaffea-X" />
+            </div>
+            <div className="kx-chat-bubble-ai" style={{ color: "var(--muted)", fontStyle: "italic" }}>Thinking…</div>
+          </div>
+        )}
+      </div>
+
+      <div className="kx-chat-input-bar">
+        <input
+          className="kx-chat-input"
+          type="text"
+          placeholder="Ask a follow-up question..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") send(); }}
+        />
+        <button className="kx-chat-send" onClick={() => send()} title="Send">
+          <Send size={16} />
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+/* ---------------- Breadcrumb navigation (replaces the numbered stepper) ---------------- */
+function Stepper({ step, draftReady, activeCommitted, goTo }) {
+  const steps = [
+    { key: "capture", label: "Capture" },
+    { key: "review",  label: "Review"  },
+    { key: "commit",  label: "CRM"     },
+  ];
+  const reachable = {
+    capture: true,
+    review:  draftReady || activeCommitted,
+    commit:  activeCommitted,
+  };
+
+  return (
+    <nav className="kx-breadcrumb" aria-label="Progress">
+      {steps.map((s, i) => {
+        const active = s.key === step;
+        const disabled = !reachable[s.key] && !active;
+        return (
+          <React.Fragment key={s.key}>
+            <button
+              className={"kx-crumb" + (active ? " active" : "")}
+              onClick={() => !disabled && !active && goTo(s.key)}
+              disabled={disabled}
+              aria-current={active ? "page" : undefined}
+              title={disabled ? "Not yet reachable" : `Go to ${s.label}`}
+            >
+              {s.label}
+            </button>
+            {i < steps.length - 1 && <span className="kx-crumb-sep" aria-hidden="true">›</span>}
+          </React.Fragment>
+        );
+      })}
+    </nav>
+  );
+}
+
+/* ---------------- small UI helpers ---------------- */
+const Conf = ({ level }) => {
+  const map = {
+    high:   { color: "var(--green-deep)", txt: "high" },
+    medium: { color: "var(--mustard)",    txt: "medium" },
+    low:    { color: "var(--rust)",       txt: "low" },
+  };
+  const { color, txt } = map[level] || map.low;
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4,
+      fontSize: 10, fontWeight: 700, color, textTransform: "uppercase", letterSpacing: 0.4 }}>
+      {level === "low" && <AlertTriangle size={11} />} {txt}
+    </span>
+  );
+};
+
+const SectionTitle = ({ icon: IconEl, children, onNavy }) => (
+  <div className={"kx-section-title" + (onNavy ? " on-navy" : "")}>
+    {IconEl && <IconEl size={14} color="var(--mustard)" />}
+    <span>{children}</span>
+  </div>
+);
+
+const listToText = (a) => (a || []).join("\n");
+const textToList = (t) => t.split("\n").map((x) => x.trim()).filter(Boolean);
+
+const Empty = ({ text }) => (
+  <div style={{ fontSize: 12, color: "var(--muted)", padding: "18px 4px", lineHeight: 1.55 }}>{text}</div>
+);
+
+function EditList({ title, value, onChange, tone }) {
+  const flagged = tone === "warn" && (value || []).length > 0;
+  return (
+    <div>
+      <div style={{
+        fontSize: 10, fontWeight: 800,
+        color: flagged ? "var(--rust)" : "var(--midnight)",
+        marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5,
+      }}>
+        {title}{flagged ? ` · ${value.length}` : ""}
+      </div>
+      <textarea
+        value={listToText(value)}
+        onChange={(e) => onChange(textToList(e.target.value))}
+        className="kx-textarea"
+        style={{ height: 68, fontSize: 11.5, background: flagged ? "#FDF3F1" : "#fff",
+          borderColor: flagged ? "#E7C9C2" : "var(--border-warm)" }}
+      />
+    </div>
+  );
+}
+
+function CommitmentsEditor({ value, onChange }) {
+  const items = value || [];
+  function update(i, key, val) { const arr = structuredClone(items); arr[i][key] = val; onChange(arr); }
+  function remove(i) { const arr = structuredClone(items); arr.splice(i, 1); onChange(arr); }
+  function add() { onChange([...(items || []), { side: "kaffea_x", description: "" }]); }
+  return (
+    <div>
+      <div style={{ fontSize: 10, fontWeight: 800, color: "var(--midnight)",
+        marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>Commitments</div>
+      {items.length === 0 && <span style={{ fontSize: 11, color: "var(--muted)" }}>None detected.</span>}
+      {items.map((c, i) => (
+        <div key={i} style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4 }}>
+          <select
+            value={c.side}
+            onChange={(e) => update(i, "side", e.target.value)}
+            style={{ fontSize: 10, fontWeight: 700, padding: "6px 6px", borderRadius: 4,
+              border: "1px solid var(--border-warm)",
+              color: c.side === "kaffea_x" ? "var(--midnight)" : "var(--mustard)",
+              background: "#fff", outline: "none" }}
+          >
+            <option value="kaffea_x">Kaffea-X</option>
+            <option value="prospect">Prospect</option>
+          </select>
+          <input
+            value={c.description}
+            placeholder="What was promised"
+            onChange={(e) => update(i, "description", e.target.value)}
+            className="kx-input"
+            style={{ flex: 1, fontSize: 11.5 }}
+          />
+          <button onClick={() => remove(i)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer" }}>
+            <Trash2 size={13} />
+          </button>
+        </div>
+      ))}
+      <button onClick={add} className="kx-btn kx-btn-ghost" style={{ marginTop: 4, padding: "6px 10px", fontSize: 11 }}>
+        <Plus size={12} /> Add commitment
+      </button>
+    </div>
+  );
+}
+
+/* ---------------- Review section (read-only; edits happen via chat) ---------------- */
+function ReviewSection({ title, readView }) {
+  return (
+    <section className="kx-review-section">
+      <div className="kx-section-head">
+        <div>
+          <h2 className="kx-h2-sm">{title}</h2>
+        </div>
+      </div>
+      {readView}
+    </section>
+  );
+}
+
+/* ---------------- editorial hero header ---------------- */
+function Hero({ eyebrow, title, sub, small }) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div className="kx-eyebrow">{eyebrow}</div>
+      <h1 className={"kx-h1" + (small ? " sm" : "")}>{title}</h1>
+      <div className="kx-accent-bar" />
+      {sub && <p className="kx-sub">{sub}</p>}
+    </div>
+  );
+}
+
+/* ---------------- Review dossier screen ---------------- */
+function ReviewScreen({ draft, patch, band, committed, onApprove, onReject }) {
+  const SIDE_LABEL = { kaffea_x: "Kaffea-X", prospect: "Prospect" };
+  const SIDE_CLS = { kaffea_x: "kaffea", prospect: "prospect" };
+  const attendees = draft.summary.attendees || [];
+  const attendeeNames = attendees.map((a) => a.name).join(", ");
+  const signalCount = (draft.lead_score.detected_signals || []).length;
+  const SCORE_BY_BAND = { hot: 93, warm: 68, cold: 34 };
+  const scoreValue = SCORE_BY_BAND[draft.lead_score.band] ?? Math.min(100, signalCount * 20);
+
+  const emailValue = (draft.contact && draft.contact.email && draft.contact.email.value) || "";
+  const emailMissing = !emailValue.trim();
+  const emailRef = useRef(null);
+
+  const sendEmail = () => {
+    const s = draft.recap_email.subject || "";
+    const b = draft.recap_email.body || "";
+    window.location.href = "mailto:?subject=" + encodeURIComponent(s) + "&body=" + encodeURIComponent(b);
+  };
+
+  return (
+    <div className="kx-review">
+      {/* Hero block — left column holds SUMMARY eyebrow + meeting title (tight);
+          right column holds action buttons. When the title wraps, it grows down
+          within the left column, never opening a gap under the eyebrow. */}
+      <div className="kx-review-hero-block-wrap">
+        <div className="kx-review-hero-block-main">
+          <div className="kx-eyebrow">Meeting summary</div>
+          <div className="kx-review-hero-row">
+            <h1 className="kx-h1">
+              {draft.summary.meeting_title
+                || (draft.contact.company.value ? buildMeetingTitle(draft.lead_score.band, draft.contact.company.value) : "Untitled meeting")}
+              <span className="kx-h1-scorepack">
+                <span className={"kx-badge " + band.cls}>{band.label}</span>
+                <span className={"kx-score-num " + band.cls} title="Lead score against the rubric">
+                  <b>{scoreValue}</b><span className="kx-score-total">/100</span>
+                </span>
+              </span>
+            </h1>
+          </div>
+        </div>
+
+        <div className="kx-review-actions">
+          <button className="kx-btn kx-btn-sm kx-btn-send" onClick={sendEmail} title="Send recap email">
+            <Mail size={11} /> Email
+          </button>
+          {committed ? (
+            <button
+              className="kx-btn kx-btn-sm kx-btn-approve"
+              onClick={onApprove}
+              disabled={emailMissing}
+              title={emailMissing ? "Prospect email is required to update the CRM record" : "Update the CRM record"}
+            >
+              <RefreshCw size={11} /> Update CRM
+            </button>
+          ) : (
+            <>
+              <button className="kx-btn kx-btn-sm kx-btn-reject" onClick={onReject}>Reject</button>
+              <button
+                className="kx-btn kx-btn-sm kx-btn-approve"
+                onClick={onApprove}
+                disabled={emailMissing}
+                title={emailMissing ? "Prospect email is required to create the CRM record" : "Approve and write to CRM"}
+              >
+                Approve
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Attendees · date · prospect email — meta strip. The email input is mandatory
+          for CRM commit; Approve stays disabled until it's filled. */}
+      <div className="kx-meta-inline">
+        {attendees.length > 0 && (
+          <>
+            <span className="kx-meta-attendees" title="Attendees">
+              <Users size={14} color="var(--muted)" />
+              <span className="kx-meta-attendee-names">{attendeeNames}</span>
+            </span>
+            <span className="kx-meta-dot" aria-hidden="true" />
+          </>
+        )}
+        <span className="kx-meta-date">June 24, 2026</span>
+        <span className="kx-meta-dot" aria-hidden="true" />
+        <span className="kx-meta-email" title="Prospect email — required for CRM entry">
+          <Mail size={13} className="kx-meta-email-icon" />
+          <span className="kx-meta-email-star" aria-hidden="true">*</span>
+          <input
+            ref={emailRef}
+            type="email"
+            value={emailValue}
+            placeholder="name@company.com"
+            onChange={(e) => patch("contact.email.value", e.target.value)}
+            className="kx-meta-email-input"
+            aria-label="Prospect email (required for CRM)"
+            aria-required="true"
+          />
+        </span>
+      </div>
+
+      {/* Summary — generated narrative paragraph */}
+      <section className="kx-review-section" style={{ marginTop: 8 }}>
+        <h2 className="kx-h2-sm">Summary</h2>
+        <div className="kx-narrative">
+          {draft.summary.narrative || "Meeting recap will appear here."}
+        </div>
+      </section>
+
+      {/* What we heard — signals grouped by weight.
+          Three columns spatially encode HOT / WARM / COLD. Hover a row
+          to reveal the transcript snippet that fired the signal.
+          Reasoning footer surfaces the AI's read of the composite band. */}
+      <section className="kx-review-section">
+        {(() => {
+          const signals = draft.lead_score.detected_signals || [];
+          const band = draft.lead_score.band || "cold";
+          const buckets = { hot: [], warm: [], cold: [] };
+          signals.forEach((s) => {
+            const w = (s.weight && buckets[s.weight]) ? s.weight : band;
+            (buckets[w] || buckets.cold).push(s);
+          });
+          const total = signals.length;
+          const bandLabel = (BAND[band] && BAND[band].label) || band.toUpperCase();
+          const cols = [
+            { key: "hot",  title: "▲ Hot",  items: buckets.hot },
+            { key: "warm", title: "● Warm", items: buckets.warm },
+            { key: "cold", title: "○ Cold", items: buckets.cold },
+          ];
+          return (
+            <>
+              <div className="kx-heard-head">
+                <h2 className="kx-h2-sm">What we heard</h2>
+              </div>
+              {draft.lead_score.rationale && (
+                <div className="kx-heard-reason">{draft.lead_score.rationale}</div>
+              )}
+              <div className="kx-heard-grid">
+                {cols.map((c) => (
+                  <div key={c.key} className={"kx-heard-col " + c.key}>
+                    <div className="kx-heard-col-head">
+                      <span className="kx-heard-col-title">{c.title}</span>
+                      <span className="kx-heard-col-count">{c.items.length}</span>
+                    </div>
+                    <ul>
+                      {c.items.length === 0 ? (
+                        <li className="kx-heard-item empty">Nothing fired</li>
+                      ) : (
+                        c.items.map((s, i) => (
+                          <li key={i} className="kx-heard-item">
+                            {s.label}
+                            {s.evidence && (
+                              <span className="kx-heard-evidence">{s.evidence}</span>
+                            )}
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </>
+          );
+        })()}
+      </section>
+
+      {/* What was covered + What was decided — side-by-side, Option B card treatment */}
+      <section className="kx-review-section">
+        <div className="kx-b-pair">
+          <div className="kx-b-pair-col">
+            <div className="kx-section-head">
+              <div>
+                <h2 className="kx-h2-sm">What was covered</h2>
+              </div>
+            </div>
+            {(draft.summary.topics || []).length === 0 ? (
+              <div className="kx-b-empty">No topics captured.</div>
+            ) : (
+              <div className="kx-b-card">
+                <ul>
+                  {(draft.summary.topics || []).map((t, i) => (
+                    <li key={i}>
+                      <span className="kx-b-num topic">{String(i + 1).padStart(2, "0")}</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className="kx-b-pair-col">
+            <div className="kx-section-head">
+              <div>
+                <h2 className="kx-h2-sm">What was decided</h2>
+              </div>
+            </div>
+            {(draft.summary.decisions || []).length === 0 ? (
+              <div className="kx-b-empty">No decisions captured.</div>
+            ) : (
+              <div className="kx-b-card">
+                <ul>
+                  {(draft.summary.decisions || []).map((d, i) => (
+                    <li key={i}>
+                      <span className="kx-b-num decision">✓</span>
+                      <span>{d}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Action items — one unified table combining next_steps + commitments.
+          Same list treatment as "What was covered" for visual consistency.
+          Each row reads: [num]  Owner: action item — due_date */}
+      <section className="kx-review-section">
+        <div className="kx-section-head">
+          <div>
+            <h2 className="kx-h2-sm">Action items</h2>
+          </div>
+        </div>
+        {(() => {
+          const actionItems = [
+            ...(draft.summary.next_steps || []).map((ns) => ({
+              owner: ns.owner || null,
+              text: ns.description,
+              due_date: ns.due_date || null,
+            })),
+            ...(draft.summary.commitments || []).map((c) => ({
+              owner: SIDE_LABEL[c.side] || c.side || null,
+              text: c.description,
+              due_date: null,
+            })),
+          ];
+          if (actionItems.length === 0) {
+            return <div className="kx-b-empty">No action items captured.</div>;
+          }
+          return (
+            <div className="kx-b-card">
+              <ul>
+                {actionItems.map((it, i) => (
+                  <li key={i}>
+                    <span className="kx-b-num action">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="kx-action-body">
+                      <span className="kx-action-text">
+                        {it.owner && <b className="kx-action-owner">{it.owner}:</b>}{" "}
+                        {it.text}
+                      </span>
+                      {it.due_date && <span className="kx-due-tag kx-action-due-chip">{it.due_date}</span>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })()}
+      </section>
+
+    </div>
+  );
+}
+
+function CompactContact({ draft, patch }) {
+  const c = draft.contact;
+  const [editingName, setEditingName] = useState(false);
+  const [editingEmail, setEditingEmail] = useState(false);
+  const hasName = !!c.name.value;
+  const hasEmail = !!c.email.value;
+
+  return (
+    <div className="kx-contact-compact">
+      <span className="kx-contact-item name">
+        <User size={13} className="kx-contact-icon" />
+        {editingName || (!hasName && c.name.confidence === "low") ? (
+          <input
+            autoFocus={editingName}
+            value={c.name.value}
+            placeholder="Contact name"
+            onChange={(e) => patch("contact.name.value", e.target.value)}
+            onBlur={() => setEditingName(false)}
+            onKeyDown={(e) => { if (e.key === "Enter") setEditingName(false); }}
+            className={"kx-contact-inline-input" + (!c.name.value ? " warn" : "")}
+          />
+        ) : hasName ? (
+          <span onClick={() => setEditingName(true)} style={{ cursor: "pointer" }} title="Click to edit">{c.name.value}</span>
+        ) : (
+          <span className="kx-contact-item-empty" onClick={() => setEditingName(true)}>Add name</span>
+        )}
+      </span>
+
+      {c.title.value && (
+        <>
+          <span className="kx-contact-sep" aria-hidden="true">·</span>
+          <span className="kx-contact-item kx-contact-item-muted">{c.title.value}</span>
+        </>
+      )}
+
+      <span className="kx-contact-sep" aria-hidden="true">·</span>
+      <span className="kx-contact-item">
+        <Mail size={13} className="kx-contact-icon" />
+        {editingEmail || (!hasEmail && c.email.confidence === "low") ? (
+          <input
+            autoFocus={editingEmail}
+            type="email"
+            value={c.email.value}
+            placeholder="name@company.com"
+            onChange={(e) => patch("contact.email.value", e.target.value)}
+            onBlur={() => setEditingEmail(false)}
+            onKeyDown={(e) => { if (e.key === "Enter") setEditingEmail(false); }}
+            className={"kx-contact-inline-input" + (!c.email.value ? " warn" : "")}
+          />
+        ) : hasEmail ? (
+          <a href={"mailto:" + c.email.value} title="Send email">{c.email.value}</a>
+        ) : (
+          <span className="kx-contact-item-empty" onClick={() => setEditingEmail(true)}>Add email</span>
+        )}
+      </span>
+    </div>
+  );
+}
+
+function RecapLetter({ draft, patch }) {
+  const [edit, setEdit] = useState(false);
+  const [copied, setCopied] = useState(false);
+  function copy() {
+    const text = `Subject: ${draft.recap_email.subject}\n\n${draft.recap_email.body}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1600);
+      });
+    }
+  }
+  return (
+    <section className="kx-review-section">
+      <div className="kx-section-head">
+        <div>
+          <div className="kx-eyebrow-inline">Recap email</div>
+          <h2 className="kx-h2-sm">Draft</h2>
+        </div>
+        <div className="kx-section-actions">
+          <button className="kx-link-btn" onClick={copy}>{copied ? "Copied" : "Copy"}</button>
+          <button className="kx-link-btn" onClick={() => setEdit((v) => !v)}>{edit ? "Done" : "Edit"}</button>
+        </div>
+      </div>
+      {edit ? (
+        <div>
+          <input
+            value={draft.recap_email.subject}
+            onChange={(e) => patch("recap_email.subject", e.target.value)}
+            className="kx-input"
+            style={{ fontWeight: 600, marginBottom: 8 }}
+          />
+          <textarea
+            value={draft.recap_email.body}
+            onChange={(e) => patch("recap_email.body", e.target.value)}
+            className="kx-textarea"
+            style={{ height: 200, fontSize: 13 }}
+          />
+        </div>
+      ) : (
+        <div className="kx-letter">
+          <div className="kx-letter-subject">{draft.recap_email.subject}</div>
+          <hr className="kx-letter-rule" />
+          <div className="kx-letter-body">{draft.recap_email.body}</div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/* ---------------- Processing modal ---------------- */
+function ProcessingModal({ procTick }) {
+  const PROC_STEPS = [
+    { label: "Reading transcript", Icon: FileText },
+    { label: "Extracting entities", Icon: UserCheck },
+    { label: "Scoring intent", Icon: Flag },
+    { label: "Drafting recap", Icon: Mail },
+  ];
+  const active = Math.min(procTick, PROC_STEPS.length - 1);
+  return (
+    <div className="kx-proc-overlay">
+      <div className="kx-proc-card">
+        <div className="kx-eyebrow-inline">Processing</div>
+        <h2 className="kx-h2" style={{ fontSize: 22 }}>Reading your transcript…</h2>
+        <div className="kx-bar-h2" />
+        <p style={{ fontSize: 13, color: "var(--muted)", margin: "0 0 20px", lineHeight: 1.55 }}>
+          Claude is drafting the summary, score, and recap. About 3 seconds.
+        </p>
+
+        {PROC_STEPS.map((s, i) => {
+          const state = i < active ? "done" : i === active ? "active" : "pending";
+          const IconEl = s.Icon;
+          return (
+            <React.Fragment key={i}>
+              <div className={"kx-proc-row " + state}>
+                <div className={"kx-proc-icon " + state}>
+                  {state === "done" ? <Check size={14} /> : <IconEl size={14} />}
+                </div>
+                <div className={"kx-proc-label " + state}>{s.label}</div>
+                <div className="kx-proc-status">
+                  {state === "active" && <span style={{ color: "var(--mustard)", fontWeight: 700, letterSpacing: 2 }}>…</span>}
+                  {state === "done" && (
+                    <span style={{ color: "var(--green-deep)", fontSize: 11, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      <Check size={12} color="var(--green-deep)" /> done
+                    </span>
+                  )}
+                </div>
+              </div>
+              {state === "active" && (
+                <div className="kx-proc-shimmers">
+                  <div className="kx-shimmer" style={{ width: "85%" }} />
+                  <div className="kx-shimmer" style={{ width: "65%" }} />
+                  <div className="kx-shimmer" style={{ width: "45%" }} />
+                </div>
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- main component ---------------- */
+function KaffeaXPOC() {
+  const [transcript, setTranscript] = useState(SAMPLE);
+  const [rubric, setRubric] = useState(DEFAULT_RUBRIC);
+  const [status, setStatus] = useState("idle"); // idle | processing | review | error
+  const [draft, setDraft] = useState(null);
+  const [error, setError] = useState("");
+  const [crm, setCrm] = useState(() => SEED_LIBRARY.filter((r) => r.committed).map((r) => ({
+    id: r.id, contact: r.contact, band: r.band, rationale: r.lead_score.rationale,
+    recap: r.recap_email, nextSteps: r.summary.next_steps, at: new Date(),
+  })));
+  const [audit, setAudit] = useState([]);
+  const [library, setLibrary] = useState(() => SEED_LIBRARY);
+  const [activeId, setActiveId] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [step, setStep] = useState("capture"); // capture | review | commit
+  const [procTick, setProcTick] = useState(0);
+  const [addingSignal, setAddingSignal] = useState(false);
+  const [newSignalLabel, setNewSignalLabel] = useState("");
+  const [newSignalWeight, setNewSignalWeight] = useState("warm");
+  const [rubricOpen, setRubricOpen] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const activeRecord = library.find((r) => r.id === activeId) || null;
+  const isCommitted = !!(activeRecord && activeRecord.committed);
+
+  function openFromLibrary(record) {
+    setDraft(record);
+    setActiveId(record.id);
+    setStep("review");
+    setStatus("idle");
+    setError("");
+  }
+
+  function saveNewSignal() {
+    const label = newSignalLabel.trim();
+    if (!label) return;
+    setRubric((r) => ({
+      ...r,
+      signals: [...r.signals, { id: "custom_" + Date.now(), label, weight: newSignalWeight }],
+    }));
+    setNewSignalLabel("");
+    setNewSignalWeight("warm");
+    setAddingSignal(false);
+  }
+  function cancelNewSignal() {
+    setNewSignalLabel("");
+    setNewSignalWeight("warm");
+    setAddingSignal(false);
+  }
+
+  function handleFile(e) {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => setTranscript(String(reader.result || ""));
+    reader.readAsText(f);
+    e.target.value = "";
+  }
+
+
+  function notify(message, tone = "success") {
+    setToast({ message, tone });
+    window.clearTimeout(window.__kxToastTimer);
+    window.__kxToastTimer = window.setTimeout(() => setToast(null), 3200);
+  }
+
+  function goTo(target) {
+    if (!["capture", "review", "commit"].includes(target)) return;
+    if (target === "review" && !draft) return;
+    // Step 3 is only reachable when the ACTIVE record has been committed —
+    // seed records or other committed history in the sidebar don't unlock it for a draft.
+    if (target === "commit" && !isCommitted) return;
+    setStep(target);
+  }
+
+  function resetDemo() {
+    setTranscript(SAMPLE); setRubric(DEFAULT_RUBRIC); setStatus("idle");
+    setDraft(null); setError(""); setCrm([]); setAudit([]);
+    setLibrary(SEED_LIBRARY); setActiveId(null);
+    setStep("capture");
+    notify("Demo reset", "info");
+  }
+
+  function newCapture() {
+    setTranscript(""); setDraft(null); setActiveId(null); setStatus("idle"); setError(""); setStep("capture");
+  }
+
+  async function process() {
+    setError(""); setStatus("processing"); setProcTick(0);
+    const ticker = window.setInterval(() => setProcTick((t) => t + 1), 380);
+    try {
+      const r = await runProcessing(transcript, rubric);
+      const draftId = "DRF-" + String(Date.now()).slice(-6);
+      const draftRec = { ...r, id: draftId, committed: false, when: "Just now", band: r.lead_score.band };
+      setLibrary((L) => [draftRec, ...L]);
+      setDraft(draftRec); setActiveId(draftId);
+      setStatus("review"); setStep("review");
+    } catch (e) {
+      setError(e.message || "Could not process the transcript."); setStatus("error");
+    } finally {
+      window.clearInterval(ticker);
+    }
+  }
+
+  function patch(path, value) {
+    setDraft((d) => {
+      const n = structuredClone(d);
+      let o = n; const keys = path.split(".");
+      for (let i = 0; i < keys.length - 1; i++) o = o[keys[i]];
+      o[keys[keys.length - 1]] = value;
+      return n;
+    });
+  }
+
+  function approve() {
+    if (!draft) return;
+    // If already committed, this is an "Update in CRM" action — refresh the record but stay in place.
+    if (isCommitted) {
+      const zid = draft.id;
+      setCrm((c) => c.map((r) => r.id === zid ? {
+        ...r, contact: draft.contact, band: draft.lead_score.band,
+        rationale: draft.lead_score.rationale, recap: draft.recap_email,
+        nextSteps: draft.summary.next_steps, at: new Date(),
+      } : r));
+      setLibrary((L) => L.map((r) => r.id === zid ? { ...draft, id: zid, committed: true, when: "Updated just now" } : r));
+      setAudit((a) => [{
+        id: zid, model: "claude-sonnet-4-6", reviewer: "You (demo reviewer)",
+        rubric: "2026-06", outcome: "updated", target: "Zoho sandbox", at: new Date(),
+      }, ...a]);
+      notify(`${zid} updated in Zoho sandbox`, "success");
+      return;
+    }
+    // First commit — mint a Zoho activity ID and promote the draft into the committed library.
+    const zid = "ZOHO-" + String(Date.now()).slice(-6);
+    const committed = { ...draft, id: zid, committed: true, when: "Committed just now", band: draft.lead_score.band };
+    const rec = {
+      id: zid, contact: draft.contact, band: draft.lead_score.band,
+      rationale: draft.lead_score.rationale, recap: draft.recap_email,
+      nextSteps: draft.summary.next_steps, at: new Date(),
+    };
+    setCrm((c) => [rec, ...c]);
+    setAudit((a) => [{
+      id: zid, model: "claude-sonnet-4-6", reviewer: "You (demo reviewer)",
+      rubric: "2026-06", outcome: "written", target: "Zoho sandbox", at: new Date(),
+    }, ...a]);
+    // Replace the old draft entry (by activeId) with the committed record.
+    setLibrary((L) => {
+      const filtered = L.filter((r) => r.id !== activeId);
+      return [committed, ...filtered];
+    });
+    setDraft(committed); setActiveId(zid); setStatus("idle"); setStep("commit");
+    notify(`${zid} written to Zoho sandbox`, "success");
+  }
+
+  function reject() {
+    const rid = "REJ-" + String(Date.now()).slice(-6);
+    setAudit((a) => [{
+      id: rid, model: "claude-sonnet-4-6", reviewer: "You (demo reviewer)",
+      rubric: "2026-06", outcome: "rejected", target: "—", at: new Date(),
+    }, ...a]);
+    // Remove the rejected draft from the library entirely.
+    setLibrary((L) => L.filter((r) => r.id !== activeId));
+    setDraft(null); setActiveId(null); setStatus("idle"); setStep("capture");
+    notify(`Draft rejected · no CRM write · logged internally`, "reject");
+  }
+
+  const band = draft ? BAND[draft.lead_score.band] : null;
+  const unresolved = draft ? [
+    ...Object.entries(draft.contact).filter(([, f]) => f.confidence === "low" && !f.value).map(([k]) => `${k} unconfirmed`),
+    ...(draft.summary.open_questions || []).map(() => "open question"),
+  ] : [];
+
+  // Panel visibility — user can collapse either side. Chat is only meaningful past Capture.
+  const [sidebarOpen, setSidebarOpen] = useState(() =>
+    typeof window === "undefined" ? true : window.innerWidth > 900
+  );
+  const [chatOpen, setChatOpen] = useState(true);
+  const showChat = step !== "capture";
+  const chatVisible = showChat && chatOpen;
+  const chatContext = {
+    company: (draft && draft.contact.company.value) || (crm[0] && crm[0].contact.company.value) || "Cascade Ember",
+    signals: "distribution pain, price-transparency pain, and a listing/marketplace need",
+  };
+
+  return (
+    <div>
+      {/* Toast */}
+      {toast && (
+        <div role="status" style={{
+          position: "fixed", top: 14, left: "50%", zIndex: 50,
+          animation: "kx-toast-in 0.18s ease-out",
+          background: toast.tone === "success" ? "var(--green-deep)" : toast.tone === "reject" ? "var(--rust)" : "var(--midnight)",
+          color: "#fff", fontSize: 12.5, fontWeight: 600, padding: "9px 16px", borderRadius: 4,
+          boxShadow: "0 4px 14px rgba(15,35,69,0.25)", display: "flex", alignItems: "center", gap: 8,
+        }}>
+          {toast.tone === "success" ? <CheckCircle2 size={14} /> : toast.tone === "reject" ? <XCircle size={14} /> : <History size={14} />}
+          {toast.message}
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="kx-header">
+        <div className="kx-header-left">
+          <img className="kx-header-logo" src="KX-Primary-logo.png" alt="Kaffea-X" />
+          <img className="kx-header-logo-mini" src="favicon.png" alt="Kaffea-X" />
+          <div className="kx-header-divider"></div>
+          <span className="kx-header-app">Meeting Summary to CRM</span>
+        </div>
+        <div className="kx-header-right">
+          <div className="kx-header-user">
+            <div className="kx-header-name">Mohan Verma</div>
+            <div className="kx-header-email">mohan.verma@kaffeax.com</div>
+          </div>
+          <div className="kx-header-avatar">MR</div>
+        </div>
+      </div>
+
+      {/* App shell */}
+      <div className={"kx-shell" + (sidebarOpen ? "" : " no-sidebar") + (chatVisible ? "" : " no-chat")}>
+        {sidebarOpen && (
+          <div
+            className="kx-sidebar-backdrop"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+        {sidebarOpen ? (
+          <Sidebar
+            library={library}
+            activeId={activeId}
+            onSelect={openFromLibrary}
+            onNew={newCapture}
+            onCollapse={() => setSidebarOpen(false)}
+          />
+        ) : (
+          <aside className="kx-sidebar-rail">
+            <button
+              className="kx-side-peek"
+              onClick={() => setSidebarOpen(true)}
+              title="Show recent meetings"
+              aria-label="Show recent meetings"
+            >
+              <PanelLeft size={16} />
+              <span className="kx-side-peek-label">Recent meetings</span>
+            </button>
+          </aside>
+        )}
+
+        <main className="kx-main">
+          <div className="kx-main-breadcrumb">
+            <Stepper
+              step={step}
+              draftReady={!!draft}
+              activeCommitted={isCommitted}
+              goTo={goTo}
+            />
+          </div>
+
+          <div className="kx-main-body">
+          {status === "processing" && (
+            <ProcessingModal procTick={procTick} />
+          )}
+
+          {step === "capture" && status !== "processing" && (
+            <div className="kx-capture-shell">
+              <div className="kx-capture-hero">
+                <div className="kx-capture-hero-copy">
+                  <Hero
+                    eyebrow="New meeting"
+                    title="Turn a call into a scored lead."
+                    sub="Paste a meeting transcript. Agent extracts contacts, scores intent against your rubric — you review and approve before anything touches the CRM."
+                  />
+                </div>
+                <button
+                  className="kx-rubric-fab"
+                  onClick={() => setRubricOpen(true)}
+                  title="Open scoring rubric"
+                  aria-label="Open scoring rubric"
+                >
+                  <SlidersHorizontal size={14} />
+                  <span className="kx-rubric-fab-label">Scoring rubric</span>
+                  <span className="kx-rubric-fab-dot" aria-hidden="true" />
+                </button>
+              </div>
+
+              <div className="kx-capture-grid">
+                {/* Transcript fills the whole viewport width — rubric now lives in the floating assistant */}
+                <div className="kx-capture-col">
+                  <div className="kx-card kx-transcript-card"
+                    onDragOver={(e) => { e.preventDefault(); }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const f = e.dataTransfer.files && e.dataTransfer.files[0];
+                      if (!f) return;
+                      const r = new FileReader();
+                      r.onload = () => setTranscript(String(r.result || ""));
+                      r.readAsText(f);
+                    }}
+                  >
+                    <div className="kx-transcript-head">
+                      <div className="kx-eyebrow-inline">Transcript</div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button onClick={() => fileInputRef.current && fileInputRef.current.click()} className="kx-btn kx-btn-ghost">
+                          <UploadCloud size={13} /> Attach file
+                        </button>
+                        <button onClick={() => setTranscript(SAMPLE)} className="kx-btn kx-btn-ghost">
+                          <FileText size={13} /> Load sample
+                        </button>
+                      </div>
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".txt,.md,.vtt,.srt"
+                      style={{ display: "none" }}
+                      onChange={handleFile}
+                    />
+                    <textarea
+                      value={transcript}
+                      onChange={(e) => setTranscript(e.target.value)}
+                      spellCheck={false}
+                      className="kx-transcript-textarea"
+                      placeholder="Paste a meeting transcript, drop a .txt/.vtt file, or attach one…"
+                    />
+                    {status === "error" && (
+                      <div style={{ marginTop: 12, display: "flex", alignItems: "flex-start", gap: 8,
+                        background: "#FBEAE7", border: "1px solid #E7C9C2", borderRadius: 8, padding: 10 }}>
+                        <AlertTriangle size={16} color="var(--rust)" />
+                        <span style={{ fontSize: 12, color: "var(--rust)" }}>{error}</span>
+                      </div>
+                    )}
+                    <div className="kx-transcript-foot">
+                      <span style={{ fontSize: 12, color: "var(--muted)" }}>
+                        {transcript.trim() ? transcript.trim().split(/\s+/).length : 0} words
+                      </span>
+                      <div className="kx-transcript-actions">
+                        <button
+                          onClick={() => setTranscript("")}
+                          className="kx-btn kx-btn-ghost"
+                          disabled={!transcript}
+                          style={{ padding: "10px 18px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600 }}
+                        >
+                          Clear
+                        </button>
+                        <button
+                          onClick={process}
+                          disabled={!transcript.trim() || status === "processing"}
+                          className="kx-btn kx-btn-primary"
+                        >
+                          {status === "processing" ? <Loader2 size={16} className="kx-spin" /> : <Sparkles size={16} />}
+                          Summarise
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rubric now lives inside the floating-assistant modal below */}
+              </div>
+
+              {rubricOpen && (
+                <div className="kx-rubric-overlay" onClick={() => setRubricOpen(false)}>
+                  <div className="kx-rubric-modal" onClick={(e) => e.stopPropagation()} style={{ position: "relative" }}>
+                    <button
+                      className="kx-rubric-modal-close"
+                      onClick={() => setRubricOpen(false)}
+                      aria-label="Close scoring rubric"
+                    >
+                      <X size={16} />
+                    </button>
+                    <div className="kx-rubric-head">
+                      <div className="kx-rubric-title-row">
+                        <div>
+                          <div className="kx-eyebrow-inline" style={{ marginBottom: 2 }}>Scoring rubric</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="kx-rubric-body-2col">
+                      <aside className="kx-rubric-body-left">
+                        <div className="kx-rubric-body-left-title">Banding rule</div>
+                        <div className="kx-band-pills" title="Banding rule">
+                          <div className="kx-band-pill hot">
+                            <span className="kx-band-pill-label">Hot</span>
+                            <span className="kx-band-pill-rule">≥1 HOT signal AND a next step agreed</span>
+                          </div>
+                          <div className="kx-band-pill warm">
+                            <span className="kx-band-pill-label">Warm</span>
+                            <span className="kx-band-pill-rule">≥1 WARM signal with no cold-overriding signal</span>
+                          </div>
+                          <div className="kx-band-pill cold">
+                            <span className="kx-band-pill-label">Cold</span>
+                            <span className="kx-band-pill-rule">Nothing else fires</span>
+                          </div>
+                        </div>
+                        <div className="kx-rubric-body-left-help">
+                          <b>How scoring works.</b> Every signal you list on the right is scanned in the transcript. Weights (<b>HOT</b>, <b>WARM</b>, <b>COLD</b>) decide the band via the rule above. Changes are live — the next transcript uses the updated rubric with no deploy.
+                        </div>
+                      </aside>
+
+                      <div className="kx-rubric-body-right">
+                      <div className="kx-rubric-section-row">
+                        <div>
+                          <span className="kx-rubric-section-label">Signals</span>
+                          <span className="kx-rubric-section-count"> · {rubric.signals.length} tracked</span>
+                        </div>
+                        {!addingSignal && (
+                          <button
+                            onClick={() => setAddingSignal(true)}
+                            className="kx-btn-add-signal"
+                          >
+                            <Plus size={12} /> Add signal
+                          </button>
+                        )}
+                      </div>
+                      <div className="kx-signal-list">
+                        {rubric.signals.map((sig, i) => (
+                          <div key={sig.id || i} className={"kx-signal-card " + sig.weight}>
+                            <input
+                              value={sig.label}
+                              onChange={(e) => setRubric((r) => { const s = structuredClone(r); s.signals[i].label = e.target.value; return s; })}
+                              className="kx-signal-card-input"
+                              placeholder="Signal description"
+                            />
+                            <div className="kx-signal-card-foot">
+                              <div className="kx-weight-seg" role="radiogroup" aria-label="Signal weight">
+                                {["hot", "warm", "cold"].map((w) => (
+                                  <button
+                                    key={w}
+                                    type="button"
+                                    className={"kx-weight-seg-btn " + w + (sig.weight === w ? " active" : "")}
+                                    onClick={() => setRubric((r) => { const s = structuredClone(r); s.signals[i].weight = w; return s; })}
+                                    aria-pressed={sig.weight === w}
+                                  >
+                                    {w.toUpperCase()}
+                                  </button>
+                                ))}
+                              </div>
+                              <button
+                                onClick={() => setRubric((r) => { const s = structuredClone(r); s.signals.splice(i, 1); return s; })}
+                                className="kx-signal-card-remove"
+                                aria-label="Remove signal"
+                                title="Remove signal"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+
+                        {addingSignal && (
+                          <div className={"kx-signal-card compose " + newSignalWeight}>
+                            <input
+                              autoFocus
+                              value={newSignalLabel}
+                              onChange={(e) => setNewSignalLabel(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveNewSignal();
+                                if (e.key === "Escape") cancelNewSignal();
+                              }}
+                              className="kx-signal-card-input"
+                              placeholder="Describe the signal — e.g., 'Mentioned a competitor by name'"
+                            />
+                            <div className="kx-signal-card-foot">
+                              <div className="kx-weight-seg" role="radiogroup" aria-label="Signal weight">
+                                {["hot", "warm", "cold"].map((w) => (
+                                  <button
+                                    key={w}
+                                    type="button"
+                                    className={"kx-weight-seg-btn " + w + (newSignalWeight === w ? " active" : "")}
+                                    onClick={() => setNewSignalWeight(w)}
+                                  >
+                                    {w.toUpperCase()}
+                                  </button>
+                                ))}
+                              </div>
+                              <div className="kx-compose-actions">
+                                <button className="kx-btn-mini ghost" onClick={cancelNewSignal}>Cancel</button>
+                                <button
+                                  className="kx-btn-mini primary"
+                                  onClick={saveNewSignal}
+                                  disabled={!newSignalLabel.trim()}
+                                >
+                                  Add
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {step === "review" && draft && (
+            <ReviewScreen
+              draft={draft}
+              patch={patch}
+              band={band}
+              committed={isCommitted}
+              onApprove={approve}
+              onReject={reject}
+            />
+          )}
+
+          {step === "commit" && (
+            <div className="kx-commit-wrap">
+              <Hero
+                eyebrow="Written to CRM"
+                title="This meeting is now in Zoho"
+                sub="The activity record below was just written to the Zoho CRM"
+              />
+
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+                <button onClick={newCapture} className="kx-btn kx-btn-ghost">
+                  <FileText size={13} /> Capture another meeting
+                </button>
+              </div>
+
+              {crm.filter((r) => r.id === activeId).length === 0 && <Empty text="Approve a draft on the Review step to see the CRM activity here." />}
+              {crm.filter((r) => r.id === activeId).map((r) => {
+                const rec = library.find((l) => l.id === r.id);
+                return (
+                  <div key={r.id} className="kx-commit-card">
+                    <div className="kx-commit-card-head">
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                        <h2 className="kx-commit-card-title">
+                          {r.contact.company.value || "Unnamed company"}
+                        </h2>
+                        <span className={"kx-badge " + BAND[r.band].cls}>{BAND[r.band].label}</span>
+                        <span className="kx-review-status">
+                          <CheckCircle2 size={12} /> Written to Zoho
+                        </span>
+                      </div>
+                      {rec && (
+                        <button
+                          className="kx-btn kx-btn-ghost"
+                          onClick={() => openFromLibrary(rec)}
+                          title="Open this record in Review"
+                        >
+                          <FileText size={13} /> Open in Review
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 12.5, color: "var(--muted)", marginBottom: 12 }}>
+                      {r.contact.name.value || "—"} · {r.contact.title.value || "—"}
+                      {r.contact.email.value && ` · ${r.contact.email.value}`}
+                    </div>
+                    <div style={{
+                      borderLeft: "3px solid var(--mustard)",
+                      paddingLeft: 12,
+                      fontStyle: "italic",
+                      color: "var(--midnight)",
+                      fontSize: 13, lineHeight: 1.55,
+                      margin: "12px 0",
+                    }}>
+                      {r.rationale}
+                    </div>
+                    <div className="kx-commit-card-foot">
+                      <span>Written {r.at.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                      <span className="kx-commit-id" title="Zoho activity record ID">
+                        Zoho activity · <b>{r.id}</b>
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          </div>
+        </main>
+
+        {chatVisible && <ChatPanel context={chatContext} onClose={() => setChatOpen(false)} />}
+      </div>
+
+      {/* Floating chat FAB — appears when chat is closed on screens that support it */}
+      {showChat && !chatOpen && (
+        <button
+          className="kx-chat-fab"
+          onClick={() => setChatOpen(true)}
+          title="Ask about this lead"
+          aria-label="Open chat"
+        >
+          <MessageSquare size={22} />
+          <span className="kx-chat-fab-dot" aria-hidden="true" />
+          <span className="kx-chat-fab-label">Ask about this lead</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<KaffeaXPOC />);
+
+</script>
+</body>
+</html>

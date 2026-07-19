@@ -5,5 +5,6 @@
     "source.fixAll.eslint": "explicit"
   },
   "editor.organizeImports": false,
-  "eslint.useFlatConfig": true
+  "eslint.useFlatConfig": true,
+  "prettier.prettierPath": "./node_modules/prettier"
 }
