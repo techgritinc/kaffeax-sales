@@ -1,0 +1,30 @@
+# Read from stdin to catch the remote branch being pushed to
+while read local_ref local_sha remote_ref remote_sha
+do
+  # Prevent direct pushes to protected remote branches
+  if echo "$remote_ref" | grep -qE 'refs/heads/(main|master|dev|development)$'; then
+    echo "================================================================="
+    echo "  ERROR: Direct pushes to '$remote_ref' are strictly prohibited!"
+    echo "================================================================="
+    echo "Please create a feature branch and submit a Pull Request instead."
+    echo ""
+    exit 1
+  fi
+done
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+# Feature branches must follow: type/short-description
+if ! echo "$branch" | grep -qE '^(feat|fix|hotfix|perf|refactor|docs|test|chore|build|ci|revert)/[a-z0-9][a-z0-9-]*$'; then
+  echo ""
+  echo "  Branch name '$branch' does not follow the naming convention."
+  echo ""
+  echo "  Required format:  type/short-description"
+  echo "  Examples:"
+  echo "    feat/listing-filters"
+  echo "    fix/auth-token-expiry"
+  echo "    chore/upgrade-expo-sdk"
+  echo "    hotfix/payment-crash"
+  echo ""
+  exit 1
+fi
