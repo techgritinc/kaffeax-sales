@@ -1,5 +1,4 @@
 # Run lint-staged: ESLint + Prettier on all staged .ts/.tsx files
-npx lint-staged
-
 # TypeScript type-check — catches type errors that ESLint misses
-npm run type-check
+# Next Build
+npm run validate
