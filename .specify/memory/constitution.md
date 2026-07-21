@@ -1,29 +1,38 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: 1.1.0 → 1.1.1 (PATCH — clarify brainstorm vs prototype scope)
+  Version change: 1.1.1 → 1.2.0 (MINOR — three new principles added, directory architecture expanded)
+
+  Rationale: Adopted expanded directory structure aligned with the enterprise reference, adding
+  lib/ (with db/, auth/, utils/ subdirectories), integrations/, providers/, config/, constants/,
+  and middleware.ts. Renamed components/<feature>/ to components/common/ for shared composed
+  components; feature-specific components now live in features/<feature>/components/. Three new
+  constitutional principles added: XIV (Error Handling & Observability), XV (Quality & Performance),
+  XVI (Git & Deployment Standards).
+
+  Modified sections:
+    - Directory Architecture — expanded tree and Directory Principles; updated lib/ subdirs,
+      added integrations/, providers/, config/, constants/, middleware.ts; renamed
+      components/<feature>/ → components/common/ + features/<feature>/components/
+    - §VII Utility Functions — updated global path from src/utils/ to src/lib/utils/ to align
+      with new directory structure
+
   Added principles:
-    - I. Tech Stack & Framework
-    - II. CSS & Design Tokens
-    - III. TypeScript Strictness
-    - IV. Linting & Formatting
-    - V. Code Modularity
-    - VI. Reusable UI Components
-    - VII. Utility Functions
-    - VIII. Schema Validation & Forms
-    - IX. Repository Layer
-    - X. Server Actions & API Layer
-    - XI. Type Isolation
-    - XII. Design Fidelity
-    - XIII. AI-Assisted Development Workflow
-  Added sections:
-    - Directory Architecture
-    - Quality Gates & CI/CD
-  Removed sections: None (initial version)
+    - XIV. Error Handling & Observability
+    - XV. Quality & Performance
+    - XVI. Git & Deployment Standards
+
+  Added sections: None (new content placed within Core Principles and Directory Architecture)
+  Removed sections: None
+
   Templates:
-    ✅ .specify/templates/plan-template.md — Constitution Check section aligns with principle-driven gates; no update needed.
-    ✅ .specify/templates/spec-template.md — User stories and requirements structure is compatible; no update needed.
-    ✅ .specify/templates/tasks-template.md — Phase structure supports modularity and story-based delivery; no update needed.
+    ✅ .specify/templates/plan-template.md — Constitution Check section aligns with updated
+        principle-driven gates; directory structure in Source Code section should use new layout
+    ✅ .specify/templates/spec-template.md — User stories and requirements structure compatible;
+        no structural changes required
+    ✅ .specify/templates/tasks-template.md — Phase structure supports new error handling,
+        observability, and git workflow task types; no update needed
+
   Follow-up TODOs: None
 -->
 
@@ -99,7 +108,7 @@ const name = user?.profile?.name ?? 'Unknown';
 
 ### VII. Utility Functions
 
-- Pure utility functions MUST be extracted into dedicated utility files — either globally in `src/utils/` or at the feature level in `src/features/<feature>/utils/`.
+- Pure utility functions MUST be extracted into dedicated utility files — either globally in `src/lib/utils/` or at the feature level in `src/features/<feature>/utils/`.
 - Complex logic (formatting, calculations, transformations) MUST NOT live inside component files.
 - Utility functions MUST be pure (no side effects) and independently testable.
 
@@ -160,6 +169,68 @@ const users = await userRepository.findAll();
   - **Logic/architecture tasks**: `superpowers:brainstorming` → Plan → Implement
   - **Mixed tasks**: Brainstorm the logic, then use `frontend-design` for the UI portion
 
+### XIV. Error Handling & Observability
+
+- Errors MUST be categorized as **operational** (recoverable, expected) or **programmer** (bugs, unexpected state). Operational errors MUST surface user-friendly messages. Programmer errors MUST fail loudly with full context — never silently swallowed.
+- Bare `catch {}` blocks are NEVER permitted. Every caught error MUST be handled explicitly: either surfaced to the user, logged with context, or re-thrown with enriched information.
+- Async operations MUST ALWAYS have error handling. Unhandled promise rejections are NEVER permitted.
+- Error responses from server actions and API routes MUST NEVER expose internal stack traces, database details, or system information to end users. Return structured error objects with user-safe messages.
+- Structured logging MUST be used throughout the application. Every meaningful server-side event MUST be logged with sufficient context to diagnose issues without accessing production systems directly.
+- Sensitive data (passwords, tokens, personal data) MUST NEVER appear in logs under any circumstances.
+
+**Bad:**
+```ts
+try {
+  await createUser(data);
+} catch {}  // silent failure
+
+// Exposing internals
+return { error: error.stack };
+```
+
+**Good:**
+```ts
+try {
+  await createUser(data);
+} catch (error) {
+  logger.error('User creation failed', { userId: data.id, error });
+  return { error: 'Unable to create user. Please try again.' };
+}
+```
+
+### XV. Quality & Performance
+
+- Code MUST be clean, readable, and maintainable. Every function and file MUST follow the Single Responsibility Principle. Functions SHOULD do exactly one thing and do it well.
+- Naming MUST be descriptive, consistent, and self-documenting. Magic numbers and hardcoded strings MUST be extracted into named constants in `src/constants/` or feature-level constant files.
+- Dead code MUST be removed immediately. Commented-out code MUST NOT be committed to the codebase — use git history instead.
+- Application components MUST remain stateless wherever practical. UI state that influences navigation MUST use URL state. Global client state MUST be minimized.
+- Performance MUST be considered throughout development. Every data-dependent view MUST have loading, empty, and error states designed. Images MUST use Next.js `<Image>` with explicit dimensions. Heavy client bundles MUST be code-split.
+- New dependencies MUST have a clear justification. Before adding a package, evaluate: maintenance status, security posture, bundle size impact, licensing, and whether the functionality can reasonably be implemented without the dependency.
+- Simplicity MUST be preferred over cleverness. YAGNI and KISS: nothing built speculatively, nothing more complex than the problem demands.
+
+### XVI. Git & Deployment Standards
+
+- **Branch naming** MUST follow `type/short-description`. Permitted types: `feat`, `fix`, `hotfix`, `perf`, `refactor`, `docs`, `test`, `chore`, `build`, `ci`, `revert`. Description MUST be lowercase alphanumeric with hyphens only.
+- **Direct pushes** to `main`, `master`, `dev`, and `development` are STRICTLY PROHIBITED. All changes MUST flow through Pull Requests. The pre-push hook enforces this automatically.
+- **Commits** MUST follow Conventional Commits: `type(scope): description`. Permitted scopes: `app`, `auth`, `api`, `ui`, `db`, `infra`, `config`, `deps`, `release`. Subject MUST be imperative, lowercase, and under 100 characters. The `commit-msg` hook enforces this via commitlint.
+- Every PR MUST be reviewed before merging. Reviews MUST verify correctness, constitution compliance, TypeScript strictness, and security.
+- Every PR to `main` or `dev` MUST pass the full `validate` pipeline (type-check → lint → build) before it can be merged. CI enforces this automatically.
+- Environment variables MUST be validated at startup before the server binds any port. The `env.mjs` import in `next.config.ts` enforces fail-fast behavior.
+
+**Bad:**
+```bash
+git push origin main          # direct push to protected branch
+git commit -m "fix stuff"     # no conventional commit format
+git checkout -b myFeature     # no type prefix, wrong case
+```
+
+**Good:**
+```bash
+git checkout -b feat/sales-dashboard
+git commit -m "feat(ui): add sales pipeline dashboard"
+git push origin feat/sales-dashboard  # then open a PR
+```
+
 ## Directory Architecture
 
 ```text
@@ -169,19 +240,43 @@ src/
 │   ├── layout.tsx          # Root layout
 │   └── <feature>/          # Route-based feature directories
 ├── components/
-│   ├── ui/                 # Atomic reusable UI components
-│   └── <feature>/          # Feature-specific composed components
-├── features/               # Feature modules (logic, hooks, utils)
+│   ├── ui/                 # Atomic reusable UI primitives (buttons, inputs, badges, etc.)
+│   └── common/             # Shared cross-feature composed components
+├── features/               # Self-contained domain feature modules
 │   └── <feature>/
 │       ├── actions/        # Server actions
+│       ├── components/     # Feature-specific composed components
 │       ├── hooks/          # Feature-specific hooks
 │       ├── utils/          # Feature-specific utilities
 │       └── types/          # Feature-specific types
+├── lib/                    # Shared infrastructure and core libraries
+│   ├── db/                 # Database client (MongoDB connection, helpers)
+│   ├── auth/               # Authentication and authorization helpers
+│   └── utils/              # Shared utility functions
+├── integrations/           # External service integrations and API clients
+├── providers/              # React context providers
 ├── repositories/           # Database abstraction layer (classes)
 ├── schemas/                # Shared Zod validation schemas
+├── config/                 # Application configuration
+├── constants/              # Shared constants and configuration values
 ├── types/                  # Shared cross-feature types
-└── utils/                  # Global utility functions
+└── middleware.ts           # Next.js middleware entry point
 ```
+
+**Directory Principles**
+
+- `app/` MUST contain only routing, layouts, page entry points, and route-level Server Components.
+- `features/` MUST organize code by business domain. Each feature MUST be self-contained: components, actions, hooks, utils, and types all live inside the feature directory.
+- A feature MUST NEVER import directly from another feature's internals. Cross-feature dependencies MUST flow through explicitly defined shared modules (`lib/`, `schemas/`, `types/`, `constants/`).
+- `components/` MUST contain only UI components shared across multiple features. `ui/` holds atomic primitives; `common/` holds cross-feature composed components.
+- `lib/` MUST contain shared infrastructure: database client, authentication helpers, and global utilities. No business logic belongs here.
+- `integrations/` MUST encapsulate all communication with external services and third-party APIs. Each integration MUST be self-contained with its own client, types, and error handling.
+- `providers/` MUST contain React context providers (e.g., auth context, theme). Providers MUST NOT contain business logic.
+- `repositories/` MUST contain all database abstraction classes. No direct database calls outside this directory.
+- `schemas/` MUST contain Zod schemas shared across multiple features. Feature-specific schemas live inside the feature directory.
+- `constants/` MUST contain named constants and configuration values used across the application. Magic numbers and magic strings MUST be extracted here.
+- The `@/*` path alias MUST be used for all imports from `src/`. Relative imports beyond one level (`../../`) are NEVER permitted.
+- `middleware.ts` MUST be the sole Next.js middleware entry point. Helper modules MAY be organized in a `middleware/` subdirectory imported by the entry point.
 
 ## Quality Gates & CI/CD
 
@@ -203,4 +298,4 @@ Pre-commit hooks enforce lint-staged and type-checking locally. Pre-push hooks e
   3. Update to this file and propagation to dependent templates.
 - The `rulebook.md` file at the repository root serves as the upstream source for constitutional principles. Changes to the rulebook MUST be reflected here.
 
-**Version**: 1.1.1 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-07-20
+**Version**: 1.2.0 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-07-21
