@@ -1,4 +1,4 @@
-# Specification Quality Checklist: Pixel-Perfect UI Parity with HTML Prototype
+# Specification Quality Checklist: Layout & Spacing Pixel Parity (Header, Review Screen, Chat/FAQ)
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-07-22
@@ -32,6 +32,6 @@
 ## Notes
 
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`
-- No `[NEEDS CLARIFICATION]` markers were needed: the request already identifies the specific broken elements (sidebar, chips, accent bar) and a clear default scope (audit + fix all screens against the existing, unchanged prototype file), so no ambiguous decision met the bar for a clarification question.
+- No `[NEEDS CLARIFICATION]` markers were needed: the request names five concrete areas (header, Meeting Summary + Chat/FAQ, the four Review content sections, the email-capture field, the Follow-up accent bar), each measured against the unchanged prototype baseline, so no ambiguous decision met the bar for a clarification question.
+- Overlap with completed feature `003-fix-ui-pixel-parity` (Meeting Summary + Chat/FAQ, Follow-up accent bar) is handled explicitly in Assumptions and FR-007/SC-006 (treat residual differences as new, open discrepancies; do not regress 003's fixes).
 - All items passed on the first validation pass.
-- **2026-07-22 (expansion)**: Spec expanded with four new user stories (US5 Capture transcript section incl. Start-button icon sizing; US6 Scoring Rubric modal; US7 Review Meeting Summary + Chat/FAQ width; US8 CRM Write to CRM + Chat/FAQ width), FR-009–FR-014, SC-006–SC-008, new edge cases, the Chat/FAQ Panel entity, and related assumptions. US1–US4 retained unchanged so the existing `plan.md`/`tasks.md` references remain valid. Re-validated: all checklist items still pass; no new `[NEEDS CLARIFICATION]` markers required (the new areas name concrete screens/sections against the unchanged prototype baseline). Downstream `plan.md`/`tasks.md` should be regenerated via `/speckit-plan` and `/speckit-tasks` to cover the added scope.

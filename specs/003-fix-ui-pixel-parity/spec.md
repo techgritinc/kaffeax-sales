@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Review and Fix Pixel-Level UI Differences Between HTML Prototype and Next.js Application — the US3 Sidebar, the Draft/Saved to CRM chips, and the accent bar all deviate from `Design/POC_Kaffea-X_Prototype.html`; every screen must be reviewed and brought to pixel-perfect parity across layout, spacing, typography, color, sizing, icons, responsiveness, and interactive behavior."
+**Input**: User description: "Review and Fix Pixel-Level UI Differences Between HTML Prototype and Next.js Application — the sidebar, the Draft/Saved to CRM chips, and the accent bar all deviate from `Design/POC_Kaffea-X_Prototype.html`; additionally the Capture screen's transcript section (Start button icons appear too large), the Scoring Rubric modal, the Review screen's Meeting Summary section, and the CRM screen's Write to CRM section must be brought to pixel-perfect parity, including verifying the Chat/FAQ panel does not alter available content width or cause layout shifts. Every screen must be reviewed and brought to pixel-perfect parity across layout, spacing, typography, color, sizing, icons, responsiveness, and interactive behavior."
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -73,6 +73,70 @@ A reviewer stepping through every screen of the application — capture, process
 2. **Given** any screen in the application, **When** compared against its corresponding prototype view at the supported mobile/tablet breakpoints, **Then** responsive behavior matches the prototype at each breakpoint.
 3. **Given** an interactive element (button, chip, sidebar item, input) in a hover, active, focus, or disabled state, **When** compared against the prototype's equivalent state, **Then** the visual treatment matches exactly.
 
+---
+
+### User Story 5 - Capture screen transcript section matches the prototype exactly (Priority: P2)
+
+A user on the Capture screen sees the transcript section — its heading, textarea, footer, and action buttons (including the "Start" control) — rendered identically to the prototype, with correctly sized icons inside the buttons.
+
+**Why this priority**: The transcript section is the primary working area of the Capture screen, and its Start-button icons were explicitly reported as rendering larger than the prototype. This is a concrete, confirmed defect on a high-traffic screen.
+
+**Independent Test**: Open the Capture screen next to the prototype's capture view at the same viewport width and confirm the transcript heading, textarea, footer, action-button dimensions, and the icons inside those buttons overlay without visible difference.
+
+**Acceptance Scenarios**:
+
+1. **Given** the "Start" button (and any sibling transcript action buttons) in the Capture transcript section, **When** compared against the prototype, **Then** the icon dimensions inside the button match the prototype exactly and do not appear enlarged.
+2. **Given** the transcript action buttons, **When** compared against the prototype, **Then** button height, width, internal padding, corner rounding, icon-to-label spacing, and the gap between adjacent buttons match the prototype.
+3. **Given** the transcript textarea and its footer, **When** compared against the prototype, **Then** width, min-width, height, padding, border, border-radius, and focus-state treatment match the prototype.
+4. **Given** the full transcript section, **When** compared against the prototype at each supported breakpoint, **Then** spacing, alignment, and layout match the prototype.
+
+---
+
+### User Story 6 - Scoring Rubric modal matches the prototype exactly (Priority: P3)
+
+A user who opens the Scoring Rubric on the Capture screen sees a modal/card whose width, alignment, spacing, padding, typography, and internal layout are identical to the prototype's rubric presentation.
+
+**Why this priority**: The rubric drives the meeting score and is a distinct, self-contained surface that was explicitly called out for side-by-side comparison. It is lower-traffic than the transcript area but must match exactly where it appears.
+
+**Independent Test**: Open the Scoring Rubric next to the prototype's rubric view and confirm the container width, header, section rows, counts, add-control, and typography overlay without visible difference.
+
+**Acceptance Scenarios**:
+
+1. **Given** the rubric container, **When** compared against the prototype, **Then** width, max-width, alignment, outer margins, and internal padding match exactly.
+2. **Given** the rubric header, section rows, section labels, section counts, and add-control, **When** compared against the prototype, **Then** spacing, alignment, and sizing of each element match exactly.
+3. **Given** all text within the rubric, **When** compared against the prototype, **Then** font size, weight, line height, and color match exactly.
+
+---
+
+### User Story 7 - Review screen Meeting Summary section matches the prototype exactly (Priority: P2)
+
+A user on the Review screen sees the Meeting Summary section at the same content width, spacing, and alignment as the prototype, and the presence or absence of the Chat/FAQ panel changes the layout only in the way the prototype does — with no unexpected width reduction or layout shift.
+
+**Why this priority**: The Meeting Summary is the main content of the Review screen, and a Chat/FAQ panel that steals width or shifts content would visibly break parity across the whole screen. This was explicitly flagged for investigation.
+
+**Independent Test**: Open the Review screen next to the prototype's review view with the Chat/FAQ panel both visible and collapsed, and confirm the Meeting Summary's content width, hero block, narrative summary, and signal chips match the prototype in each chat state.
+
+**Acceptance Scenarios**:
+
+1. **Given** the Review screen with the Chat/FAQ panel visible, **When** compared against the prototype in the same chat state, **Then** the Meeting Summary content width, spacing, and alignment match the prototype exactly.
+2. **Given** the Review screen with the Chat/FAQ panel collapsed, **When** compared against the prototype in the same chat state, **Then** the Meeting Summary reflows to the prototype's width and layout with no visual state absent from the prototype.
+3. **Given** the Chat/FAQ panel is toggled open or closed, **When** observed in the app, **Then** the Meeting Summary does not exhibit any layout shift, overlap, or width reduction that the prototype does not exhibit.
+
+---
+
+### User Story 8 - CRM screen Write to CRM section matches the prototype exactly (Priority: P3)
+
+A user on the CRM screen sees the Write to CRM section with the same width, spacing, padding, margins, and alignment as the prototype, and the Chat/FAQ panel affects its layout only as the prototype does.
+
+**Why this priority**: The Write to CRM section is the terminal step of the core workflow and shares the same Chat/FAQ panel layout risk as the Review screen. Correcting it ensures the whole commit flow matches the prototype.
+
+**Independent Test**: Open the CRM screen next to the prototype's commit view with the Chat/FAQ panel both visible and collapsed, and confirm the Write to CRM section's width, spacing, padding, margins, and alignment match the prototype in each chat state.
+
+**Acceptance Scenarios**:
+
+1. **Given** the Write to CRM section, **When** compared against the prototype at the same viewport width and chat state, **Then** width, spacing, padding, margins, and alignment match exactly.
+2. **Given** the Chat/FAQ panel is visible versus collapsed, **When** the CRM screen is compared against the prototype in each state, **Then** the Write to CRM section reflows exactly as the prototype does with no unexpected layout shift or width change.
+
 ### Edge Cases
 
 - What happens when a sidebar group (Drafts or Saved to CRM) is empty? The empty-state message and spacing must still match the prototype's empty-state treatment.
@@ -80,6 +144,9 @@ A reviewer stepping through every screen of the application — capture, process
 - How do accent bars behave on headings that wrap to two lines? Position and sizing must remain consistent with the prototype's behavior in the same case.
 - What happens at viewport widths between named breakpoints (e.g., mid-resize)? The transition between breakpoint-specific styles must not introduce a visual state absent from the prototype.
 - How are long company/meeting names truncated in sidebar rows and chips? Truncation behavior must match the prototype exactly, including any ellipsis treatment.
+- What happens to the Review and CRM main content when the Chat/FAQ panel is toggled at the mobile breakpoint, where the prototype turns the chat into a full-screen takeover rather than a side column? The transition and the reclaimed content width must match the prototype at that breakpoint.
+- How do the transcript action buttons behave when their labels are hidden or wrapped at narrow widths? Icon sizing and button dimensions must remain consistent with the prototype at that width.
+- What happens to the Scoring Rubric layout when a rubric section has zero items or a very large count? Spacing and alignment must match the prototype's treatment of the same case.
 
 ## Requirements *(mandatory)*
 
@@ -93,11 +160,18 @@ A reviewer stepping through every screen of the application — capture, process
 - **FR-006**: All interactive states (hover, active, focus, disabled) for sidebar items, chips, and other reviewed components MUST visually match the prototype's corresponding states.
 - **FR-007**: Every screen in the application (capture, processing, review, commit, and library) MUST be reviewed against its corresponding prototype view and MUST match in layout, spacing, typography, color, component sizing, and icon usage.
 - **FR-008**: Any visual difference identified during the review MUST be corrected before the feature is considered complete; no known pixel-level discrepancy may remain undocumented.
+- **FR-009**: The Capture screen transcript section — heading, textarea, footer, and action buttons — MUST match the prototype in width, height, padding, margins, spacing, border, border-radius, and alignment.
+- **FR-010**: Icons inside the transcript action buttons (including the "Start" control) MUST match the prototype's icon dimensions exactly and MUST NOT render larger than the prototype; button dimensions, internal padding, icon-to-label spacing, and inter-button gaps MUST also match.
+- **FR-011**: The Scoring Rubric modal/card MUST match the prototype in container width and max-width, alignment, outer margins, internal padding, per-element spacing and sizing (header, section rows, labels, counts, add-control), and typography (font size, weight, line height, color).
+- **FR-012**: The Review screen Meeting Summary section MUST match the prototype's content width, spacing, and alignment in every Chat/FAQ panel state (visible and collapsed) at every supported breakpoint.
+- **FR-013**: The CRM screen Write to CRM section MUST match the prototype's width, spacing, padding, margins, and alignment in every Chat/FAQ panel state at every supported breakpoint.
+- **FR-014**: The Chat/FAQ panel MUST alter the available content width and layout of the Review and CRM screens only in the manner the prototype does (matching the prototype's grid/column and mobile-takeover behavior); toggling it MUST NOT introduce any layout shift, overlap, or width change absent from the prototype.
 
 ### Key Entities
 
 - **Meeting Record**: A captured meeting shown in the sidebar and library, carrying a commit state (draft vs. saved to CRM) that determines which status indicator/chip style is displayed.
 - **Screen/View**: One of the application's distinct screens (capture, processing, review, commit, library) that has a corresponding reference view in the HTML prototype used as the comparison baseline.
+- **Chat/FAQ Panel**: A collapsible side panel present on the Review and CRM screens (a full-screen takeover at the mobile breakpoint in the prototype) whose visible/collapsed state governs the available content width of the main section beside it.
 
 ## Success Criteria *(mandatory)*
 
@@ -108,6 +182,9 @@ A reviewer stepping through every screen of the application — capture, process
 - **SC-003**: Side-by-side visual comparison of accent bars on every screen shows zero perceptible differences in color, size, or position.
 - **SC-004**: 100% of application screens have been reviewed against the prototype, with all identified discrepancies resolved and none remaining open.
 - **SC-005**: A reviewer stepping through the full application at each supported screen size reports no visual or interactive-behavior difference from the prototype.
+- **SC-006**: Side-by-side visual comparison of the Capture screen transcript section — including the icons inside the "Start" and sibling action buttons — shows zero perceptible differences in icon size, button dimensions, spacing, padding, margins, or alignment.
+- **SC-007**: Side-by-side visual comparison of the Scoring Rubric modal shows zero perceptible differences in width, alignment, spacing, padding, typography, or internal layout.
+- **SC-008**: Side-by-side visual comparison of the Review Meeting Summary section and the CRM Write to CRM section, with the Chat/FAQ panel both visible and collapsed, shows zero perceptible differences in content width, spacing, padding, margins, or alignment, and toggling the Chat/FAQ panel produces no layout shift absent from the prototype.
 
 ## Assumptions
 
@@ -115,3 +192,5 @@ A reviewer stepping through every screen of the application — capture, process
 - "Pixel-perfect" is evaluated by side-by-side visual comparison at the application's supported viewport widths (desktop, tablet, and mobile breakpoints already defined in the prototype), not by automated pixel-diffing tooling, since no such tooling currently exists in the project.
 - The set of supported screens is the set already implemented in the application (capture, processing, review, commit, library/sidebar) — no new screens are introduced by this effort.
 - Where the "Draft" / "Saved to CRM" indicator appears in more than one place, it is expected to share one consistent visual style rather than allowing each location to diverge independently, matching the prototype's use of a single reusable style for this element.
+- The "Scoring Rubric modal" refers to the prototype's rubric presentation (the `.kx-rubric-*` card/surface) on the Capture screen; whether it renders as an inline card or an overlay, its container width, spacing, and typography are the comparison baseline.
+- The Chat/FAQ panel's effect on content width is intended to match the prototype's layout mechanism (a dedicated column that reserves space when visible and reflows the main content when collapsed), not to overlay or squeeze content in a way the prototype does not.

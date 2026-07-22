@@ -37,7 +37,13 @@ export function AppHeader() {
             {USER_EMAIL}
           </div>
         </div>
-        <Avatar variant="initials" initials={USER_INITIALS} tone="green" size={36} />
+        <Avatar
+          variant="initials"
+          initials={USER_INITIALS}
+          tone="green"
+          size={36}
+          className="max-bp560:h-8 max-bp560:w-8 max-bp560:text-[12px]"
+        />
       </div>
     </header>
   );

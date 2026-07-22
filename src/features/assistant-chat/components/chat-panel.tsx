@@ -48,16 +48,16 @@ export function ChatPanel({ context, onClose }: ChatPanelProps) {
   );
 
   return (
-    <aside className="border-border from-chat-bg-start to-chat-bg-end max-bp900:fixed max-bp900:inset-x-0 max-bp900:top-[56px] max-bp900:bottom-0 max-bp900:z-50 max-bp900:h-auto max-bp900:animate-chat-slide-up max-bp900:border-l-0 flex h-full flex-col overflow-hidden border-l bg-linear-to-b p-[20px_18px]">
+    <aside className="border-border from-chat-bg-start to-chat-bg-end max-bp900:fixed max-bp900:inset-x-0 max-bp900:top-[56px] max-bp900:bottom-0 max-bp900:z-50 max-bp900:h-auto max-bp900:animate-chat-slide-up max-bp900:border-l-0 max-bp900:p-[16px_16px_14px] flex h-full flex-col overflow-hidden border-l bg-linear-to-b p-[20px_18px]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="text-mustard mb-1.5 text-[11px] font-extrabold tracking-[0.14em] uppercase">
+          <div className="text-mustard max-bp900:mb-1 mb-1.5 text-[11px] font-extrabold tracking-[0.14em] uppercase">
             Follow-up
           </div>
-          <div className="font-display text-midnight mb-1.5 text-[20px] font-bold">
+          <div className="font-display text-midnight max-bp900:mb-1 max-bp900:text-[18px] mb-1.5 text-[20px] font-bold">
             Ask about this lead
           </div>
-          <AccentBar variant="h2" />
+          <AccentBar variant="h2" className="mt-0!" />
         </div>
         <button
           type="button"
@@ -72,10 +72,10 @@ export function ChatPanel({ context, onClose }: ChatPanelProps) {
 
       <ChatMessages messages={messages} pending={pending} onSend={send} />
 
-      <div className="border-border-warm mt-3.5 flex gap-2 border-t pt-3">
+      <div className="border-border-warm max-bp900:mt-2.5 max-bp900:pt-2.5 mt-3.5 flex gap-2 border-t pt-3">
         <input
           type="text"
-          className="rounded-input-sm border-border-warm focus:border-green flex-1 border bg-white px-3 py-2.5 text-[12.5px] outline-none"
+          className="rounded-input-sm border-border-warm focus:border-green max-bp900:px-3.5 max-bp900:py-3 max-bp900:text-[14px] flex-1 border bg-white px-3 py-2.5 text-[12.5px] outline-none"
           placeholder="Ask a follow-up question..."
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -85,7 +85,7 @@ export function ChatPanel({ context, onClose }: ChatPanelProps) {
         />
         <button
           type="button"
-          className="rounded-tight bg-midnight hover:bg-midnight-send-hover inline-flex h-[38px] w-[38px] items-center justify-center text-white"
+          className="rounded-tight bg-midnight hover:bg-midnight-send-hover max-bp900:h-11 max-bp900:w-11 inline-flex h-[38px] w-[38px] items-center justify-center text-white"
           onClick={() => send()}
           title="Send"
         >

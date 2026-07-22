@@ -32,7 +32,7 @@ export function ActionItems({ nextSteps, commitments }: ActionItemsProps) {
 
   return (
     <section className="mt-8">
-      <Heading level={2} smallLabel>
+      <Heading level={2} smallLabel className="ml-[3px]">
         Action items
       </Heading>
       {rows.length === 0 ? (
@@ -40,7 +40,7 @@ export function ActionItems({ nextSteps, commitments }: ActionItemsProps) {
           No action items captured.
         </div>
       ) : (
-        <div className="rounded-card border-border shadow-bcard border bg-white p-[6px_18px]">
+        <div className="rounded-card-sm border-border shadow-bcard border bg-white p-[6px_18px]">
           <ul>
             {rows.map((it, i) => (
               <li

@@ -12,6 +12,11 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   miniTone?: 'ghost' | 'primary';
   iconStart?: IconName;
   iconEnd?: IconName;
+  /**
+   * Overrides the size-derived icon dimension. The prototype sizes button
+   * icons per instance (11/12/13/14px), so callers pass the exact value.
+   */
+  iconSize?: number;
 }
 
 /** Shared box-button chrome (everything except geometry, which varies by size). */
@@ -84,16 +89,18 @@ export function Button({
   miniTone = 'ghost',
   iconStart,
   iconEnd,
+  iconSize,
   className,
   children,
   ...rest
 }: ButtonProps): JSX.Element {
-  const { classes, iconSize } = resolve(variant, size, wide, miniTone);
+  const { classes, iconSize: derivedIconSize } = resolve(variant, size, wide, miniTone);
+  const resolvedIconSize = iconSize ?? derivedIconSize;
   return (
     <button className={cn(classes, className)} {...rest}>
-      {iconStart ? <Icon name={iconStart} size={iconSize} /> : null}
+      {iconStart ? <Icon name={iconStart} size={resolvedIconSize} /> : null}
       {children}
-      {iconEnd ? <Icon name={iconEnd} size={iconSize} /> : null}
+      {iconEnd ? <Icon name={iconEnd} size={resolvedIconSize} /> : null}
     </button>
   );
 }

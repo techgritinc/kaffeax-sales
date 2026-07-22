@@ -67,6 +67,79 @@ Each row is a distinct visual context in the prototype; the corrected component/
 | `processing-modal.tsx:53` | `<AccentBar variant="h2" />` (no margin on bar) | `h2` margin `8px 0 16px` |
 | `chat-panel.tsx:59` | Inline equivalent, `mb-4` only (bottom margin only) | `h2`-equivalent margin `8px 0 16px` (add missing top margin) |
 
+## Button Icon Size (US5, US8, review audit)
+
+`Button` currently derives the leading/trailing icon size from the button *size* (`sm`→12, `md`→14; `button.tsx:77`), which cannot reproduce the prototype's **per-instance** icon sizing. Corrected contract: add an optional `iconSize?: number` prop that, when set, overrides the derived value passed to `<Icon>`; the derived value remains the fallback.
+
+| Call site | Prototype icon size | Prototype ref | Current (wrong) | Fix |
+|---|---|---|---|---|
+| `transcript-card.tsx:67` (`UploadCloud`, ghost md) | `13` | line 3645 | `14` | `iconSize={13}` |
+| `transcript-card.tsx:72` (`FileText`, ghost md) | `13` | line 3648 | `14` | `iconSize={13}` |
+| `commit-screen.tsx:38` (`FileText`, ghost md) | `13` | line 3862 | `14` | `iconSize={13}` |
+| `commit-card.tsx:33` (`FileText`, ghost md) | `13` | line 3887 | `14` | `iconSize={13}` |
+| `review-hero.tsx:66` (`Mail`, sm) | `11` | line 2958 | `12` | `iconSize={11}` |
+| `review-hero.tsx:76` (`RefreshCw`, sm) | `11` | line 2967 | `12` | `iconSize={11}` |
+
+New prop on `ButtonProps` (no new token, no data shape): `iconSize?: number` (optional, backward-compatible).
+
+## Clear Button Geometry (US5)
+
+| Property | Value | Source |
+|---|---|---|
+| Padding | `10px 18px` | `.kx-btn` inline override (prototype line 3682) — **NEEDS FIX**: collides with ghost-base `14px 8px` via non-merging `cn` |
+| Font weight | `600` | prototype line 3682 — **NEEDS FIX**: collides with ghost-base `font-medium` |
+| Font size | `12px` | prototype line 3682 — already correct |
+| Text transform / tracking | `uppercase` / `0.04em` | prototype line 3682 — already correct |
+
+Fix approach: eliminate the duplicate-utility collision at the call site (do not double-declare padding/weight that the ghost base already sets). No new dependency (`tailwind-merge`/`clsx`) — the project's `cn` is intentionally dependency-free.
+
+## Scoring Rubric Modal (US6)
+
+Comparison baseline is the **modal** variant (`.kx-rubric-overlay`/`.kx-rubric-modal`, prototype lines 3702–3819), not the dead legacy `.kx-rubric-card` CSS. Panel, columns, band pills, section rows, labels, counts, and typography all already match (verified). Only the following need correction:
+
+| Element | Property | Value | Prototype ref | Current (wrong) |
+|---|---|---|---|---|
+| Overlay (`modal.tsx:33`) | Padding | `32px` | line 862 | none |
+| Add-signal button (`rubric-modal.tsx:129`) | Border radius | `6px` (`rounded-input`/`rounded-btn-sm`) | line 1074 | `rounded-input-sm` (4px) |
+| Add-signal button hover (`rubric-modal.tsx:129`) | Filter | `brightness(0.94)` | lines 1083–1086 | none (shadow only) |
+| Header (`rubric-modal.tsx:71`) | Flex shrink | `0` | line 1003 | none |
+| Compose input (`signal-composer.tsx:16`) | Padding | `2px 0 4px` (`pt-0.5 pb-1`) | line 1113 | `py-[2px_0_4px]` (invalid → collapses to 0) |
+
+## App Shell / Chat Grid (US7, US8) — NO CHANGE
+
+`SHELL_COLS` (`app-shell.tsx:15-23`) reproduces the prototype's `.kx-shell` `grid-template-columns` exactly in all four states and all breakpoints (prototype lines 156–184). The Chat/FAQ panel reflows the main column identically to the prototype; toggling it introduces no extra layout shift. **No change required.** Recorded here so the audit does not re-open it.
+
+## Chat Panel Mobile Takeover (US7, US8)
+
+At `max-bp900` the chat becomes a fixed full-screen overlay (position/animation already correct); its internal sizing must switch to the prototype's mobile values (prototype lines 191–220):
+
+| Element | `max-bp900` value | Prototype ref | Current source |
+|---|---|---|---|
+| `.kx-chat` padding | `16px 16px 14px` | line 197 | `chat-panel.tsx:51` (stays `20px 18px`) |
+| Title | `18px` / `mb 4px` | line 201 | `chat-panel.tsx:57` (`text-[20px]`) |
+| Eyebrow | `mb 4px` | line 202 | `chat-panel.tsx:54` (`mb-1.5`) |
+| Input bar | `mt 10px` / `pt 10px` | lines 204–207 | `chat-panel.tsx:75` (`mt-3.5 pt-3`) |
+| Text input | `12px 14px` / `14px` | lines 209–213 | `chat-panel.tsx:78` (`px-3 py-2.5 text-[12.5px]`) |
+| Send button | `44 × 44` | line 214 | `chat-panel.tsx:88` (`h-[38px] w-[38px]`) |
+| User bubble | `max-width 82%` | line 219 | `chat-messages.tsx` (absent) |
+
+## Review Meeting Summary + Hero Spacing (US7)
+
+| Element | Property | Value | Prototype ref | Current source |
+|---|---|---|---|---|
+| Summary heading (`kx-h2-sm`) | Margin bottom | `8px` (`mb-2`) | lines 1476–1483 | `heading.tsx:41-43` (smallLabel branch, none) / `summary-block.tsx:11` |
+| Hero wrap (`max-bp640`) | Gap | `12px` | lines 1522–1526 | `review-hero.tsx:35` (`gap-4`=16px) |
+| Review actions | Margin top | `2px` | line 1508 | `review-hero.tsx:62` (none) |
+| Hero eyebrow | Line height | `1` (`leading-none`) | lines 1498–1501 | `review-hero.tsx:37` (none) |
+
+## CRM Write to CRM Section (US8)
+
+| Element | Property | Value | Prototype ref | Current source |
+|---|---|---|---|---|
+| Hero sub-paragraph (`.kx-sub`) | Margin bottom | `24px` (`mb-6`) | lines 511–515 | `commit-screen.tsx:32` (none) |
+
+The commit-card (`commit-card.tsx`) and commit-wrap/hero geometry already match `.kx-commit-card`/`.kx-commit-wrap` exactly (verified) — no change beyond the sub-paragraph margin and the shared ghost-icon size (Button `iconSize` table above).
+
 ## Out of Scope for This Document
 
 Full-screen-by-screen comparison beyond the three flagged elements (US4) is a validation activity, not a data-model concern — any additional discrepancies found during that audit are tracked and fixed directly against the corresponding prototype rule using the same method demonstrated above, not modeled here in advance.

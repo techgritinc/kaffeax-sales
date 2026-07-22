@@ -13,7 +13,7 @@ export interface SignalComposerProps {
 }
 
 const INPUT_CLASS =
-  'w-full border-none bg-transparent px-0 py-[2px_0_4px] font-sans text-[12.5px] leading-[1.4] font-semibold text-midnight outline-none placeholder:text-muted placeholder:font-medium';
+  'w-full border-none bg-transparent px-0 pt-0.5 pb-1 font-sans text-[12.5px] leading-[1.4] font-semibold text-midnight outline-none placeholder:text-muted placeholder:font-medium';
 
 const MINI_BASE =
   'rounded-btn-sm px-2.5 py-[5px] text-[10.5px] font-bold uppercase tracking-[0.06em] transition';

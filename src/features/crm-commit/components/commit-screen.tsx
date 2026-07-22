@@ -29,13 +29,13 @@ export function CommitScreen({
         <Eyebrow>Written to CRM</Eyebrow>
         <Heading level={1}>This meeting is now in Zoho</Heading>
         <AccentBar />
-        <p className="text-muted text-[14px] leading-[1.55]">
+        <p className="text-muted mb-6 text-[14px] leading-[1.55]">
           The activity record below was just written to the Zoho CRM
         </p>
       </div>
 
       <div className="mb-4 flex justify-end">
-        <Button variant="ghost" iconStart="FileText" onClick={onNewCapture}>
+        <Button variant="ghost" iconStart="FileText" iconSize={13} onClick={onNewCapture}>
           Capture another meeting
         </Button>
       </div>

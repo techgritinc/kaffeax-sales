@@ -31,6 +31,7 @@ export function CommitCard({ record, libraryRecord, onOpenInReview }: CommitCard
           <Button
             variant="ghost"
             iconStart="FileText"
+            iconSize={13}
             onClick={() => onOpenInReview(libraryRecord)}
             title="Open this record in Review"
           >

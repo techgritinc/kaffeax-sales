@@ -30,11 +30,14 @@ export function MetaStrip({ attendees, email, onEmailChange }: MetaStripProps) {
       <span>{MEETING_DATE}</span>
       <MetaDot />
       <span
-        className="inline-flex items-center gap-1.5"
+        className="inline-flex items-center gap-[5px]"
         title="Prospect email — required for CRM entry"
       >
         <Icon name="Mail" size={13} className="text-muted" />
-        <span className="text-rust text-[13px] leading-none font-bold" aria-hidden="true">
+        <span
+          className="text-rust mr-[1px] ml-[-1px] text-[13px] leading-none font-bold"
+          aria-hidden="true"
+        >
           *
         </span>
         <InlineInput
@@ -42,7 +45,7 @@ export function MetaStrip({ attendees, email, onEmailChange }: MetaStripProps) {
           value={email}
           placeholder="name@company.com"
           onChange={(e) => onEmailChange(e.target.value)}
-          className="min-w-[200px]"
+          className="min-w-[200px]! px-[2px]!"
           aria-label="Prospect email (required for CRM)"
           aria-required="true"
         />

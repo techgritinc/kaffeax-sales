@@ -65,11 +65,12 @@ export function TranscriptCard({
           <Button
             variant="ghost"
             iconStart="UploadCloud"
+            iconSize={13}
             onClick={() => fileInputRef.current?.click()}
           >
             Attach file
           </Button>
-          <Button variant="ghost" iconStart="FileText" onClick={onLoadSample}>
+          <Button variant="ghost" iconStart="FileText" iconSize={13} onClick={onLoadSample}>
             Load sample
           </Button>
         </div>
@@ -101,7 +102,9 @@ export function TranscriptCard({
             variant="ghost"
             disabled={!transcript}
             onClick={onClear}
-            className="px-[18px] py-[10px] text-[12px] font-semibold tracking-[0.04em] uppercase"
+            // `!` (Tailwind important) makes these win over the ghost-base geometry
+            // deterministically — `cn` is a plain joiner and does not merge conflicts.
+            className="px-[18px]! py-[10px]! text-[12px] font-semibold! tracking-[0.04em] uppercase"
           >
             Clear
           </Button>

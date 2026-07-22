@@ -32,9 +32,9 @@ export function ReviewHero({
   onEmail,
 }: ReviewHeroProps) {
   return (
-    <div className="max-bp640:flex-col max-bp640:items-stretch mb-1.5 flex items-start justify-between gap-4">
+    <div className="max-bp640:flex-col max-bp640:items-stretch max-bp640:gap-[12px] mb-1.5 flex items-start justify-between gap-4">
       <div className="min-w-0 flex-1">
-        <div className="text-mustard mb-1.5 font-sans text-[11px] font-extrabold tracking-[0.14em] uppercase">
+        <div className="text-mustard mb-1.5 font-sans text-[11px] leading-none font-extrabold tracking-[0.14em] uppercase">
           Meeting summary
         </div>
         <h1 className="font-display text-midnight max-bp900:text-[22px] max-bp640:text-[20px] max-bp400:text-[18px] text-[24px] leading-[1.2] font-black tracking-[-0.02em] break-words">
@@ -59,11 +59,12 @@ export function ReviewHero({
         </h1>
       </div>
 
-      <div className="max-bp640:justify-start inline-flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+      <div className="max-bp640:justify-start mt-[2px] inline-flex shrink-0 flex-wrap items-center justify-end gap-1.5">
         <Button
           variant="send"
           size="sm"
           iconStart="Mail"
+          iconSize={11}
           onClick={onEmail}
           title="Send recap email"
         >
@@ -74,6 +75,7 @@ export function ReviewHero({
             variant="approve"
             size="sm"
             iconStart="RefreshCw"
+            iconSize={11}
             onClick={onApprove}
             disabled={emailMissing}
             title={

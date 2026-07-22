@@ -5,7 +5,7 @@ export interface CoveredDecidedProps {
   decisions: string[];
 }
 
-const CARD = 'flex-1 rounded-card border border-border bg-white p-[6px_18px] shadow-bcard';
+const CARD = 'flex-1 rounded-card-sm border border-border bg-white p-[6px_18px] shadow-bcard';
 const ROW =
   'flex items-start gap-3 border-b border-border py-3 text-[13.5px] leading-[1.55] text-ink-blue last:border-b-0';
 const NUM =
@@ -18,7 +18,7 @@ export function CoveredDecided({ topics, decisions }: CoveredDecidedProps) {
     <section className="mt-8">
       <div className="max-bp900:grid-cols-1 grid grid-cols-2 gap-5">
         <div className="flex min-w-0 flex-col">
-          <Heading level={2} smallLabel>
+          <Heading level={2} smallLabel className="ml-[3px]">
             What was covered
           </Heading>
           {topics.length === 0 ? (
@@ -40,7 +40,7 @@ export function CoveredDecided({ topics, decisions }: CoveredDecidedProps) {
         </div>
 
         <div className="flex min-w-0 flex-col">
-          <Heading level={2} smallLabel>
+          <Heading level={2} smallLabel className="ml-[3px]">
             What was decided
           </Heading>
           {decisions.length === 0 ? (

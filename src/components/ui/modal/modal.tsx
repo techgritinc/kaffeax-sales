@@ -30,7 +30,7 @@ export function Modal({ open, onClose, children, className, labelledBy }: ModalP
 
   return (
     <div
-      className="bg-midnight/[0.42] fixed inset-0 z-[55] flex items-center justify-center backdrop-blur-[4px]"
+      className="bg-midnight/[0.42] fixed inset-0 z-[55] flex items-center justify-center p-8 backdrop-blur-[4px]"
       onClick={onClose}
     >
       <div

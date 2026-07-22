@@ -31,3 +31,94 @@ No entries in Technical Context were marked `NEEDS CLARIFICATION` — this is a 
 - No other "Draft"/"Saved to CRM" chip element exists in the codebase outside the sidebar's per-row status badge (confirmed via full-text search of `src/` for "Draft" and "Saved to CRM"); the two group *headers* ("Drafts"/"Saved to CRM" in `sidebar.tsx:36-37`) already match the prototype's group labels verbatim and are not chips.
 - `--radius-tight: 2px` (`globals.css:162`) is already correctly registered, so `AccentBar`'s corner rounding is correct wherever `rounded-tight` is applied — no radius fix needed.
 - `review-hero.tsx` (meeting-review feature) does not use `AccentBar` at all — the review screen's hero is an intentionally distinct custom layout in the prototype and is out of scope for the accent-bar fix, but remains in scope for the US4 full-application audit.
+
+---
+
+# Phase 0 (expansion) — Findings for US5–US8
+
+Added when the spec was expanded (2026-07-22) with the Capture transcript section, Scoring Rubric modal, Review Meeting Summary + Chat/FAQ panel, and CRM Write to CRM + Chat/FAQ panel. Same method: each finding cites the exact prototype rule and the exact current source line. Line references are into `Design/POC_Kaffea-X_Prototype.html` and the named source file.
+
+## Cross-cutting confirmation — the Chat/FAQ panel does NOT alter content width or shift layout beyond the prototype
+
+The most important result of the US7/US8 investigation is a **negative** one, and it narrows scope significantly: the app shell's grid is faithful to the prototype. `src/components/common/app-shell/app-shell.tsx:15-23` (`SHELL_COLS`) reproduces the prototype's `.kx-shell` `grid-template-columns` **exactly** in all four states and all three breakpoints — sidebar+chat `260px minmax(0,1fr) 340px` → bp1100 `220px … 300px` → bp900 single column; the `no-chat`, `no-sidebar`, and `no-sidebar no-chat` variants all match (`Design/POC_Kaffea-X_Prototype.html:156-184`). The main column is `minmax(0,1fr)` with `overflow:hidden`/`min-w-0` in both. Consequently, opening/closing the Chat/FAQ panel reflows the main content by exactly the chat-column width in **both** the prototype and the app — this is intended prototype behavior, not a layout-shift defect. On mobile (≤900px) the chat becomes a `position:fixed` full-screen takeover in both, so it never squeezes the main column. **No change to `app-shell.tsx` is required.** The residual Chat/FAQ work is limited to the panel's own internal mobile-takeover sizing (Finding 13), not the shell layout.
+
+## Finding 5 — Transcript ghost-button icons render 14px instead of the prototype's 13px (the reported "icons look larger" defect)
+
+- **Decision**: The leading icons in the transcript ghost buttons — *Attach file* (`UploadCloud`) and *Load sample* (`FileText`) — MUST render at **13×13px**, not 14×14px. (There is no literal "Start"/"Start Recording" button in either the prototype or the app; the transcript actions are *Attach file*, *Load sample*, *Clear*, *Summarise*. The reported oversized-icon defect is these ghost-button icons.)
+- **Rationale**: Prototype renders these icons at 13px explicitly — `Design/POC_Kaffea-X_Prototype.html:3645` (`<UploadCloud size={13} />`) and `:3648` (`<FileText size={13} />`). The app routes both through the shared `Button` with `iconStart` (`src/features/meeting-capture/components/transcript-card.tsx:67,72`). `Button.resolve()` returns a **size-derived** icon dimension — `iconSize: size === 'sm' ? 12 : 14` (`src/components/ui/button/button.tsx:77`) — and passes it straight to `<Icon size={iconSize} />` (`button.tsx:94`), which writes `width`/`height` onto the SVG (`src/components/ui/icon/icon.tsx:16-17`). So every default-size (`md`) icon-start button paints its icon at 14px, ~7.7% larger than the prototype's 13px. No CSS counteracts it (the prototype has no `svg`/`.kx-btn svg` sizing rule). The *Summarise* button is unaffected because it renders `<Icon name="Sparkles" size={16} />` as an explicit child (`transcript-card.tsx:113`) matching prototype `:3691`.
+- **Root cause (shared)**: `Button` derives icon size from button *size* and cannot reproduce the prototype's **per-instance** icon sizing. The prototype uses 11, 12, 13, and 14px icons across different buttons (e.g. `:2958`/`:2967` review actions `size={11}`; `:3645`/`:3648`/`:3862`/`:3887` ghost buttons `size={13}`; `:2581` sidebar "New" `size={14}`). A single derived value per button size is therefore fundamentally lossy. This same root cause produces Finding 15 (CRM ghost buttons) and Finding 16 (review sm buttons).
+- **Alternatives considered**: (a) Change `button.tsx:77` md default 14→13 (rejected as the *sole* fix — it happens to be correct for every current `md` `iconStart` call site, all ghost buttons wanting 13, but still can't express 11/12/14 where the prototype needs them, and silently bakes in an assumption). (b) Drop `iconStart` and render `<Icon size={13}>` children per call site (works, but duplicates the pattern and loses the ergonomic API). **Chosen**: add an optional `iconSize?: number` prop to `ButtonProps` that overrides the derived value when provided; pass `iconSize={13}` at the four `md` ghost call sites and `iconSize={11}` at the two `sm` review call sites (Finding 16). This is faithful, backward-compatible (derived value remains the fallback), and honors Principle VI.
+
+## Finding 6 — `Clear` button geometry overrides collide non-deterministically (non-merging `cn`)
+
+- **Decision**: The *Clear* transcript button MUST deterministically render padding **10px 18px** and **font-weight 600** (uppercase, `0.04em` tracking), per the prototype. As written the rendered padding/weight is order-dependent and may resolve to the ghost base (14px/8px/500) instead.
+- **Rationale**: Prototype *Clear* is a ghost button with an inline geometry override — `Design/POC_Kaffea-X_Prototype.html:3682` (`padding:"10px 18px", fontSize:12, textTransform:"uppercase", letterSpacing:"0.04em", fontWeight:600`). The app renders `variant="ghost"` + `className="px-[18px] py-[10px] text-[12px] font-semibold tracking-[0.04em] uppercase"` (`src/features/meeting-capture/components/transcript-card.tsx:100-107`). But the ghost `md` base already sets `px-[14px] py-[8px] … font-medium` (`button.tsx:36,28`), and `cn` is a **plain string joiner with no Tailwind conflict resolution** (`src/lib/utils/cn.ts:8-13`). The final class attribute therefore contains both `px-[14px]` and `px-[18px]` (and both `font-medium`/`font-semibold`); with equal CSS specificity the winner is decided by generated-stylesheet order, not attribute order — so the button can render at the wrong padding/weight.
+- **Alternatives considered**: (a) Adopt `tailwind-merge`/`clsx` in `cn` — **rejected as the default**: `cn`'s docstring states the project intentionally stays dependency-free ("no clsx"), and `package.json` confirms no such dependency; adding one for a single collision is disproportionate and against the project's stated minimalism. (b) **Chosen**: eliminate the collision at the call site so no base utility is double-declared for the same property — i.e. the *Clear* button's differing geometry is expressed without competing with `GEO_MD.ghost` (e.g. a dedicated one-off styling path for this button that does not inherit the conflicting base padding/weight). Confidence: **Medium** (the defect is real but its visibility depends on build-time class ordering; verify by inspecting the computed style during the quickstart pass).
+
+## Finding 7 — Rubric "Add signal" button corner radius is 4px, must be 6px
+
+- **Decision**: The Add-signal button MUST use a **6px** radius (`rounded-input`/`rounded-btn-sm`, both `6px`), not `rounded-input-sm` (`4px`).
+- **Rationale**: Prototype `.kx-btn-add-signal { border-radius: 6px; }` (`Design/POC_Kaffea-X_Prototype.html:1074`). Source `src/features/scoring-rubric/components/rubric-modal.tsx:129` uses `rounded-input-sm` → `--radius-input-sm: 4px` (`src/app/globals.css:171`). Correct token: `--radius-input: 6px` (`globals.css:172`) or `--radius-btn-sm: 6px` (`globals.css:173`).
+- **Alternatives considered**: `rounded-[6px]` arbitrary value (rejected — a named token is preferred per the token discipline in `CLAUDE.md`).
+
+## Finding 8 — Rubric overlay is missing its 32px padding gutter
+
+- **Decision**: The rubric overlay MUST have `padding: 32px` so the modal panel keeps a 32px gutter on all sides at viewport widths below the panel's `max-width` (1080px).
+- **Rationale**: Prototype `.kx-rubric-overlay { … padding: 32px; }` (`Design/POC_Kaffea-X_Prototype.html:862`). The generic overlay the modal uses has no padding — `src/components/ui/modal/modal.tsx:33` (`fixed inset-0 … flex items-center justify-center …`). Below ~1080px the panel (`w-full max-w-[1080px]`) stretches edge-to-edge with 0 horizontal gutter instead of the prototype's 32px.
+- **Alternatives considered**: Adding `p-8` directly to the shared `modal.tsx` overlay (affects **every** modal that uses it — must confirm no other modal depends on a padding-less overlay; if any does, apply the 32px only for the rubric via a wrapper/prop). The prototype value for *this* overlay is unambiguously 32px. File: `src/components/ui/modal/modal.tsx:33`.
+
+## Finding 9 — Rubric header omits `flex-shrink: 0`
+
+- **Decision**: The rubric header container MUST be non-shrinking (`shrink-0`).
+- **Rationale**: Prototype `.kx-rubric-head { … flex-shrink: 0; }` (`Design/POC_Kaffea-X_Prototype.html:1003`); the panel is a flex column (`rubric-modal.tsx:47`) whose body region can grow, so on short viewports the header can be compressed. Source header `<div>` at `rubric-modal.tsx:71` has no `shrink-0`. Minor but real.
+- **Alternatives considered**: None; the prototype is explicit.
+
+## Finding 10 — Rubric "Add signal" hover omits the brightness darken
+
+- **Decision**: Add-signal hover MUST darken the fill with `filter: brightness(0.94)` in addition to the (already-correct) shadow bump.
+- **Rationale**: Prototype `.kx-btn-add-signal:hover { filter: brightness(0.94); box-shadow: 0 2px 6px rgba(65,187,147,0.35); }` (`Design/POC_Kaffea-X_Prototype.html:1083-1086`). Source `rubric-modal.tsx:129` applies only `hover:shadow-add-signal-hover` (correct shadow, `globals.css:202`) but no brightness change. Minor hover-state gap.
+- **Alternatives considered**: `hover:brightness-[0.94]` Tailwind filter utility (chosen form).
+
+## Finding 11 — SignalComposer input padding declaration is invalid and collapses to 0
+
+- **Decision**: The compose input MUST render `padding: 2px 0 4px` (top 2px, bottom 4px). Use `pt-0.5 pb-1` (2px/4px) or an explicit `[padding:2px_0_4px]`.
+- **Rationale**: Prototype `.kx-signal-card-input { … padding: 2px 0 4px; }` (`Design/POC_Kaffea-X_Prototype.html:1113`). Source `src/features/scoring-rubric/components/signal-composer.tsx:16` uses `px-0 py-[2px_0_4px]`; a `py-*` arbitrary value emits `padding-block: 2px 0 4px`, an **invalid 3-value declaration** the browser drops, so top/bottom padding collapse to 0 — shifting the compose input's text baseline.
+- **Alternatives considered**: Keep `py-[…]` (rejected — `padding-block` takes at most two values; the three-value form is invalid).
+
+## Finding 12 — "Summary" section heading (`kx-h2-sm`) is missing its 8px bottom margin
+
+- **Decision**: The `smallLabel` heading treatment (the `kx-h2-sm` "Summary" heading and its siblings) MUST carry `margin-bottom: 8px`, making the collapsed gap to the narrative block 8px (not the current 4px).
+- **Rationale**: Prototype `.kx-h2-sm { … margin: 0 0 8px; }` (`Design/POC_Kaffea-X_Prototype.html:1476-1483`), applied to `<h2 class="kx-h2-sm">Summary</h2>` (`:3017`) above `.kx-narrative { … margin-top: 4px }` (`:1751`). In the app the `smallLabel` branch of `Heading` emits no margin (`src/components/ui/typography/heading.tsx:38-48`), and `SummaryBlock` gives the narrative only `mt-1` (4px) (`src/features/meeting-review/components/summary-block.tsx:11-14`). Net gap 4px vs the prototype's 8px.
+- **Alternatives considered**: Add `mt-2` to the narrative instead (rejected — the prototype puts the space on the heading; because margins collapse, placing it on the heading is what reproduces the value robustly). Fix location: add `mb-2` to the `smallLabel` branch (`heading.tsx:41-43`) or pass the margin from `summary-block.tsx:11`. Note the `smallLabel` treatment is reused by other review section headings, all of which want the 8px in the prototype.
+
+## Finding 13 — Chat panel omits the entire mobile (≤900px) takeover internal restyle
+
+- **Decision**: At `max-bp900` the chat `<aside>` MUST switch padding to `16px 16px 14px` and shrink its internals: title `font-size:18px; margin-bottom:4px`; eyebrow `margin-bottom:4px`; input-bar `margin-top:10px; padding-top:10px`; text input `padding:12px 14px; font-size:14px`; send button `44px × 44px`; user bubble `max-width:82%`.
+- **Rationale**: Prototype mobile block `Design/POC_Kaffea-X_Prototype.html:191-220` (under `@media (max-width:900px)`): `.kx-chat` `padding:16px 16px 14px` (`:197`), `.kx-chat-title` `18px`/`mb 4px` (`:201`), `.kx-chat-eyebrow` `mb 4px` (`:202`), `.kx-chat-input-bar` `mt 10px`/`pt 10px` (`:204-207`), `.kx-chat-input` `12px 14px`/`14px` (`:209-213`), `.kx-chat-send` `44×44` (`:214`), `.kx-chat-bubble-user` `max-width:82%` (`:219`). The app declares the takeover *position/animation* at `chat-panel.tsx:51` (`max-bp900:fixed … animate-chat-slide-up border-l-0`) — correct — but **no `max-bp900:` sizing overrides**: base `p-[20px_18px]` (`:51`), title `text-[20px]` (`:57`), eyebrow `mb-1.5` (`:54`), input-bar `mt-3.5 pt-3` (`:75`), input `px-3 py-2.5 text-[12.5px]` (`:78`), send `h-[38px] w-[38px]` (`:88`) all persist on the overlay; the user-bubble `max-width` lives in `chat-messages.tsx` and is also absent.
+- **Alternatives considered**: Leave desktop sizing on mobile (rejected — the prototype deliberately tightens the header and enlarges tap targets so the input bar stays in the viewport fold on phones). Fix locations: `chat-panel.tsx:51,54,57,75,78,88` (add `max-bp900:` variants) plus the user-bubble class in `chat-messages.tsx`.
+
+## Finding 14 — Review hero: three minor spacing deviations at narrow widths
+
+- **Decision**: (a) At `max-bp640` the stacked hero-wrap gap MUST be `12px`, not `16px`; (b) the action cluster MUST have `margin-top: 2px`; (c) the "Meeting summary" eyebrow MUST have `line-height: 1`.
+- **Rationale**: (a) Prototype `.kx-review-hero-block-wrap { gap: 12px }` inside `@media (max-width:640px)` (`Design/POC_Kaffea-X_Prototype.html:1522-1526`); app hero root is `gap-4` (16px) with no `max-bp640` gap override (`src/features/meeting-review/components/review-hero.tsx:35`). (b) Prototype `.kx-review-actions { margin-top: 2px }` (`:1508`); app actions cluster has no `mt` (`review-hero.tsx:62`). (c) Prototype `.kx-review-hero-block-main .kx-eyebrow { margin:0 0 6px; line-height:1 }` (`:1498-1501`); app eyebrow has `mb-1.5` (6px ✓) but no `leading-none` (`review-hero.tsx:37`).
+- **Alternatives considered**: Treat as negligible (rejected for completeness — the spec's US7 names hero spacing/alignment; these are the lowest-priority items in the story).
+
+## Finding 15 — CRM hero sub-paragraph is missing its 24px bottom margin
+
+- **Decision**: The commit hero's descriptive paragraph MUST carry `margin-bottom: 24px` (add `mb-6`), yielding the prototype's gap before the "Capture another meeting" row instead of the current 20px.
+- **Rationale**: Prototype `Hero` renders `<p class="kx-sub">` (`Design/POC_Kaffea-X_Prototype.html:2909`) and `.kx-sub { … margin-bottom: 24px; }` (`:511-515`); the Hero wrapper is `marginBottom:20` (`:2905`). App renders `<p className="text-muted text-[14px] leading-[1.55]">` with the correct font/color/line-height but **no bottom margin** (`src/features/crm-commit/components/commit-screen.tsx:32`); the wrapper `mb-5` (20px, `:28`) matches the prototype wrapper, so the missing 24px on the paragraph is the whole gap deficit.
+- **Alternatives considered**: Put the gap on the wrapper (rejected — that changes the wrapper away from the prototype's 20px; the margin belongs on the paragraph).
+
+## Finding 16 — Review `sm` action buttons render 12px icons; prototype uses 11px
+
+- **Decision**: The *Email* (`Mail`) and *Update CRM* (`RefreshCw`) buttons on the review hero MUST render their icons at **11px**, not 12px.
+- **Rationale**: Prototype `Design/POC_Kaffea-X_Prototype.html:2958` (`<Mail size={11} /> Email`) and `:2967` (`<RefreshCw size={11} /> Update CRM`). The app renders these as `<Button size="sm" iconStart="Mail" />` / `iconStart="RefreshCw"` (`src/features/meeting-review/components/review-hero.tsx:65-66,75-76`), and `Button.resolve()` returns `iconSize: 12` for `size==='sm'` (`button.tsx:77`). Same root cause as Finding 5.
+- **Alternatives considered**: Change the `sm` derived default 12→11 (rejected as the sole fix — same lossiness argument as Finding 5). **Chosen**: pass `iconSize={11}` via the new `iconSize?` override prop introduced for Finding 5.
+
+## Scope confirmation (expansion)
+
+- The `.kx-rubric-card`/`.kx-rubric-note`/`.kx-rubric-body`/`.kx-rubric-add` legacy inline-card CSS in the prototype is **dead** — the rendered prototype uses the modal variant (`.kx-rubric-overlay`/`.kx-rubric-modal`/`.kx-rubric-body-2col`, `Design/POC_Kaffea-X_Prototype.html:3702-3819`), which `RubricModal` correctly implements. The legacy card is not a comparison baseline and correctly has no React counterpart.
+- **No `app-shell.tsx` change is required** — the grid shell matches the prototype in every chat/sidebar state and breakpoint (see the cross-cutting confirmation above). The Chat/FAQ panel's only residual work is its internal mobile-takeover sizing (Finding 13).
+- The transcript section has **no** "Start"/"Start Recording" button; the reported oversized-icon defect maps to the ghost-button icons (Finding 5).
+- The transcript textarea, foot/actions layout, card padding, error banner, and word-count label all already match the prototype (verified) — no change beyond Findings 5–6.
+- The commit card (`commit-card.tsx`) matches `.kx-commit-card` exactly (verified); the only CRM-screen fixes are the hero sub-paragraph margin (Finding 15) and the shared ghost-icon size (Finding 15's `FileText` icons via the Finding 5 mechanism).

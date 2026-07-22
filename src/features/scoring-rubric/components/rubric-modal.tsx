@@ -68,7 +68,7 @@ export function RubricModal({
         <Icon name="X" size={16} />
       </button>
 
-      <div className="border-border-warm from-cream-50 border-b bg-linear-to-b to-white p-[16px_18px_12px]">
+      <div className="border-border-warm from-cream-50 shrink-0 border-b bg-linear-to-b to-white p-[16px_18px_12px]">
         <div
           id="rubric-title"
           className="text-mustard mb-0.5 font-sans text-[11px] font-extrabold tracking-[0.14em] uppercase"
@@ -126,7 +126,7 @@ export function RubricModal({
               <button
                 type="button"
                 onClick={() => setAddingSignal(true)}
-                className="rounded-input-sm bg-green shadow-add-signal hover:shadow-add-signal-hover inline-flex items-center gap-1.5 px-3.5 py-[7px] text-[11.5px] font-bold tracking-[0.04em] text-white uppercase"
+                className="rounded-btn-sm bg-green shadow-add-signal hover:shadow-add-signal-hover inline-flex items-center gap-1.5 px-3.5 py-[7px] text-[11.5px] font-bold tracking-[0.04em] text-white uppercase hover:brightness-[0.94]"
               >
                 <Icon name="Plus" size={12} /> Add signal
               </button>

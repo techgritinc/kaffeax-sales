@@ -39,7 +39,7 @@ export function Heading({
     return (
       <h2
         className={cn(
-          'text-mustard font-sans text-[11px] font-extrabold tracking-[0.14em] uppercase',
+          'text-mustard mb-2 font-sans text-[11px] font-extrabold tracking-[0.14em] uppercase',
           className,
         )}
       >

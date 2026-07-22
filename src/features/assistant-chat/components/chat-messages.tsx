@@ -44,7 +44,7 @@ export function ChatMessages({ messages, pending, onSend }: ChatMessagesProps) {
             </div>
           ) : (
             <div className="mb-3.5 flex justify-end">
-              <div className="bg-midnight max-w-[85%] rounded-[12px_2px_12px_12px] p-[10px_14px] text-[13px] leading-[1.55] text-white">
+              <div className="bg-midnight max-bp900:max-w-[82%] max-w-[85%] rounded-[12px_2px_12px_12px] p-[10px_14px] text-[13px] leading-[1.55] text-white">
                 {m.text}
               </div>
             </div>
