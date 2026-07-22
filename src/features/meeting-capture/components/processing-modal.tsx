@@ -51,7 +51,7 @@ export function ProcessingModal({ procTick, className }: ProcessingModalProps) {
         <Eyebrow inline>Processing</Eyebrow>
         <Heading level={2}>Reading your transcript…</Heading>
         <AccentBar variant="h2" />
-        <p className="text-muted mt-[10px] mb-[20px] text-[13px] leading-[1.55]">
+        <p className="text-muted mb-[20px] text-[13px] leading-[1.55]">
           Claude is drafting the summary, score, and recap. About 3 seconds.
         </p>
 

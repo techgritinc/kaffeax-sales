@@ -43,6 +43,10 @@
   --midnight-send-hover: #1a3562;
   --sidebar-muted: #8090b0;
   --sidebar-group-count: #6b7a99;
+  --sidebar-status-draft-text: #e6c778;
+  --sidebar-status-saved-text: #a6e6ca;
+  --sidebar-text-strong: #e8eaf0;
+  --sidebar-new-text: #e8f6f0;
   --transcript-bg: #fafaf6;
   --contact-panel-bg: #fbf9f2;
   --band-tile-bg: #fcfaf4;
@@ -116,6 +120,10 @@
   --color-sidebar-text: var(--sidebar-text);
   --color-sidebar-muted: var(--sidebar-muted);
   --color-sidebar-group-count: var(--sidebar-group-count);
+  --color-sidebar-status-draft-text: var(--sidebar-status-draft-text);
+  --color-sidebar-status-saved-text: var(--sidebar-status-saved-text);
+  --color-sidebar-text-strong: var(--sidebar-text-strong);
+  --color-sidebar-new-text: var(--sidebar-new-text);
   --color-chat-bg-start: var(--chat-bg-start);
   --color-chat-bg-end: var(--chat-bg-end);
 

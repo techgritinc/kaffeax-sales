@@ -46,7 +46,7 @@ export function Sidebar({
             type="button"
             onClick={onNew}
             title="New capture"
-            className="rounded-input border-green/[0.35] bg-green/[0.14] hover:border-green/[0.55] hover:bg-green/[0.24] inline-flex items-center gap-1 border px-2 py-1 text-[11px] font-bold text-white transition-colors"
+            className="rounded-input border-green/[0.35] bg-green/[0.14] hover:border-green/[0.55] hover:bg-green/[0.24] text-sidebar-new-text inline-flex items-center gap-1 border px-2 py-1 text-[11px] font-bold transition-colors"
           >
             <Icon name="Plus" size={14} /> New
           </button>
@@ -73,7 +73,7 @@ export function Sidebar({
       {groups.map((group) => (
         <div key={group.label} className="mb-1.5">
           <div className="flex items-center justify-between px-[18px] pt-3 pb-1">
-            <span className="text-sidebar-muted text-[10px] font-extrabold tracking-[0.08em] uppercase">
+            <span className="text-sidebar-muted px-[18px] pt-[10px] pb-1 text-[10px] font-extrabold tracking-[0.08em] uppercase">
               {group.label}
             </span>
             <span className="text-sidebar-group-count rounded-[10px] bg-white/[0.06] px-1.5 py-px text-[10px] font-extrabold tracking-[0.06em]">
@@ -81,7 +81,7 @@ export function Sidebar({
             </span>
           </div>
           {group.entries.length === 0 ? (
-            <div className="text-sidebar-group-count px-[18px] pb-2 text-[11px] italic">
+            <div className="text-sidebar-group-count px-[18px] pt-1 pb-2 text-[11px] italic">
               {group.empty}
             </div>
           ) : (

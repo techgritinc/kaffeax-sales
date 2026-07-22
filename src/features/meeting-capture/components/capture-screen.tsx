@@ -18,7 +18,7 @@ export function CaptureScreen({ onOpenRubric, className, ...transcript }: Captur
           <h1 className="font-display text-midnight text-[26px] leading-[1.1] font-black tracking-[-0.03em]">
             Turn a call into a scored lead.
           </h1>
-          <AccentBar variant="h2" className="my-[10px]" />
+          <AccentBar context="captureHero" />
           <p className="text-muted text-[13px] leading-[1.55]">
             Paste a meeting transcript. Agent extracts contacts, scores intent against your rubric —
             you review and approve before anything touches the CRM.

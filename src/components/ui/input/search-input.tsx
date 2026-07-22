@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils/cn';
 export type SearchInputProps = InputHTMLAttributes<HTMLInputElement>;
 
 const BASE =
-  'w-full rounded-input border border-white/[0.14] bg-white/[0.06] py-2 pr-3 pl-8 text-[12px] text-sidebar-text outline-none placeholder:text-sidebar-muted';
+  'w-full rounded-input border border-white/[0.14] bg-white/[0.06] py-2 pr-3 pl-8 text-[12px] text-sidebar-text-strong outline-none placeholder:text-sidebar-muted';
 
 export function SearchInput({ className, ...rest }: SearchInputProps): JSX.Element {
   return (

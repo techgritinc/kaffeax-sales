@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { Icon } from '@/components/ui/icon';
+import { AccentBar } from '@/components/ui/typography';
 import type { ChatMessage } from '@/types/workflow.types';
 
 import { cannedResponse } from '../hooks/use-canned-response';
@@ -56,7 +57,7 @@ export function ChatPanel({ context, onClose }: ChatPanelProps) {
           <div className="font-display text-midnight mb-1.5 text-[20px] font-bold">
             Ask about this lead
           </div>
-          <div className="rounded-tight bg-bright-blue mb-4 h-1.5 w-[72px]" />
+          <AccentBar variant="h2" />
         </div>
         <button
           type="button"
