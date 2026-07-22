@@ -1,37 +1,31 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: 1.1.1 → 1.2.0 (MINOR — three new principles added, directory architecture expanded)
+  Version change: 1.2.0 → 1.3.0 (MINOR — Principle XI expanded with a new normative rule)
 
-  Rationale: Adopted expanded directory structure aligned with the enterprise reference, adding
-  lib/ (with db/, auth/, utils/ subdirectories), integrations/, providers/, config/, constants/,
-  and middleware.ts. Renamed components/<feature>/ to components/common/ for shared composed
-  components; feature-specific components now live in features/<feature>/components/. Three new
-  constitutional principles added: XIV (Error Handling & Observability), XV (Quality & Performance),
-  XVI (Git & Deployment Standards).
+  Rationale: Mongoose model files (e.g. transcript.model.ts, rubric-signal.model.ts) were
+  declaring their plain-data interfaces/types inline alongside Schema definitions. This blocked
+  reuse of those exact data shapes from frontend code (components, forms, server action return
+  types), forcing either duplication or an import that would pull mongoose's runtime into the
+  client bundle. Resolved by extracting plain interfaces/types into src/types/<domain>.types.ts
+  (zero mongoose dependency) and leaving only Schema/HydratedDocument/model code in the
+  lib/db/models/<domain>.model.ts file — first applied to rubric-signal.model.ts, then to
+  transcript.model.ts. Principle XI is amended to make this split a explicit, permanent rule
+  rather than an ad-hoc fix.
 
   Modified sections:
-    - Directory Architecture — expanded tree and Directory Principles; updated lib/ subdirs,
-      added integrations/, providers/, config/, constants/, middleware.ts; renamed
-      components/<feature>/ → components/common/ + features/<feature>/components/
-    - §VII Utility Functions — updated global path from src/utils/ to src/lib/utils/ to align
-      with new directory structure
+    - §XI Type Isolation — added a rule requiring plain data types to be separated from
+      persistence-layer (Mongoose) types, so shared types remain directly importable by
+      frontend code.
 
-  Added principles:
-    - XIV. Error Handling & Observability
-    - XV. Quality & Performance
-    - XVI. Git & Deployment Standards
-
-  Added sections: None (new content placed within Core Principles and Directory Architecture)
+  Added principles: None
+  Added sections: None
   Removed sections: None
 
   Templates:
-    ✅ .specify/templates/plan-template.md — Constitution Check section aligns with updated
-        principle-driven gates; directory structure in Source Code section should use new layout
-    ✅ .specify/templates/spec-template.md — User stories and requirements structure compatible;
-        no structural changes required
-    ✅ .specify/templates/tasks-template.md — Phase structure supports new error handling,
-        observability, and git workflow task types; no update needed
+    ✅ .specify/templates/plan-template.md — no structural changes required
+    ✅ .specify/templates/spec-template.md — no structural changes required
+    ✅ .specify/templates/tasks-template.md — no structural changes required
 
   Follow-up TODOs: None
 -->
@@ -153,6 +147,24 @@ const users = await userRepository.findAll();
 - NEVER dump all types into a single global file.
 - Types and interfaces MUST be isolated into dedicated `types/` directories organized strictly by feature module: `src/features/<feature>/types/` or `src/types/<domain>.ts`.
 - Shared cross-feature types live in `src/types/` with clear domain-based file names (e.g., `user.types.ts`, `api.types.ts`).
+- **Plain data types MUST be separated from persistence-layer types.** A Mongoose model file (`src/lib/db/models/<domain>.model.ts`) MUST NOT declare plain interfaces/types inline. It MUST import them from the corresponding `src/types/<domain>.types.ts` file and keep only Mongoose-specific code — `Schema` definitions, sub-schemas, indexes, the `HydratedDocument<T>` type, and the model export. This is not just backend hygiene: the plain type file has zero Mongoose dependency, so the exact same interface is directly reusable by frontend code (components, forms, server action signatures) instead of being duplicated or re-declared.
+
+**Bad:**
+```ts
+// src/lib/db/models/transcript.model.ts
+interface TranscriptFields { title: string; status: TranscriptStatus /* ... */ }
+const transcriptSchema = new Schema<TranscriptFields>({ /* ... */ });
+```
+
+**Good:**
+```ts
+// src/types/transcript.types.ts — zero mongoose dependency, frontend-safe
+export interface TranscriptFields { title: string; status: TranscriptStatus /* ... */ }
+
+// src/lib/db/models/transcript.model.ts
+import type { TranscriptFields } from '@/types/transcript.types';
+const transcriptSchema = new Schema<TranscriptFields>({ /* ... */ });
+```
 
 ### XII. Design Fidelity
 
@@ -298,4 +310,4 @@ Pre-commit hooks enforce lint-staged and type-checking locally. Pre-push hooks e
   3. Update to this file and propagation to dependent templates.
 - The `rulebook.md` file at the repository root serves as the upstream source for constitutional principles. Changes to the rulebook MUST be reflected here.
 
-**Version**: 1.2.0 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-07-21
+**Version**: 1.3.0 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-07-22
