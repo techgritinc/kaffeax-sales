@@ -65,3 +65,18 @@ export interface MeetingRecord {
   lead_score: LeadScore;
   recap_email: RecapEmail;
 }
+
+export interface TranscriptPresentation {
+  when: string;
+  recapSubject: string;
+  contact: {
+    name: ConfidentField;
+    company: ConfidentField;
+    title: ConfidentField;
+    emailConfidence: Confidence;
+  };
+  summary: {
+    openQuestions: string[];
+    commitments: Commitment[];
+  };
+}

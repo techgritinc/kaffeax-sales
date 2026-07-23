@@ -10,13 +10,11 @@ import type {
 import type { Band, Rubric } from '@/types/rubric.types';
 import type { DetectedSignal } from '@/types/scoring.types';
 
+import { CURATED } from './curated';
+
 /** Valid bands — mirrors the prototype's BAND lookup used by `normalize`. */
 const BANDS: readonly Band[] = ['hot', 'warm', 'cold'];
 
-/**
- * Fallback hint extraction: derive lowercase words (>4 chars) from a signal's
- * label when the signal carries no explicit `hints`.
- */
 export const hintFallback = (label: string): string[] =>
   label
     .toLowerCase()
@@ -192,18 +190,10 @@ export function normalize(p: NormalizeInput): NormalizedRecord {
   };
 }
 
-/**
- * Orchestrate the mocked processing pipeline. Simulates model latency
- * (`PROCESSING_MIN_MS + Math.random() * PROCESSING_JITTER_MS`) — no external
- * request is made — then runs detection, banding, and text generation locally
- * so that editing the rubric changes the score live.
- */
 export async function runProcessing(transcript: string, rubric: Rubric): Promise<NormalizedRecord> {
   await new Promise<void>((r) =>
     setTimeout(r, PROCESSING_MIN_MS + Math.random() * PROCESSING_JITTER_MS),
   );
-  // Imported lazily to avoid a load-time cycle with seed.ts (which imports engine).
-  const { CURATED } = await import('./seed');
   const detected = detectSignals(transcript, rubric);
   const nextStep = detectNextStep(transcript);
   const band = applyBanding(detected, nextStep);

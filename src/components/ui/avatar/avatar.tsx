@@ -27,10 +27,6 @@ const TONE_CLASS: Record<AvatarTone, string> = {
   'green-deep': 'bg-green-deep text-[12px]',
 };
 
-/**
- * Header (.kx-header-avatar 78–85), attendee (.kx-attendee-avatar 1798–1806)
- * and chat (.kx-chat-avatar 707–714) avatars.
- */
 export function Avatar({
   variant,
   initials,

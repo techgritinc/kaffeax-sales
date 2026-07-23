@@ -14,6 +14,13 @@ import {
   REJECT_ID_PREFIX,
   TOAST_DURATION_MS,
 } from '@/constants/workflow';
+import {
+  createTranscript,
+  deleteTranscript,
+  resetTranscripts,
+  updateTranscript,
+} from '@/features/workflow/actions/transcript.actions';
+import { persist } from '@/features/workflow/utils/persist';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { Rubric } from '@/types/rubric.types';
 import type {
@@ -26,7 +33,6 @@ import type {
 } from '@/types/workflow.types';
 
 import { runProcessing } from './engine';
-import { SAMPLE, SEED_LIBRARY } from './seed';
 
 /** State values and setters the actions operate over. */
 export interface WorkflowActionDeps {
@@ -35,6 +41,10 @@ export interface WorkflowActionDeps {
   draft: MeetingRecord | null;
   activeId: string | null;
   isCommitted: boolean;
+  /** The default sample transcript (fetched on the server, injected by the provider). */
+  sample: string;
+  /** The server-fetched seed library, used to restore state on demo reset. */
+  initialLibrary: MeetingRecord[];
   setTranscript: Dispatch<SetStateAction<string>>;
   setStatus: Dispatch<SetStateAction<WorkflowStatus>>;
   setDraft: Dispatch<SetStateAction<MeetingRecord | null>>;
@@ -78,6 +88,8 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
     draft,
     activeId,
     isCommitted,
+    sample,
+    initialLibrary,
     setTranscript,
     setStatus,
     setDraft,
@@ -111,7 +123,7 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
   }
 
   function loadSample() {
-    setTranscript(SAMPLE);
+    setTranscript(sample);
   }
 
   function handleFile(file: File) {
@@ -144,6 +156,7 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
       setActiveId(draftId);
       setStatus('idle');
       setStep('review');
+      persist('process', createTranscript(draftRec));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not process the transcript.');
       setStatus('error');
@@ -170,14 +183,17 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
     if (!draft) return;
     if (isCommitted) {
       const zid = draft.id;
+      const updated: MeetingRecord = {
+        ...draft,
+        id: zid,
+        committed: true,
+        when: 'Updated just now',
+      };
       setCrm((c) => c.map((r) => (r.id === zid ? toCrmRecord(draft, zid) : r)));
-      setLibrary((L) =>
-        L.map((r) =>
-          r.id === zid ? { ...draft, id: zid, committed: true, when: 'Updated just now' } : r,
-        ),
-      );
+      setLibrary((L) => L.map((r) => (r.id === zid ? updated : r)));
       setAudit((a) => [auditEntry(zid, 'updated', AUDIT_TARGET), ...a]);
       notify(`${zid} updated in Zoho sandbox`, 'success');
+      persist('approve:update', updateTranscript(updated));
       return;
     }
     const zid = mintId(CRM_ID_PREFIX);
@@ -188,6 +204,7 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
       when: 'Committed just now',
       band: draft.lead_score.band,
     };
+    const draftId = activeId;
     setCrm((c) => [toCrmRecord(draft, zid), ...c]);
     setAudit((a) => [auditEntry(zid, 'written', AUDIT_TARGET), ...a]);
     setLibrary((L) => [committed, ...L.filter((r) => r.id !== activeId)]);
@@ -196,10 +213,13 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
     setStatus('idle');
     setStep('commit');
     notify(`${zid} written to Zoho sandbox`, 'success');
+    persist('approve:create', createTranscript(committed));
+    if (draftId && draftId !== zid) persist('approve:deleteDraft', deleteTranscript(draftId));
   }
 
   function reject() {
     const rid = mintId(REJECT_ID_PREFIX);
+    const rejectedId = activeId;
     setAudit((a) => [auditEntry(rid, 'rejected', AUDIT_TARGET_NONE), ...a]);
     setLibrary((L) => L.filter((r) => r.id !== activeId));
     setDraft(null);
@@ -207,6 +227,7 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
     setStatus('idle');
     setStep('capture');
     notify('Draft rejected · no CRM write · logged internally', 'reject');
+    if (rejectedId) persist('reject', deleteTranscript(rejectedId));
   }
 
   function goTo(target: Step) {
@@ -216,16 +237,17 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
   }
 
   function resetDemo() {
-    setTranscript(SAMPLE);
+    setTranscript(sample);
     setStatus('idle');
     setDraft(null);
     setError('');
     setCrm([]);
     setAudit([]);
-    setLibrary(SEED_LIBRARY);
+    setLibrary(initialLibrary);
     setActiveId(null);
     setStep('capture');
     notify('Demo reset', 'info');
+    persist('resetDemo', resetTranscripts());
   }
 
   function newCapture() {

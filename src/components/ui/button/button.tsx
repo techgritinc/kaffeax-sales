@@ -12,10 +12,6 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   miniTone?: 'ghost' | 'primary';
   iconStart?: IconName;
   iconEnd?: IconName;
-  /**
-   * Overrides the size-derived icon dimension. The prototype sizes button
-   * icons per instance (11/12/13/14px), so callers pass the exact value.
-   */
   iconSize?: number;
 }
 

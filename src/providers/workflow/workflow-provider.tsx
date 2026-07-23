@@ -4,38 +4,53 @@ import { type ReactNode, useState } from 'react';
 
 import { SCORE_BY_BAND } from '@/constants/bands';
 import { SIDEBAR_OPEN_MIN_WIDTH } from '@/constants/workflow';
+import {
+  createRubricSignal,
+  deleteRubricSignal,
+  updateRubricSignal,
+} from '@/features/workflow/actions/rubric.actions';
+import { persist } from '@/features/workflow/utils/persist';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { Rubric, RubricSignal, Weight } from '@/types/rubric.types';
 import type { AuditEntry, CrmRecord, Step, Toast, WorkflowStatus } from '@/types/workflow.types';
 
-import { DEFAULT_RUBRIC, SAMPLE, SEED_LIBRARY } from './seed';
 import { useWorkflowActions } from './use-workflow-actions';
 import { WorkflowContext, type WorkflowContextValue } from './workflow-context';
 
 export interface WorkflowProviderProps {
   children: ReactNode;
+  initialLibrary: MeetingRecord[];
+  initialRubric: Rubric;
+  initialSample: string;
 }
 
 /** Owns all shared workflow state and exposes it via {@link WorkflowContext}. */
-export function WorkflowProvider({ children }: WorkflowProviderProps) {
-  const [transcript, setTranscript] = useState<string>(SAMPLE);
-  const [rubric, setRubric] = useState<Rubric>(DEFAULT_RUBRIC);
+export function WorkflowProvider({
+  children,
+  initialLibrary,
+  initialRubric,
+  initialSample,
+}: WorkflowProviderProps) {
+  const [transcript, setTranscript] = useState<string>(initialSample);
+  const [rubric, setRubric] = useState<Rubric>(initialRubric);
   const [status, setStatus] = useState<WorkflowStatus>('idle');
   const [draft, setDraft] = useState<MeetingRecord | null>(null);
   const [error, setError] = useState<string>('');
   const [crm, setCrm] = useState<CrmRecord[]>(() =>
-    SEED_LIBRARY.filter((r) => r.committed).map((r) => ({
-      id: r.id,
-      contact: r.contact,
-      band: r.band,
-      rationale: r.lead_score.rationale,
-      recap: r.recap_email,
-      nextSteps: r.summary.next_steps,
-      at: new Date(),
-    })),
+    initialLibrary
+      .filter((r) => r.committed)
+      .map((r) => ({
+        id: r.id,
+        contact: r.contact,
+        band: r.band,
+        rationale: r.lead_score.rationale,
+        recap: r.recap_email,
+        nextSteps: r.summary.next_steps,
+        at: new Date(),
+      })),
   );
   const [audit, setAudit] = useState<AuditEntry[]>([]);
-  const [library, setLibrary] = useState<MeetingRecord[]>(() => SEED_LIBRARY);
+  const [library, setLibrary] = useState<MeetingRecord[]>(() => initialLibrary);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [step, setStep] = useState<Step>('capture');
@@ -46,22 +61,28 @@ export function WorkflowProvider({ children }: WorkflowProviderProps) {
   const [rubricOpen, setRubricOpen] = useState<boolean>(false);
   const [chatOpen, setChatOpen] = useState<boolean>(true);
 
-  // --- Rubric mutation (live re-scoring on the next run) ---
-  const addSignal = (label: string, weight: Weight) =>
-    setRubric((r) => ({
-      ...r,
-      signals: [
-        ...r.signals,
-        { id: `custom_${Date.now()}`, label, weight, source: 'proposed', hints: [] },
-      ],
-    }));
-  const updateSignal = (id: string, patch: Partial<RubricSignal>) =>
+  const addSignal = (label: string, weight: Weight) => {
+    const signal: RubricSignal = {
+      id: `custom_${Date.now()}`,
+      label,
+      weight,
+      source: 'proposed',
+      hints: [],
+    };
+    setRubric((r) => ({ ...r, signals: [...r.signals, signal] }));
+    persist('addSignal', createRubricSignal(signal));
+  };
+  const updateSignal = (id: string, patch: Partial<RubricSignal>) => {
     setRubric((r) => ({
       ...r,
       signals: r.signals.map((s) => (s.id === id ? { ...s, ...patch } : s)),
     }));
-  const removeSignal = (id: string) =>
+    persist('updateSignal', updateRubricSignal(id, patch));
+  };
+  const removeSignal = (id: string) => {
     setRubric((r) => ({ ...r, signals: r.signals.filter((s) => s.id !== id) }));
+    persist('removeSignal', deleteRubricSignal(id));
+  };
 
   // --- Derived selectors (recomputed each render) ---
   const activeRecord = library.find((r) => r.id === activeId) ?? null;
@@ -77,6 +98,8 @@ export function WorkflowProvider({ children }: WorkflowProviderProps) {
     draft,
     activeId,
     isCommitted,
+    sample: initialSample,
+    initialLibrary,
     setTranscript,
     setStatus,
     setDraft,

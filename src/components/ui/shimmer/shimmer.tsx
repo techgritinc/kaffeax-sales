@@ -4,10 +4,6 @@ export interface ShimmerProps {
   className?: string;
 }
 
-/**
- * Loading shimmer bar — `.kx-shimmer` (prototype 2175–2184). Width is supplied
- * through `className` (e.g. `w-[85%]`).
- */
 export function Shimmer({ className }: ShimmerProps) {
   return (
     <div

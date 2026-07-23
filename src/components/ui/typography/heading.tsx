@@ -10,10 +10,6 @@ export interface HeadingProps {
   className?: string;
 }
 
-/**
- * Display headings — `.kx-h1` (prototype 499–505, `sm` → 28px), `.kx-h2`
- * (1469–1473), and the mustard label treatment `.kx-h2-sm` (1476–1483).
- */
 export function Heading({
   level,
   sm = false,

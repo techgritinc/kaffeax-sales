@@ -8,10 +8,6 @@ export interface EyebrowProps {
   className?: string;
 }
 
-/**
- * Mustard uppercase eyebrow label — `.kx-eyebrow` (prototype 492–498) with the
- * tighter-margin `.kx-eyebrow-inline` variant (1462–1468).
- */
 export function Eyebrow({ inline = false, children, className }: EyebrowProps) {
   return (
     <div

@@ -1,0 +1,60 @@
+import type { RubricSignalFields } from '@/types/rubric-signal.types';
+
+export const SEED_RUBRIC_SIGNALS: RubricSignalFields[] = [
+  {
+    signalId: 'distribution_pipeline_challenge',
+    label: 'Challenge distributing / building a pipeline of buyers',
+    weight: 'hot',
+    source: 'client',
+    hints: ['no channel', 'distribution', 'in front of buyers', "doesn't scale", 'get it in front'],
+    isActive: true,
+  },
+  {
+    signalId: 'listing_frustration',
+    label: 'Frustration listing their coffee for lack of a channel',
+    weight: 'hot',
+    source: 'client',
+    hints: ['list our lots', 'list our coffee', 'just list', 'have buyers find us'],
+    isActive: true,
+  },
+  {
+    signalId: 'price_transparency_pain',
+    label: 'Price-transparency pain',
+    weight: 'hot',
+    source: 'client',
+    hints: ['no idea what other', 'charge wholesale', 'no visibility', 'pricing', 'leaving money'],
+    isActive: true,
+  },
+  {
+    signalId: 'logistics_issue',
+    label: 'Logistics / fulfillment issues',
+    weight: 'hot',
+    source: 'client',
+    hints: ['shipping', 'warehouse', 'fulfillment', 'logistics'],
+    isActive: true,
+  },
+  {
+    signalId: 'budget_confirmed',
+    label: 'Budget or willingness to spend mentioned',
+    weight: 'warm',
+    source: 'proposed',
+    hints: ['budget', 'set aside', 'willing to spend', "we're serious"],
+    isActive: true,
+  },
+  {
+    signalId: 'timeline_named',
+    label: 'Specific evaluation timeline mentioned',
+    weight: 'warm',
+    source: 'proposed',
+    hints: ['six to eight weeks', 'next few months', 'before the fall', 'weeks'],
+    isActive: true,
+  },
+  {
+    signalId: 'just_browsing',
+    label: "Explicit 'just looking' / no near-term need",
+    weight: 'cold',
+    source: 'proposed',
+    hints: ['just looking', 'just exploring', 'no near-term', 'not right now', 'maybe later'],
+    isActive: true,
+  },
+];

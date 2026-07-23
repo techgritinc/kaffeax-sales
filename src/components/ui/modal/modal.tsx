@@ -12,10 +12,6 @@ export interface ModalProps {
   labelledBy?: string;
 }
 
-/**
- * Generic centered overlay: blurred midnight backdrop, click-outside and
- * Escape both close. Panel styling (size/padding) comes from the caller.
- */
 export function Modal({ open, onClose, children, className, labelledBy }: ModalProps) {
   useEffect(() => {
     if (!open) return;

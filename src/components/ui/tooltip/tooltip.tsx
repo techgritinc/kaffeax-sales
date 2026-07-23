@@ -8,10 +8,6 @@ export interface TooltipProps {
   className?: string;
 }
 
-/**
- * Hover-evidence popover — `.kx-heard-evidence` (prototype 1995–2026). CSS-only
- * (group-hover); positioned above the trigger with a downward arrow.
- */
 export function Tooltip({ content, children, className }: TooltipProps) {
   return (
     <span className={cn('group relative inline-flex', className)}>
