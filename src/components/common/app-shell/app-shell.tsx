@@ -43,7 +43,7 @@ export function AppShell() {
   };
 
   return (
-    <div className="h-full">
+    <div className="flex h-screen flex-col overflow-hidden">
       <AppHeader />
       <div className={cn('grid h-[calc(100vh-56px)]', shellCols)}>
         {wf.sidebarOpen && (

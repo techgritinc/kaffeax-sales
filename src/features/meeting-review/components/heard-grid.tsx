@@ -26,11 +26,11 @@ export function HeardGrid({ signals, band, rationale }: HeardGridProps) {
 
   return (
     <section className="mt-8">
-      <Heading level={2} smallLabel>
+      <Heading level={2} smallLabel className="ml-[3px]">
         What we heard
       </Heading>
       {rationale && (
-        <div className="text-midnight mt-0.5 mb-3 font-sans text-[13px] leading-[1.55]">
+        <div className="text-midnight mt-[2px] mb-3 font-sans text-[13px] leading-[1.55]">
           {rationale}
         </div>
       )}

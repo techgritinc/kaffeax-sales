@@ -16,7 +16,7 @@ const EMPTY = 'p-[14px_2px] font-sans text-[13px] text-muted italic';
 export function CoveredDecided({ topics, decisions }: CoveredDecidedProps) {
   return (
     <section className="mt-8">
-      <div className="max-bp900:grid-cols-1 grid grid-cols-2 gap-5">
+      <div className="max-bp900:grid-cols-1 mt-[2px] grid grid-cols-2 gap-5">
         <div className="flex min-w-0 flex-col">
           <Heading level={2} smallLabel className="ml-[3px]">
             What was covered

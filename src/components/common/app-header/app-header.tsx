@@ -28,7 +28,7 @@ export function AppHeader() {
           {APP_LABEL}
         </span>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="max-bp560:gap-2 flex shrink-0 items-center gap-3">
         <div className="max-bp560:hidden min-w-0 text-right">
           <div className="text-midnight max-bp900:max-w-[140px] max-w-[180px] truncate text-[13px] leading-[1.2] font-bold">
             {USER_NAME}

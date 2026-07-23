@@ -39,11 +39,11 @@ export function ReviewHero({
         </div>
         <h1 className="font-display text-midnight max-bp900:text-[22px] max-bp640:text-[20px] max-bp400:text-[18px] text-[24px] leading-[1.2] font-black tracking-[-0.02em] break-words">
           {title}
-          <span className="ml-[12px] inline-block align-[0.14em] whitespace-nowrap">
+          <span className="max-bp900:ml-[10px] max-bp400:ml-[8px] ml-[12px] inline-block align-[0.14em] whitespace-nowrap">
             <Badge band={band} className="align-baseline" />
             <span
               className={cn(
-                'font-display ml-[10px] inline-flex items-baseline align-baseline leading-none font-bold tracking-[-0.02em]',
+                'font-display max-bp900:ml-[8px] max-bp400:ml-[6px] ml-[10px] inline-flex items-baseline align-baseline leading-none font-bold tracking-[-0.02em]',
                 SCORE_COLOR[band],
               )}
               title="Lead score against the rubric"

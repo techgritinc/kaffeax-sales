@@ -29,11 +29,14 @@ export function CaptureScreen({ onOpenRubric, className, ...transcript }: Captur
           onClick={onOpenRubric}
           title="Open scoring rubric"
           aria-label="Open scoring rubric"
-          className="bg-midnight shadow-rubric-fab hover:shadow-rubric-fab-hover mt-[4px] inline-flex shrink-0 items-center gap-2 rounded-full px-[16px] py-[10px] font-sans text-[11.5px] font-bold tracking-[0.06em] whitespace-nowrap text-white uppercase transition hover:-translate-y-px"
+          className="bg-midnight shadow-rubric-fab hover:shadow-rubric-fab-hover max-bp720:gap-[6px] max-bp720:px-[12px] max-bp720:py-[9px] max-bp720:tracking-[0.04em] mt-[4px] inline-flex shrink-0 items-center gap-2 rounded-full px-[16px] py-[10px] font-sans text-[11.5px] font-bold tracking-[0.06em] whitespace-nowrap text-white uppercase transition hover:-translate-y-px"
         >
           <Icon name="SlidersHorizontal" size={14} />
           <span className="max-bp720:hidden">Scoring rubric</span>
-          <span className="bg-green h-2 w-2 rounded-full" aria-hidden="true" />
+          <span
+            className="bg-green h-2 w-2 rounded-full shadow-[0_0_8px_var(--green)]"
+            aria-hidden="true"
+          />
         </button>
       </div>
 

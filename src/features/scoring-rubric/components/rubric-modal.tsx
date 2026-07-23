@@ -112,12 +112,12 @@ export function RubricModal({
         </aside>
 
         <div className="flex min-h-0 flex-col overflow-y-auto p-[20px_24px_22px]">
-          <div className="mb-2.5 flex items-center justify-between gap-3">
+          <div className="mb-[10px] flex items-center justify-between gap-3">
             <div>
-              <span className="text-midnight text-[10px] font-extrabold tracking-[0.12em] uppercase">
+              <span className="text-midnight font-sans text-[10px] font-extrabold tracking-[0.12em] uppercase">
                 Signals
               </span>
-              <span className="text-muted text-[10px] font-semibold">
+              <span className="text-muted font-sans text-[10px] font-semibold">
                 {' · '}
                 {rubric.signals.length} tracked
               </span>
@@ -126,13 +126,13 @@ export function RubricModal({
               <button
                 type="button"
                 onClick={() => setAddingSignal(true)}
-                className="rounded-btn-sm bg-green shadow-add-signal hover:shadow-add-signal-hover inline-flex items-center gap-1.5 px-3.5 py-[7px] text-[11.5px] font-bold tracking-[0.04em] text-white uppercase hover:brightness-[0.94]"
+                className="rounded-btn-sm bg-green shadow-add-signal hover:shadow-add-signal-hover inline-flex shrink-0 items-center gap-1.5 px-3.5 py-[7px] font-sans text-[11.5px] font-bold tracking-[0.04em] text-white uppercase transition hover:brightness-[0.94]"
               >
                 <Icon name="Plus" size={12} /> Add signal
               </button>
             )}
           </div>
-          <div className="max-bp900:grid-cols-1 grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-2">
+          <div className="max-bp900:grid-cols-1 grid [grid-auto-flow:row_dense] grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-2">
             {rubric.signals.map((signal) => (
               <SignalCard
                 key={signal.id}

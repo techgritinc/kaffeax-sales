@@ -12,14 +12,21 @@ export interface SignalComposerProps {
   onCancel: () => void;
 }
 
+const LEFT_BORDER_BY_WEIGHT: Record<Weight, string> = {
+  hot: 'border-l-green-deep',
+  warm: 'border-l-mustard',
+  cold: 'border-l-dark-teal',
+};
+
 const INPUT_CLASS =
-  'w-full border-none bg-transparent px-0 pt-0.5 pb-1 font-sans text-[12.5px] leading-[1.4] font-semibold text-midnight outline-none placeholder:text-muted placeholder:font-medium';
+  'w-full border-none bg-transparent px-0 pt-0.5 pb-1 font-sans text-[12.5px] leading-[1.4] font-semibold text-midnight outline-none placeholder:text-muted placeholder:font-medium focus:shadow-[inset_0_-1px_0_var(--green)]';
 
 const MINI_BASE =
   'rounded-btn-sm px-2.5 py-[5px] text-[10.5px] font-bold uppercase tracking-[0.06em] transition';
 const MINI_GHOST =
   'text-muted border border-transparent hover:border-border hover:bg-white hover:text-midnight';
-const MINI_PRIMARY = 'border-none bg-green text-white disabled:opacity-50';
+const MINI_PRIMARY =
+  'border-none bg-green text-white disabled:opacity-50 hover:brightness-[0.92] disabled:hover:filter-none';
 
 /** Inline card for composing a brand-new rubric signal. */
 export function SignalComposer({ onAdd, onCancel }: SignalComposerProps) {
@@ -35,7 +42,12 @@ export function SignalComposer({ onAdd, onCancel }: SignalComposerProps) {
   };
 
   return (
-    <div className="border-green border-l-green rounded-btn bg-compose-bg shadow-compose border border-l-[3px] p-[10px_12px_8px]">
+    <div
+      className={cn(
+        'border-green rounded-btn bg-compose-bg shadow-compose border border-l-[3px] p-[10px_12px_8px]',
+        LEFT_BORDER_BY_WEIGHT[weight],
+      )}
+    >
       <input
         autoFocus
         value={label}

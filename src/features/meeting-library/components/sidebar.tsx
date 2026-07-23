@@ -72,8 +72,8 @@ export function Sidebar({
 
       {groups.map((group) => (
         <div key={group.label} className="mb-1.5">
-          <div className="flex items-center justify-between px-[18px] pt-3 pb-1">
-            <span className="text-sidebar-muted px-[18px] pt-[10px] pb-1 text-[10px] font-extrabold tracking-[0.08em] uppercase">
+          <div className="flex items-center justify-between px-[18px] pt-[10px] pb-1">
+            <span className="text-sidebar-muted font-sans text-[10px] font-extrabold tracking-[0.08em] uppercase">
               {group.label}
             </span>
             <span className="text-sidebar-group-count rounded-[10px] bg-white/[0.06] px-1.5 py-px text-[10px] font-extrabold tracking-[0.06em]">

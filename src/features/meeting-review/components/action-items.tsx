@@ -51,10 +51,12 @@ export function ActionItems({ nextSteps, commitments }: ActionItemsProps) {
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <span className="text-midnight block min-w-0 text-[15px] leading-[1.6]">
-                  {it.owner && <b className="text-midnight mr-0.5 font-bold">{it.owner}:</b>}{' '}
-                  {it.text}
+                  <span className="text-midnight">
+                    {it.owner && <b className="text-midnight mr-[2px] font-bold">{it.owner}:</b>}{' '}
+                    {it.text}
+                  </span>
                   {it.due && (
-                    <Tag tone="due" className="ml-2 align-[1px]">
+                    <Tag tone="due" className="ml-2 inline-flex align-[1px]">
                       {it.due}
                     </Tag>
                   )}

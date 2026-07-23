@@ -17,11 +17,11 @@ const MetaDot = () => (
 export function MetaStrip({ attendees, email, onEmailChange }: MetaStripProps) {
   const names = attendees.map((a) => a.name).join(', ');
   return (
-    <div className="text-muted mt-2 mb-3.5 flex flex-wrap items-center gap-x-3 gap-y-2.5 font-sans text-[13px]">
+    <div className="text-muted mt-2 mb-[14px] flex flex-wrap items-center gap-x-[14px] gap-y-[6px] font-sans text-[13px]">
       {attendees.length > 0 && (
         <>
           <span className="inline-flex items-center gap-1.5 font-medium" title="Attendees">
-            <Icon name="Users" size={14} className="text-muted" />
+            <Icon name="Users" size={14} className="text-muted shrink-0" />
             <span>{names}</span>
           </span>
           <MetaDot />
@@ -29,13 +29,10 @@ export function MetaStrip({ attendees, email, onEmailChange }: MetaStripProps) {
       )}
       <span>{MEETING_DATE}</span>
       <MetaDot />
-      <span
-        className="inline-flex items-center gap-[5px]"
-        title="Prospect email — required for CRM entry"
-      >
-        <Icon name="Mail" size={13} className="text-muted" />
+      <span className="inline-flex items-center" title="Prospect email — required for CRM entry">
+        <Icon name="Mail" size={13} className="text-muted shrink-0" />
         <span
-          className="text-rust mr-[1px] ml-[-1px] text-[13px] leading-none font-bold"
+          className="text-rust mr-0.5 ml-1 text-[13px] leading-none font-bold select-none"
           aria-hidden="true"
         >
           *
