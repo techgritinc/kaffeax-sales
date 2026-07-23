@@ -26,11 +26,11 @@ export const NEW_SIGNAL_DEFAULT_WEIGHT = 'warm' as const;
 /** Viewport width (px) above which the sidebar defaults to open. */
 export const SIDEBAR_OPEN_MIN_WIDTH = 900;
 
-/** Header / identity strings (demo). */
-export const APP_LABEL = 'Meeting Summary to CRM';
-export const USER_NAME = 'Mohan Verma';
-export const USER_EMAIL = 'mohan.verma@kaffeax.com';
-export const USER_INITIALS = 'MR';
+/** Header / identity strings (configurable via env vars with fallbacks). */
+export const APP_LABEL = process.env.NEXT_PUBLIC_APP_LABEL || 'Meeting Summary to CRM';
+export const USER_NAME = process.env.NEXT_PUBLIC_USER_NAME || 'Mohan Verma';
+export const USER_EMAIL = process.env.NEXT_PUBLIC_USER_EMAIL || 'mohan.verma@kaffeax.com';
+export const USER_INITIALS = process.env.NEXT_PUBLIC_USER_INITIALS || 'MR';
 
 /** Hardcoded meeting date reproduced verbatim from the prototype. */
 export const MEETING_DATE = 'June 24, 2026';

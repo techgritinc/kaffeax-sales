@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { Icon } from '@/components/ui/icon/icon';
 import { Modal } from '@/components/ui/modal/modal';
+import { RUBRIC_BANDS_CONFIG } from '@/constants/bands';
 import { cn } from '@/lib/utils/cn';
 import type { Rubric, RubricSignal, Weight } from '@/types/rubric.types';
 
@@ -18,30 +19,6 @@ export interface RubricModalProps {
   onUpdateSignal: (id: string, patch: Partial<RubricSignal>) => void;
   onRemoveSignal: (id: string) => void;
 }
-
-const BANDS: { weight: Weight; label: string; bar: string; text: string; rule: string }[] = [
-  {
-    weight: 'hot',
-    label: 'Hot',
-    bar: 'bg-green-deep',
-    text: 'text-green-deep',
-    rule: '≥1 HOT signal AND a next step agreed',
-  },
-  {
-    weight: 'warm',
-    label: 'Warm',
-    bar: 'bg-mustard',
-    text: 'text-mustard',
-    rule: '≥1 WARM signal with no cold-overriding signal',
-  },
-  {
-    weight: 'cold',
-    label: 'Cold',
-    bar: 'bg-dark-teal',
-    text: 'text-dark-teal',
-    rule: 'Nothing else fires',
-  },
-];
 
 const PANEL_CLASS =
   'relative flex max-h-[calc(100vh-64px)] w-full max-w-[1080px] flex-col overflow-hidden rounded-card bg-white shadow-overlay';
@@ -83,7 +60,7 @@ export function RubricModal({
             Banding rule
           </div>
           <div className="flex flex-col gap-2.5">
-            {BANDS.map((band) => (
+            {RUBRIC_BANDS_CONFIG.map((band) => (
               <div
                 key={band.weight}
                 className="border-border rounded-btn relative overflow-hidden border bg-white p-[12px_14px]"

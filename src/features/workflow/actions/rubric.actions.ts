@@ -5,8 +5,7 @@ import { rubricSignalRepository } from '@/repositories/rubric-signal.repository'
 import type { RubricSignalFields } from '@/types/rubric-signal.types';
 import type { Rubric, RubricSignal } from '@/types/rubric.types';
 
-const LOAD_ERROR = 'Unable to load the scoring rubric. Please try again.';
-const SAVE_ERROR = 'Unable to save the rubric change. Please try again.';
+import { RUBRIC_LOAD_ERROR, RUBRIC_SAVE_ERROR } from '../constants/action.constants';
 
 /** Log with context and surface a user-safe error (never leak internals) — constitution §XIV. */
 function logAndThrow(op: string, error: unknown, message: string): never {
@@ -22,7 +21,7 @@ export async function getRubric(): Promise<Rubric> {
   try {
     return await readRubric();
   } catch (error) {
-    logAndThrow('getRubric', error, LOAD_ERROR);
+    logAndThrow('getRubric', error, RUBRIC_LOAD_ERROR);
   }
 }
 
@@ -31,7 +30,7 @@ export async function createRubricSignal(signal: RubricSignal): Promise<Rubric> 
     await rubricSignalRepository.create(toRubricSignalFields(signal));
     return await readRubric();
   } catch (error) {
-    logAndThrow('createRubricSignal', error, SAVE_ERROR);
+    logAndThrow('createRubricSignal', error, RUBRIC_SAVE_ERROR);
   }
 }
 
@@ -48,7 +47,7 @@ export async function updateRubricSignal(
     await rubricSignalRepository.update(id, fields);
     return await readRubric();
   } catch (error) {
-    logAndThrow('updateRubricSignal', error, SAVE_ERROR);
+    logAndThrow('updateRubricSignal', error, RUBRIC_SAVE_ERROR);
   }
 }
 
@@ -57,7 +56,7 @@ export async function deleteRubricSignal(id: string): Promise<Rubric> {
     await rubricSignalRepository.delete(id);
     return await readRubric();
   } catch (error) {
-    logAndThrow('deleteRubricSignal', error, SAVE_ERROR);
+    logAndThrow('deleteRubricSignal', error, RUBRIC_SAVE_ERROR);
   }
 }
 
@@ -66,6 +65,6 @@ export async function resetRubric(): Promise<Rubric> {
     await rubricSignalRepository.reset();
     return await readRubric();
   } catch (error) {
-    logAndThrow('resetRubric', error, SAVE_ERROR);
+    logAndThrow('resetRubric', error, RUBRIC_SAVE_ERROR);
   }
 }

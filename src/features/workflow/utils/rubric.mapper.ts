@@ -1,4 +1,4 @@
-import { RUBRIC_BANDING_RULE } from '@/constants/rubric';
+import { RUBRIC_BANDING_RULE } from '@/constants/bands';
 import type { RubricSignalFields } from '@/types/rubric-signal.types';
 import type { Rubric, RubricSignal } from '@/types/rubric.types';
 
