@@ -1,5 +1,5 @@
-import { Icon } from '@/components/ui/icon';
-import { InlineInput } from '@/components/ui/input';
+import { Icon } from '@/components/ui/icon/icon';
+import { InlineInput } from '@/components/ui/input/inline-input';
 import { MEETING_DATE } from '@/constants/workflow';
 import type { Attendee } from '@/types/meeting.types';
 

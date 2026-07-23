@@ -1,4 +1,4 @@
-import { Icon, type IconName } from '@/components/ui/icon';
+import { Icon, type IconName } from '@/components/ui/icon/icon';
 import { cn } from '@/lib/utils/cn';
 import type { ToastTone } from '@/types/workflow.types';
 

@@ -1,4 +1,4 @@
-import { Icon } from '@/components/ui/icon';
+import { Icon } from '@/components/ui/icon/icon';
 import { cn } from '@/lib/utils/cn';
 import type { Confidence } from '@/types/meeting.types';
 

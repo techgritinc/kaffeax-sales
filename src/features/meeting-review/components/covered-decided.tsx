@@ -1,4 +1,4 @@
-import { Heading } from '@/components/ui/typography';
+import { Heading } from '@/components/ui/typography/heading';
 
 export interface CoveredDecidedProps {
   topics: string[];

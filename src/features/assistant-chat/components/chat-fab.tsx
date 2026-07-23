@@ -1,4 +1,4 @@
-import { Icon } from '@/components/ui/icon';
+import { Icon } from '@/components/ui/icon/icon';
 
 export interface ChatFabProps {
   onClick: () => void;

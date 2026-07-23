@@ -1,6 +1,6 @@
 import type { JSX } from 'react';
 
-import { StatusChip } from '@/components/ui/chip';
+import { StatusChip } from '@/components/ui/chip/status-chip';
 import { BAND_LABEL } from '@/constants/bands';
 import { cn } from '@/lib/utils/cn';
 import type { MeetingRecord } from '@/types/meeting.types';

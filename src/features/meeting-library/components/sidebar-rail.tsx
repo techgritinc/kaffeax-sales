@@ -1,6 +1,6 @@
 import type { JSX } from 'react';
 
-import { Icon } from '@/components/ui/icon';
+import { Icon } from '@/components/ui/icon/icon';
 
 export interface SidebarRailProps {
   onExpand: () => void;

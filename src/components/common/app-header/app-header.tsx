@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar } from '@/components/ui/avatar/avatar';
 import { APP_LABEL, USER_EMAIL, USER_INITIALS, USER_NAME } from '@/constants/workflow';
 
 /** Fixed 56px top bar: logo + app label on the left, user identity on the right. */

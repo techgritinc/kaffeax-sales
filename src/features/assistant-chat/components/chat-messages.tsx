@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar } from '@/components/ui/avatar/avatar';
 import { cn } from '@/lib/utils/cn';
 import type { ChatMessage } from '@/types/workflow.types';
 

@@ -1,8 +1,10 @@
 import { Fragment } from 'react';
 
-import { Icon, type IconName } from '@/components/ui/icon';
-import { Shimmer } from '@/components/ui/shimmer';
-import { AccentBar, Eyebrow, Heading } from '@/components/ui/typography';
+import { Icon, type IconName } from '@/components/ui/icon/icon';
+import { Shimmer } from '@/components/ui/shimmer/shimmer';
+import { AccentBar } from '@/components/ui/typography/accent-bar';
+import { Eyebrow } from '@/components/ui/typography/eyebrow';
+import { Heading } from '@/components/ui/typography/heading';
 import { cn } from '@/lib/utils/cn';
 
 export interface ProcessingModalProps {

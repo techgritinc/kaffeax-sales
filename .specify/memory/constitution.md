@@ -229,6 +229,30 @@ try {
 - Every PR to `main` or `dev` MUST pass the full `validate` pipeline (type-check → lint → build) before it can be merged. CI enforces this automatically.
 - Environment variables MUST be validated at startup before the server binds any port. The `env.mjs` import in `next.config.ts` enforces fail-fast behavior.
 
+### XVII. No Barrel Imports
+
+- **Barrel files are categorically prohibited.** A "barrel" is any `index.ts` (or `index.js`) that exists solely to re-export symbols from other files within the same directory. NEVER create or maintain barrel files anywhere in the codebase.
+- Consumers MUST import directly from the source file that declares the symbol. This applies to all code — components, features, integrations, utilities, repositories, schemas, and any other directory.
+- No exceptions: not for `src/integrations/<service>/index.ts`, not for feature modules, not for `src/components/ui/index.ts`, not for shared libraries. If a directory has multiple exports, consumers import each one directly.
+
+**Rationale**: Barrel files silently pull entire modules into the consumer's bundle, defeating tree-shaking. They also create non-obvious circular dependency risks and obscure the actual dependency graph, making refactoring harder and import audits unreliable.
+
+**Bad:**
+```ts
+// src/integrations/claude/index.ts — DO NOT CREATE
+export { TranscriptSummarizer } from './transcript-summarizer';
+export type { SummarizationResponse } from '@/types/claude.types';
+
+// server action
+import { TranscriptSummarizer } from '@/integrations/claude';
+```
+
+**Good:**
+```ts
+// server action — import directly from source files
+import { TranscriptSummarizer } from '@/integrations/claude/transcript-summarizer';
+import type { SummarizationResponse } from '@/types/claude.types';
+
 **Bad:**
 ```bash
 git push origin main          # direct push to protected branch

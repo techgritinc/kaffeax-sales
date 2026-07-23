@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 
-import { Icon } from '@/components/ui/icon';
-import { Modal } from '@/components/ui/modal';
+import { Icon } from '@/components/ui/icon/icon';
+import { Modal } from '@/components/ui/modal/modal';
 import { cn } from '@/lib/utils/cn';
 import type { Rubric, RubricSignal, Weight } from '@/types/rubric.types';
 

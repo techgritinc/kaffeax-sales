@@ -1,5 +1,7 @@
-import { Button } from '@/components/ui/button';
-import { AccentBar, Eyebrow, Heading } from '@/components/ui/typography';
+import { Button } from '@/components/ui/button/button';
+import { AccentBar } from '@/components/ui/typography/accent-bar';
+import { Eyebrow } from '@/components/ui/typography/eyebrow';
+import { Heading } from '@/components/ui/typography/heading';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { CrmRecord } from '@/types/workflow.types';
 

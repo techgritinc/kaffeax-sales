@@ -1,5 +1,5 @@
-import { Icon } from '@/components/ui/icon';
-import { WeightSegmentedControl } from '@/components/ui/segmented-control';
+import { Icon } from '@/components/ui/icon/icon';
+import { WeightSegmentedControl } from '@/components/ui/segmented-control/weight-segmented-control';
 import { cn } from '@/lib/utils/cn';
 import type { RubricSignal, Weight } from '@/types/rubric.types';
 

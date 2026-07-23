@@ -1,4 +1,4 @@
-import { Breadcrumb, type BreadcrumbItem } from '@/components/ui/breadcrumb';
+import { Breadcrumb, type BreadcrumbItem } from '@/components/ui/breadcrumb/breadcrumb';
 import type { Step } from '@/types/workflow.types';
 
 export interface StepperProps {

@@ -1,6 +1,6 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Icon } from '@/components/ui/icon';
+import { Badge } from '@/components/ui/badge/badge';
+import { Button } from '@/components/ui/button/button';
+import { Icon } from '@/components/ui/icon/icon';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { CrmRecord } from '@/types/workflow.types';
 

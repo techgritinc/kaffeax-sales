@@ -1,4 +1,4 @@
-import { AppShell } from '@/components/common/app-shell';
+import { AppShell } from '@/components/common/app-shell/app-shell';
 import { getRubric } from '@/features/workflow/actions/rubric.actions';
 import {
   getSampleTranscript,

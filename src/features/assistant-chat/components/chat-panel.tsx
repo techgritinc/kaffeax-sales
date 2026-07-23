@@ -2,8 +2,8 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import { Icon } from '@/components/ui/icon';
-import { AccentBar } from '@/components/ui/typography';
+import { Icon } from '@/components/ui/icon/icon';
+import { AccentBar } from '@/components/ui/typography/accent-bar';
 import type { ChatMessage } from '@/types/workflow.types';
 
 import { cannedResponse } from '../hooks/use-canned-response';

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { Icon, type IconName } from '@/components/ui/icon';
+import { Icon, type IconName } from '@/components/ui/icon/icon';
 import { cn } from '@/lib/utils/cn';
 
 export interface SectionTitleProps {

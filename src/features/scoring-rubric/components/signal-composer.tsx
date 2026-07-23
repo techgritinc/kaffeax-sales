@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { WeightSegmentedControl } from '@/components/ui/segmented-control';
+import { WeightSegmentedControl } from '@/components/ui/segmented-control/weight-segmented-control';
 import { NEW_SIGNAL_DEFAULT_WEIGHT } from '@/constants/workflow';
 import { cn } from '@/lib/utils/cn';
 import type { Weight } from '@/types/rubric.types';

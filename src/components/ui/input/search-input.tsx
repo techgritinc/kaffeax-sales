@@ -1,6 +1,6 @@
 import type { InputHTMLAttributes, JSX } from 'react';
 
-import { Icon } from '@/components/ui/icon';
+import { Icon } from '@/components/ui/icon/icon';
 import { cn } from '@/lib/utils/cn';
 
 export type SearchInputProps = InputHTMLAttributes<HTMLInputElement>;

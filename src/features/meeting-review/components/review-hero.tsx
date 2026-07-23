@@ -1,5 +1,5 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge/badge';
+import { Button } from '@/components/ui/button/button';
 import { cn } from '@/lib/utils/cn';
 import type { Band } from '@/types/rubric.types';
 

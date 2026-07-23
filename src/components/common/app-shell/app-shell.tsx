@@ -1,14 +1,17 @@
 'use client';
 
-import { AppHeader } from '@/components/common/app-header';
-import { Stepper } from '@/components/common/stepper';
-import { Toast } from '@/components/ui/toast';
-import { ChatFab, ChatPanel } from '@/features/assistant-chat/components';
-import { CommitScreen } from '@/features/crm-commit/components';
-import { CaptureScreen, ProcessingModal } from '@/features/meeting-capture/components';
-import { Sidebar, SidebarRail } from '@/features/meeting-library/components';
-import { ReviewScreen } from '@/features/meeting-review/components';
-import { RubricModal } from '@/features/scoring-rubric/components';
+import { AppHeader } from '@/components/common/app-header/app-header';
+import { Stepper } from '@/components/common/stepper/stepper';
+import { Toast } from '@/components/ui/toast/toast';
+import { ChatFab } from '@/features/assistant-chat/components/chat-fab';
+import { ChatPanel } from '@/features/assistant-chat/components/chat-panel';
+import { CommitScreen } from '@/features/crm-commit/components/commit-screen';
+import { CaptureScreen } from '@/features/meeting-capture/components/capture-screen';
+import { ProcessingModal } from '@/features/meeting-capture/components/processing-modal';
+import { Sidebar } from '@/features/meeting-library/components/sidebar';
+import { SidebarRail } from '@/features/meeting-library/components/sidebar-rail';
+import { ReviewScreen } from '@/features/meeting-review/components/review-screen';
+import { RubricModal } from '@/features/scoring-rubric/components/rubric-modal';
 import { cn } from '@/lib/utils/cn';
 import { useWorkflow } from '@/providers/workflow/workflow-context';
 

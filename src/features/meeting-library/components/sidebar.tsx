@@ -2,8 +2,8 @@
 
 import type { JSX } from 'react';
 
-import { Icon } from '@/components/ui/icon';
-import { SearchInput } from '@/components/ui/input';
+import { Icon } from '@/components/ui/icon/icon';
+import { SearchInput } from '@/components/ui/input/search-input';
 import type { MeetingRecord } from '@/types/meeting.types';
 
 import { useLibrarySearch } from '../hooks/use-library-search';

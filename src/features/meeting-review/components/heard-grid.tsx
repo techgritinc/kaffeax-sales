@@ -1,5 +1,5 @@
-import { Tooltip } from '@/components/ui/tooltip';
-import { Heading } from '@/components/ui/typography';
+import { Tooltip } from '@/components/ui/tooltip/tooltip';
+import { Heading } from '@/components/ui/typography/heading';
 import { cn } from '@/lib/utils/cn';
 import type { Band } from '@/types/rubric.types';
 import type { DetectedSignal } from '@/types/scoring.types';

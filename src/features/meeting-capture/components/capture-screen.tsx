@@ -1,5 +1,6 @@
-import { Icon } from '@/components/ui/icon';
-import { AccentBar, Eyebrow } from '@/components/ui/typography';
+import { Icon } from '@/components/ui/icon/icon';
+import { AccentBar } from '@/components/ui/typography/accent-bar';
+import { Eyebrow } from '@/components/ui/typography/eyebrow';
 import { cn } from '@/lib/utils/cn';
 
 import { TranscriptCard, type TranscriptCardProps } from './transcript-card';

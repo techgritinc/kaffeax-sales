@@ -2,11 +2,11 @@
 
 import { type ChangeEvent, type DragEvent, useRef } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Icon } from '@/components/ui/icon';
-import { Spinner } from '@/components/ui/spinner';
-import { Eyebrow } from '@/components/ui/typography';
+import { Button } from '@/components/ui/button/button';
+import { Card } from '@/components/ui/card/card';
+import { Icon } from '@/components/ui/icon/icon';
+import { Spinner } from '@/components/ui/spinner/spinner';
+import { Eyebrow } from '@/components/ui/typography/eyebrow';
 import { TRANSCRIPT_FILE_ACCEPT } from '@/constants/workflow';
 import { cn } from '@/lib/utils/cn';
 import type { WorkflowStatus } from '@/types/workflow.types';

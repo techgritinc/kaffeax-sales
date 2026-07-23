@@ -1,5 +1,5 @@
-import { Tag } from '@/components/ui/chip';
-import { Heading } from '@/components/ui/typography';
+import { Tag } from '@/components/ui/chip/tag';
+import { Heading } from '@/components/ui/typography/heading';
 import type { Commitment, NextStep, Side } from '@/types/meeting.types';
 
 export interface ActionItemsProps {
