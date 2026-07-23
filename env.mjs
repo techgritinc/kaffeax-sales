@@ -13,6 +13,9 @@ export const env = createEnv({
     CLAUDE_API_KEY: z.string().min(1),
     CLAUDE_DEFAULT_MODEL: z.string().min(1).optional().default('claude-sonnet-4-6'),
     CLAUDE_MAX_TOKENS: z.coerce.number().int().positive().optional().default(16384),
+    OPENROUTER_API_KEY: z.string().min(1),
+    OPENROUTER_DEFAULT_MODEL: z.string().min(1).optional().default('google/gemma-4-31b-it:free'),
+    OPENROUTER_MAX_TOKENS: z.coerce.number().int().positive().optional().default(16384),
   },
 
   runtimeEnv: {
@@ -23,6 +26,9 @@ export const env = createEnv({
     CLAUDE_API_KEY: process.env.CLAUDE_API_KEY,
     CLAUDE_DEFAULT_MODEL: process.env.CLAUDE_DEFAULT_MODEL,
     CLAUDE_MAX_TOKENS: process.env.CLAUDE_MAX_TOKENS,
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+    OPENROUTER_DEFAULT_MODEL: process.env.OPENROUTER_DEFAULT_MODEL,
+    OPENROUTER_MAX_TOKENS: process.env.OPENROUTER_MAX_TOKENS,
   },
 
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
