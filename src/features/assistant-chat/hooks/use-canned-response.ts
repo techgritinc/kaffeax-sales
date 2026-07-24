@@ -1,7 +1,3 @@
-/**
- * Mock canned-response engine — verbatim keyword map from the prototype
- * ChatPanel (lines 2653–2661). Pure function, no client directive needed.
- */
 export function cannedResponse(question: string): string {
   const lc = question.toLowerCase();
   if (lc.includes('pric'))

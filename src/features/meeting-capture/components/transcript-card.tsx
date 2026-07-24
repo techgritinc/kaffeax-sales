@@ -105,8 +105,6 @@ export function TranscriptCard({
             variant="ghost"
             disabled={!transcript}
             onClick={onClear}
-            // `!` (Tailwind important) makes these win over the ghost-base geometry
-            // deterministically — `cn` is a plain joiner and does not merge conflicts.
             className="px-[18px]! py-[10px]! text-[12px] font-semibold! tracking-[0.04em] uppercase"
           >
             Clear

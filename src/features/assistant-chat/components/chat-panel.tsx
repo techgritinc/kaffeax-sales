@@ -13,10 +13,6 @@ export interface ChatPanelProps {
   onClose: () => void;
 }
 
-/**
- * Assistant chat panel with a mock canned-response engine
- * (ChatPanel, prototype lines 2638–2755). Manages its own messages.
- */
 export function ChatPanel({ context, onClose }: ChatPanelProps) {
   const idRef = useRef(1);
   const [messages, setMessages] = useState<ChatMessage[]>(() => [

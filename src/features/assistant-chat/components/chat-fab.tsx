@@ -4,10 +4,6 @@ export interface ChatFabProps {
   onClick: () => void;
 }
 
-/**
- * Floating "open chat" button, visible when the panel is collapsed
- * (`.kx-chat-fab` 339–384). Controlled — parent owns open/close.
- */
 export function ChatFab({ onClick }: ChatFabProps) {
   return (
     <button
