@@ -31,32 +31,34 @@ export function ActionItems({ nextSteps, commitments }: ActionItemsProps) {
   ];
 
   return (
-    <section className="mt-8">
-      <Heading level={2} smallLabel className="ml-[3px]">
-        Action items
-      </Heading>
+    <section className="mt-[32px]">
+      <div className="mb-[2px] ml-[3px] flex items-start justify-between">
+        <Heading level={2} smallLabel className="mb-[8px]">
+          Action items
+        </Heading>
+      </div>
       {rows.length === 0 ? (
         <div className="text-muted p-[14px_2px] font-sans text-[13px] italic">
           No action items captured.
         </div>
       ) : (
-        <div className="rounded-card-sm border-border shadow-bcard border bg-white p-[6px_18px]">
+        <div className="border-border rounded-[10px] border bg-white p-[6px_18px] shadow-[0_1px_2px_rgba(15,35,69,0.06)]">
           <ul>
             {rows.map((it, i) => (
               <li
                 key={i}
-                className="border-border flex items-start gap-3 border-b py-3 last:border-b-0"
+                className="border-border flex items-start gap-[12px] border-b py-[12px] last:border-b-0"
               >
-                <span className="bg-mustard/[0.22] text-toast-text-dark mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold">
+                <span className="mt-px flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full bg-[rgba(214,168,54,0.22)] font-mono text-[10px] font-bold text-[#6C4A00]">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <span className="text-midnight block min-w-0 text-[15px] leading-[1.6]">
+                <span className="text-midnight block min-w-0 font-sans text-[15px] leading-[1.6]">
                   <span className="text-midnight">
                     {it.owner && <b className="text-midnight mr-[2px] font-bold">{it.owner}:</b>}{' '}
                     {it.text}
                   </span>
                   {it.due && (
-                    <Tag tone="due" className="ml-2 inline-flex align-[1px]">
+                    <Tag tone="due" className="ml-[8px] inline-flex align-[1px]">
                       {it.due}
                     </Tag>
                   )}

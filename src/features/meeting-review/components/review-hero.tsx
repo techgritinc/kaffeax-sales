@@ -48,10 +48,10 @@ export function ReviewHero({
               )}
               title="Lead score against the rubric"
             >
-              <b className="max-bp900:text-[20px] max-bp640:text-[18px] max-bp400:text-[16px] text-[22px] font-bold">
+              <b className="font-display max-bp900:text-[20px] max-bp640:text-[18px] max-bp400:text-[16px] text-[22px] leading-none font-bold tracking-[-0.02em]">
                 {score}
               </b>
-              <span className="text-muted max-bp640:text-[12px] max-bp400:text-[11px] ml-px text-[13px] font-medium">
+              <span className="font-display text-muted max-bp640:text-[12px] max-bp400:text-[11px] ml-[1px] text-[13px] leading-none font-medium tracking-[-0.02em]">
                 /100
               </span>
             </span>

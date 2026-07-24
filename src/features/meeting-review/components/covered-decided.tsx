@@ -5,22 +5,25 @@ export interface CoveredDecidedProps {
   decisions: string[];
 }
 
-const CARD = 'flex-1 rounded-card-sm border border-border bg-white p-[6px_18px] shadow-bcard';
+const CARD =
+  'flex-1 rounded-[10px] border border-border bg-white p-[6px_18px] shadow-[0_1px_2px_rgba(15,35,69,0.06)]';
 const ROW =
-  'flex items-start gap-3 border-b border-border py-3 text-[13.5px] leading-[1.55] text-ink-blue last:border-b-0';
+  'flex items-start gap-[12px] border-b border-border py-[12px] font-sans text-[13.5px] leading-[1.55] text-[#1B2E4E] last:border-b-0';
 const NUM =
-  'mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold';
+  'mt-px flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold';
 const EMPTY = 'p-[14px_2px] font-sans text-[13px] text-muted italic';
 
 /** Side-by-side "What was covered" (topics) and "What was decided" (decisions). */
 export function CoveredDecided({ topics, decisions }: CoveredDecidedProps) {
   return (
-    <section className="mt-8">
-      <div className="max-bp900:grid-cols-1 mt-[2px] grid grid-cols-2 gap-5">
+    <section className="mt-[32px]">
+      <div className="max-bp900:grid-cols-1 mt-[2px] grid grid-cols-2 gap-[20px]">
         <div className="flex min-w-0 flex-col">
-          <Heading level={2} smallLabel className="ml-[3px]">
-            What was covered
-          </Heading>
+          <div className="mb-[2px] ml-[3px] flex items-start justify-between">
+            <Heading level={2} smallLabel className="mb-[8px]">
+              What was covered
+            </Heading>
+          </div>
           {topics.length === 0 ? (
             <div className={EMPTY}>No topics captured.</div>
           ) : (
@@ -28,7 +31,7 @@ export function CoveredDecided({ topics, decisions }: CoveredDecidedProps) {
               <ul>
                 {topics.map((t, i) => (
                   <li key={i} className={ROW}>
-                    <span className={`${NUM} bg-green/[0.18] text-green-deep`}>
+                    <span className={`${NUM} text-green-deep bg-[rgba(65,187,147,0.18)]`}>
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     <span>{t}</span>
@@ -40,9 +43,11 @@ export function CoveredDecided({ topics, decisions }: CoveredDecidedProps) {
         </div>
 
         <div className="flex min-w-0 flex-col">
-          <Heading level={2} smallLabel className="ml-[3px]">
-            What was decided
-          </Heading>
+          <div className="mb-[2px] ml-[3px] flex items-start justify-between">
+            <Heading level={2} smallLabel className="mb-[8px]">
+              What was decided
+            </Heading>
+          </div>
           {decisions.length === 0 ? (
             <div className={EMPTY}>No decisions captured.</div>
           ) : (
@@ -50,7 +55,7 @@ export function CoveredDecided({ topics, decisions }: CoveredDecidedProps) {
               <ul>
                 {decisions.map((d, i) => (
                   <li key={i} className={ROW}>
-                    <span className={`${NUM} bg-midnight/10 text-midnight`}>✓</span>
+                    <span className={`${NUM} text-midnight bg-[rgba(15,35,69,0.10)]`}>✓</span>
                     <span>{d}</span>
                   </li>
                 ))}
