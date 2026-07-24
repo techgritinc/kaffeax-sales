@@ -26,9 +26,11 @@ export function HeardGrid({ signals, band, rationale }: HeardGridProps) {
 
   return (
     <section className="mt-8">
-      <Heading level={2} smallLabel className="ml-[3px]">
-        What we heard
-      </Heading>
+      <div className="flex items-baseline justify-between gap-[12px]">
+        <Heading level={2} smallLabel className="mb-[8px]">
+          What we heard
+        </Heading>
+      </div>
       {rationale && (
         <div className="text-midnight mt-[2px] mb-3 font-sans text-[13px] leading-[1.55]">
           {rationale}

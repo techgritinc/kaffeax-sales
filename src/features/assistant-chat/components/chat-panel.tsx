@@ -3,7 +3,6 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { Icon } from '@/components/ui/icon/icon';
-import { AccentBar } from '@/components/ui/typography/accent-bar';
 import type { ChatMessage } from '@/types/workflow.types';
 
 import { cannedResponse } from '../hooks/use-canned-response';
@@ -51,13 +50,13 @@ export function ChatPanel({ context, onClose }: ChatPanelProps) {
     <aside className="border-border from-chat-bg-start to-chat-bg-end max-bp900:fixed max-bp900:inset-x-0 max-bp900:top-[56px] max-bp900:bottom-0 max-bp900:z-50 max-bp900:h-auto max-bp900:animate-chat-slide-up max-bp900:border-l-0 max-bp900:p-[16px_16px_14px] flex h-full flex-col overflow-hidden border-l bg-linear-to-b p-[20px_18px]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="text-mustard max-bp900:mb-1 mb-[6px] text-[11px] font-extrabold tracking-[0.14em] uppercase">
+          <div className="text-mustard max-bp900:mb-1 mb-[6px] font-sans text-[11px] font-extrabold tracking-[0.14em] uppercase">
             Follow-up
           </div>
-          <div className="font-display text-midnight max-bp900:mb-1 max-bp900:text-[18px] mb-[6px] text-[20px] leading-[1.2] font-bold">
+          <div className="font-display text-midnight max-bp900:mb-1 max-bp900:text-[18px] mb-[6px] text-[20px] font-bold">
             Ask about this lead
           </div>
-          <AccentBar variant="h2" className="mt-0! mb-[16px]!" />
+          <div className="bg-bright-blue mb-[16px] h-[6px] w-[72px] rounded-[2px]" />
         </div>
         <button
           type="button"

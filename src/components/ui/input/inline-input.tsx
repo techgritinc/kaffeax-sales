@@ -8,7 +8,7 @@ export interface InlineInputProps extends InputHTMLAttributes<HTMLInputElement> 
 
 /** Dashed-underline inline field — transparent, borderless except the bottom rule. */
 const BASE =
-  'min-w-[120px] border-b border-dashed bg-transparent px-[4px] py-[1px] font-sans text-[13px] text-midnight outline-none transition-colors placeholder:italic placeholder:text-border-strong';
+  'min-w-[120px] border-b border-dashed bg-transparent px-[2px] py-[1px] font-sans text-[13px] text-midnight outline-none transition-colors placeholder:italic placeholder:text-border-strong';
 
 export function InlineInput({ warn = false, className, ...rest }: InlineInputProps): JSX.Element {
   return (
