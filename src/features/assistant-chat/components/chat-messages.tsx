@@ -51,15 +51,15 @@ export function ChatMessages({ messages, pending, onSend }: ChatMessagesProps) {
           )}
           {i === 0 && m.role === 'ai' && (
             <>
-              <div className="text-muted mb-1.5 ml-[42px] text-[9.5px] font-extrabold tracking-[0.12em] uppercase">
+              <div className="text-muted mb-[6px] ml-[42px] font-sans text-[9.5px] font-extrabold tracking-[0.12em] uppercase">
                 Suggested
               </div>
-              <div className="mb-3.5 ml-[42px] flex flex-wrap gap-1.5">
+              <div className="max-bp900:ml-[42px] max-bp900:mr-0 mt-[2px] mb-[14px] ml-[42px] flex flex-wrap gap-[6px]">
                 {CHIPS.map((c) => (
                   <button
                     key={c}
                     type="button"
-                    className="rounded-pill border-tan text-midnight hover:border-green hover:bg-green/[0.10] hover:text-green-deep border bg-white/[0.72] px-3 py-1.5 text-[11.5px] font-semibold"
+                    className="border-tan text-midnight hover:border-green hover:text-green-deep cursor-pointer rounded-[20px] border bg-white/[0.72] px-[12px] py-[6px] font-sans text-[11.5px] font-semibold transition-all hover:bg-[#E8F6F0]"
                     onClick={() => onSend(c)}
                   >
                     {c}

@@ -8,12 +8,10 @@ export function AppHeader() {
   return (
     <header className="border-border-strong shadow-header max-bp900:px-[16px] max-bp560:gap-2 max-bp560:px-[12px] flex h-[56px] items-center justify-between gap-3 border-b bg-white px-[32px]">
       <div className="max-bp560:gap-2 flex min-w-0 flex-1 items-center gap-[14px]">
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src="/images/KX-Primary-logo.png"
           alt="Kaffea-X"
-          width={144}
-          height={34}
-          priority
           className="max-bp900:hidden block h-[34px] w-auto shrink-0"
         />
         <Image

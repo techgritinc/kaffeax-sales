@@ -16,14 +16,14 @@ export function CommitCard({ record, libraryRecord, onOpenInReview }: CommitCard
   const writtenAt = record.at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="rounded-card-sm border-border shadow-commit hover:shadow-commit-hover mb-3.5 border bg-white p-[18px_20px] transition-shadow">
-      <div className="mb-1.5 flex items-start justify-between gap-3">
+    <div className="border-border shadow-commit hover:shadow-commit-hover mb-[14px] rounded-[10px] border bg-white p-[18px_20px] transition-shadow">
+      <div className="mb-[6px] flex items-start justify-between gap-[12px]">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="font-display text-midnight m-0 text-[20px] font-bold">
             {contact.company.value || 'Unnamed company'}
           </h2>
           <Badge band={record.band} />
-          <span className="rounded-pill border-green/40 bg-green/[0.14] text-green-deep inline-flex items-center gap-1.5 border px-2.5 py-1 font-sans text-[10.5px] font-extrabold tracking-[0.06em] uppercase">
+          <span className="border-green/40 bg-green/[0.14] text-green-deep inline-flex items-center gap-[6px] rounded-[20px] border px-[10px] py-[4px] font-sans text-[10.5px] font-extrabold tracking-[0.06em] uppercase">
             <Icon name="CheckCircle2" size={12} /> Written to Zoho
           </span>
         </div>
@@ -40,22 +40,22 @@ export function CommitCard({ record, libraryRecord, onOpenInReview }: CommitCard
         )}
       </div>
 
-      <div className="text-muted mb-3 text-[12.5px]">
+      <div className="text-muted mb-[12px] text-[12.5px]">
         {contact.name.value || '—'} · {contact.title.value || '—'}
         {contact.email.value && ` · ${contact.email.value}`}
       </div>
 
-      <div className="border-mustard text-midnight my-3 border-l-[3px] pl-3 text-[13px] leading-[1.55] italic">
+      <div className="border-mustard text-midnight my-[12px] border-l-[3px] pl-[12px] font-sans text-[13px] leading-[1.55] italic">
         {record.rationale}
       </div>
 
-      <div className="border-border text-muted mt-3 flex items-center justify-between gap-3 border-t border-dashed pt-2.5 font-sans text-[11px]">
+      <div className="border-border text-muted mt-[12px] flex items-center justify-between gap-[12px] border-t border-dashed pt-[10px] font-sans text-[11px]">
         <span>Written {writtenAt}</span>
         <span
-          className="rounded-input-sm border-border bg-page-bg text-midnight border px-2 py-[3px] font-mono tracking-[0.04em]"
+          className="border-border text-midnight rounded-[4px] border bg-[#F5F3EE] px-[8px] py-[3px] font-mono text-[11px] tracking-[0.04em]"
           title="Zoho activity record ID"
         >
-          Zoho activity · <b className="text-bright-blue">{record.id}</b>
+          Zoho activity · <b className="text-bright-blue font-bold">{record.id}</b>
         </span>
       </div>
     </div>

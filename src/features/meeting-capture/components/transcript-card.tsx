@@ -55,11 +55,14 @@ export function TranscriptCard({
 
   return (
     <Card
-      className={cn('flex min-h-0 flex-1 flex-col p-[18px_20px]', className)}
+      className={cn(
+        'max-bp900:p-[16px] max-bp560:p-[14px] flex min-h-0 flex-1 flex-col p-[18px_20px]',
+        className,
+      )}
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >
-      <div className="mb-[10px] flex shrink-0 flex-wrap items-center justify-between gap-[12px]">
+      <div className="max-bp560:gap-[8px] mb-[10px] flex shrink-0 flex-wrap items-center justify-between gap-[12px]">
         <Eyebrow inline>Transcript</Eyebrow>
         <div className="flex gap-2">
           <Button
@@ -87,7 +90,7 @@ export function TranscriptCard({
         onChange={(e) => onTranscriptChange(e.target.value)}
         spellCheck={false}
         placeholder="Paste a meeting transcript, drop a .txt/.vtt file, or attach one…"
-        className="rounded-btn border-border bg-transcript-bg text-text focus:border-green min-h-[180px] w-full min-w-0 flex-1 resize-none border p-[16px] font-mono text-[12.5px] leading-[1.6] transition-colors outline-none focus:bg-white"
+        className="rounded-btn border-border bg-transcript-bg text-text focus:border-green max-bp560:p-[12px] max-bp560:text-[12px] min-h-[180px] w-full min-w-0 flex-1 resize-none border p-[16px] font-mono text-[12.5px] leading-[1.6] transition-colors outline-none focus:bg-white"
       />
       {status === 'error' && (
         <div className="rounded-btn border-rust/40 bg-rust-tint mt-3 flex items-start gap-2 border p-[10px]">
@@ -95,7 +98,7 @@ export function TranscriptCard({
           <span className="text-rust text-[12px]">{error}</span>
         </div>
       )}
-      <div className="mt-[12px] flex shrink-0 flex-wrap items-center justify-between gap-[12px]">
+      <div className="max-bp560:gap-[8px] mt-[12px] flex shrink-0 flex-wrap items-center justify-between gap-[12px]">
         <span className="text-muted text-[12px]">{wordCount} words</span>
         <div className="inline-flex items-center gap-[10px]">
           <Button

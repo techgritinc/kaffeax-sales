@@ -61,7 +61,7 @@ export function ChatPanel({ context, onClose }: ChatPanelProps) {
         </div>
         <button
           type="button"
-          className="rounded-btn-sm border-border-strong text-muted hover:border-midnight hover:bg-page-bg hover:text-midnight inline-flex h-[26px] w-[26px] items-center justify-center border"
+          className="border-border-strong text-muted hover:border-midnight hover:bg-page-bg hover:text-midnight max-bp900:h-[36px] max-bp900:w-[36px] max-bp900:rounded-[8px] max-bp900:border-border max-bp900:bg-white max-bp900:text-midnight inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[6px] border p-0 transition-colors"
           onClick={onClose}
           title="Close chat"
           aria-label="Close chat"
@@ -72,10 +72,10 @@ export function ChatPanel({ context, onClose }: ChatPanelProps) {
 
       <ChatMessages messages={messages} pending={pending} onSend={send} />
 
-      <div className="border-border-warm max-bp900:mt-2.5 max-bp900:pt-2.5 mt-3.5 flex gap-2 border-t pt-3">
+      <div className="border-border-warm max-bp900:mt-[10px] max-bp900:pt-[10px] mt-[14px] flex gap-2 border-t pt-[12px]">
         <input
           type="text"
-          className="rounded-input-sm border-border-warm focus:border-green max-bp900:px-3.5 max-bp900:py-3 max-bp900:text-[14px] flex-1 border bg-white px-3 py-2.5 text-[12.5px] outline-none"
+          className="border-border-warm focus:border-green max-bp900:px-[14px] max-bp900:py-[12px] max-bp900:text-[14px] flex-1 border bg-white px-3 py-[10px] text-[12.5px] outline-none"
           placeholder="Ask a follow-up question..."
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -85,7 +85,7 @@ export function ChatPanel({ context, onClose }: ChatPanelProps) {
         />
         <button
           type="button"
-          className="rounded-tight bg-midnight hover:bg-midnight-send-hover max-bp900:h-11 max-bp900:w-11 inline-flex h-[38px] w-[38px] items-center justify-center text-white"
+          className="bg-midnight hover:bg-midnight-send-hover max-bp900:h-[44px] max-bp900:w-[44px] inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[2px] text-white transition-colors"
           onClick={() => send()}
           title="Send"
         >
