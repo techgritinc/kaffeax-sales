@@ -1,6 +1,36 @@
 <!--
   Sync Impact Report
   ==================
+  Version change: 1.3.0 → 1.4.0 (MINOR — New §XVII prohibiting barrel imports/exports added)
+
+  Rationale: During the Claude API wrapper implementation (002-claude-api-wrapper), Phase 5
+  originally planned to create a `src/integrations/claude/index.ts` barrel that re-exports
+  TranscriptSummarizer and related types to give consumers a single import path. The team
+  explicitly rejected this pattern: barrels silently pull entire modules into consumer bundles
+  (defeating tree-shaking), create non-obvious circular dependency risks, and obscure the real
+  dependency graph. Consumers must import directly from the source file that declares the symbol.
+  This rule was applied retroactively to the 002-claude-api-wrapper spec and tasks, cancelling
+  T012, and is now a permanent constitutional prohibition.
+
+  Modified sections:
+    - §XVII No Barrel Imports — new section added
+
+  Added principles: §XVII No Barrel Imports
+  Added sections: §XVII No Barrel Imports
+  Removed sections: None
+
+  Templates:
+    ✅ .specify/templates/plan-template.md — no structural changes required
+    ✅ .specify/templates/spec-template.md — no structural changes required
+    ✅ .specify/templates/tasks-template.md — no structural changes required
+
+  Follow-up TODOs:
+    - Audit existing codebase for any accidental index.ts barrel files and remove them.
+-->
+
+<!--
+  Sync Impact Report
+  ==================
   Version change: 1.2.0 → 1.3.0 (MINOR — Principle XI expanded with a new normative rule)
 
   Rationale: Mongoose model files (e.g. transcript.model.ts, rubric-signal.model.ts) were
@@ -220,6 +250,31 @@ try {
 - New dependencies MUST have a clear justification. Before adding a package, evaluate: maintenance status, security posture, bundle size impact, licensing, and whether the functionality can reasonably be implemented without the dependency.
 - Simplicity MUST be preferred over cleverness. YAGNI and KISS: nothing built speculatively, nothing more complex than the problem demands.
 
+### XVII. No Barrel Imports
+
+- **Barrel files are categorically prohibited.** A "barrel" is any `index.ts` (or `index.js`) that exists solely to re-export symbols from other files within the same directory. NEVER create or maintain barrel files anywhere in the codebase.
+- Consumers MUST import directly from the source file that declares the symbol. This applies to all code — components, features, integrations, utilities, repositories, schemas, and any other directory.
+- No exceptions: not for `src/integrations/<service>/index.ts`, not for feature modules, not for `src/components/ui/index.ts`, not for shared libraries. If a directory has multiple exports, consumers import each one directly.
+
+**Rationale**: Barrel files silently pull entire modules into the consumer's bundle, defeating tree-shaking. They also create non-obvious circular dependency risks and obscure the actual dependency graph, making refactoring harder and import audits unreliable.
+
+**Bad:**
+```ts
+// src/integrations/claude/index.ts — DO NOT CREATE
+export { TranscriptSummarizer } from './transcript-summarizer';
+export type { SummarizationResponse } from '@/types/claude.types';
+
+// server action
+import { TranscriptSummarizer } from '@/integrations/claude';
+```
+
+**Good:**
+```ts
+// server action — import directly from source files
+import { TranscriptSummarizer } from '@/integrations/claude/transcript-summarizer';
+import type { SummarizationResponse } from '@/types/claude.types';
+```
+
 ### XVI. Git & Deployment Standards
 
 - **Branch naming** MUST follow `type/short-description`. Permitted types: `feat`, `fix`, `hotfix`, `perf`, `refactor`, `docs`, `test`, `chore`, `build`, `ci`, `revert`. Description MUST be lowercase alphanumeric with hyphens only.
@@ -310,4 +365,4 @@ Pre-commit hooks enforce lint-staged and type-checking locally. Pre-push hooks e
   3. Update to this file and propagation to dependent templates.
 - The `rulebook.md` file at the repository root serves as the upstream source for constitutional principles. Changes to the rulebook MUST be reflected here.
 
-**Version**: 1.3.0 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-07-22
+**Version**: 1.4.0 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-07-23
