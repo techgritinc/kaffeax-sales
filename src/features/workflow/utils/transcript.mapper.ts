@@ -1,7 +1,7 @@
-import type { StoredTranscript } from '@/lib/db/mock/types';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { Rubric, Weight } from '@/types/rubric.types';
 import type { DetectedSignal } from '@/types/scoring.types';
+import type { StoredTranscript } from '@/types/transcript.types';
 import type { AttendeeSide } from '@/types/transcript.types';
 
 /** View `Side` ↔ persistence `AttendeeSide` (differ only in the kaffea_x spelling). */

@@ -21,3 +21,12 @@ export interface Rubric {
   signals: RubricSignal[];
   banding: string;
 }
+
+/** Rubric banding configuration entry used for scoring display and editor rules. */
+export interface BandConfig {
+  weight: Band;
+  label: string;
+  bar: string;
+  text: string;
+  rule: string;
+}

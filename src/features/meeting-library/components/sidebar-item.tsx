@@ -1,22 +1,15 @@
 import type { JSX } from 'react';
 
 import { StatusChip } from '@/components/ui/chip/status-chip';
-import { BAND_LABEL } from '@/constants/bands';
+import { BAND_LABEL, BAND_SIDEBAR_DOT_CLASS } from '@/constants/bands';
 import { cn } from '@/lib/utils/cn';
 import type { MeetingRecord } from '@/types/meeting.types';
-import type { Band } from '@/types/rubric.types';
 
 export interface SidebarItemProps {
   record: MeetingRecord;
   active: boolean;
   onSelect: (record: MeetingRecord) => void;
 }
-
-const DOT_COLOR: Record<Band, string> = {
-  hot: 'bg-green text-green',
-  warm: 'bg-mustard text-mustard',
-  cold: 'bg-dark-teal text-dark-teal',
-};
 
 export function SidebarItem({ record, active, onSelect }: SidebarItemProps): JSX.Element {
   const title = record.contact.company.value || 'Untitled meeting';
@@ -35,7 +28,7 @@ export function SidebarItem({ record, active, onSelect }: SidebarItemProps): JSX
       <span
         className={cn(
           'mt-[5px] h-2 w-2 shrink-0 self-center rounded-full',
-          DOT_COLOR[record.band],
+          BAND_SIDEBAR_DOT_CLASS[record.band],
           active && 'shadow-[0_0_8px_currentColor]',
         )}
       />

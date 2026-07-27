@@ -5,10 +5,9 @@ export interface CoveredDecidedProps {
   decisions: string[];
 }
 
-const CARD =
-  'flex-1 rounded-[10px] border border-border bg-white p-[6px_18px] shadow-[0_1px_2px_rgba(15,35,69,0.06)]';
+const CARD = 'flex-1 rounded-[10px] border border-border bg-white p-[6px_18px] shadow-list-card';
 const ROW =
-  'flex items-start gap-[12px] border-b border-border py-[12px] font-sans text-[13.5px] leading-[1.55] text-[#1B2E4E] last:border-b-0';
+  'flex items-start gap-[12px] border-b border-border py-[12px] font-sans text-[13.5px] leading-[1.55] text-ink-blue last:border-b-0';
 const NUM =
   'mt-px flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold';
 const EMPTY = 'p-[14px_2px] font-sans text-[13px] text-muted italic';
@@ -31,7 +30,7 @@ export function CoveredDecided({ topics, decisions }: CoveredDecidedProps) {
               <ul>
                 {topics.map((t, i) => (
                   <li key={i} className={ROW}>
-                    <span className={`${NUM} text-green-deep bg-[rgba(65,187,147,0.18)]`}>
+                    <span className={`${NUM} bg-numbered-badge-green-bg text-green-deep`}>
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     <span>{t}</span>
@@ -55,7 +54,7 @@ export function CoveredDecided({ topics, decisions }: CoveredDecidedProps) {
               <ul>
                 {decisions.map((d, i) => (
                   <li key={i} className={ROW}>
-                    <span className={`${NUM} text-midnight bg-[rgba(15,35,69,0.10)]`}>✓</span>
+                    <span className={`${NUM} bg-numbered-badge-ink-bg text-midnight`}>✓</span>
                     <span>{d}</span>
                   </li>
                 ))}

@@ -42,14 +42,14 @@ export function ActionItems({ nextSteps, commitments }: ActionItemsProps) {
           No action items captured.
         </div>
       ) : (
-        <div className="border-border rounded-[10px] border bg-white p-[6px_18px] shadow-[0_1px_2px_rgba(15,35,69,0.06)]">
+        <div className="border-border shadow-list-card rounded-[10px] border bg-white p-[6px_18px]">
           <ul>
             {rows.map((it, i) => (
               <li
                 key={i}
                 className="border-border flex items-start gap-[12px] border-b py-[12px] last:border-b-0"
               >
-                <span className="mt-px flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full bg-[rgba(214,168,54,0.22)] font-mono text-[10px] font-bold text-[#6C4A00]">
+                <span className="bg-numbered-badge-warm-bg text-toast-text-dark mt-px flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold">
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <span className="text-midnight block min-w-0 font-sans text-[15px] leading-[1.6]">

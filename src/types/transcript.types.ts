@@ -1,3 +1,5 @@
+import type { TranscriptPresentation } from '@/types/meeting.types';
+
 export const TRANSCRIPT_STATUSES = ['processing', 'draft', 'saved', 'failed'] as const;
 export const TRANSCRIPT_SOURCES = ['manual', 'zoom', 'ms_teams', 'google_meet'] as const;
 export const ATTENDEE_SIDES = ['kaffeax', 'prospect'] as const;
@@ -58,4 +60,11 @@ export interface TranscriptFields {
   leadScore: TranscriptLeadScore;
   recapEmail: string | null;
   zohoLeadId: string | null;
+}
+
+/** A transcript record as persisted in the store, keyed by id. */
+export interface StoredTranscript {
+  id: string;
+  fields: TranscriptFields;
+  presentation: TranscriptPresentation;
 }

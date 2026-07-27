@@ -59,7 +59,7 @@ export function ChatMessages({ messages, pending, onSend }: ChatMessagesProps) {
                   <button
                     key={c}
                     type="button"
-                    className="border-tan text-midnight hover:border-green hover:text-green-deep cursor-pointer rounded-[20px] border bg-white/[0.72] px-[12px] py-[6px] font-sans text-[11.5px] font-semibold transition-all hover:bg-[#E8F6F0]"
+                    className="border-tan text-midnight hover:border-green hover:text-green-deep hover:bg-sidebar-new-text cursor-pointer rounded-[20px] border bg-white/[0.72] px-[12px] py-[6px] font-sans text-[11.5px] font-semibold transition-all"
                     onClick={() => onSend(c)}
                   >
                     {c}

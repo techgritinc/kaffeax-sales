@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
 
+import { BAND_ACTIVE_SEGMENT_CLASS } from '@/constants/bands';
 import { cn } from '@/lib/utils/cn';
 import type { Weight } from '@/types/rubric.types';
 
@@ -10,9 +11,9 @@ export interface WeightSegmentedControlProps {
 }
 
 const SEGMENTS: { weight: Weight; label: string; active: string }[] = [
-  { weight: 'hot', label: 'HOT', active: 'bg-green-deep text-white' },
-  { weight: 'warm', label: 'WARM', active: 'bg-mustard text-white' },
-  { weight: 'cold', label: 'COLD', active: 'bg-dark-teal text-white' },
+  { weight: 'hot', label: 'HOT', active: BAND_ACTIVE_SEGMENT_CLASS.hot },
+  { weight: 'warm', label: 'WARM', active: BAND_ACTIVE_SEGMENT_CLASS.warm },
+  { weight: 'cold', label: 'COLD', active: BAND_ACTIVE_SEGMENT_CLASS.cold },
 ];
 
 const BTN_BASE =

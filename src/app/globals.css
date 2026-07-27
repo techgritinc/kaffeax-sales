@@ -61,6 +61,9 @@
   --shimmer-b: #faf6ea;
   --proc-active-bg: #fbeed0;
   --ink-blue: #1b2e4e;
+  --numbered-badge-warm-bg: rgba(214, 168, 54, 0.22);
+  --numbered-badge-green-bg: rgba(65, 187, 147, 0.18);
+  --numbered-badge-ink-bg: rgba(15, 35, 69, 0.1);
 
   /* Type Scale */
   --fs-2xs: 8px;
@@ -142,6 +145,9 @@
   --color-shimmer-b: var(--shimmer-b);
   --color-proc-active-bg: var(--proc-active-bg);
   --color-ink-blue: var(--ink-blue);
+  --color-numbered-badge-warm-bg: var(--numbered-badge-warm-bg);
+  --color-numbered-badge-green-bg: var(--numbered-badge-green-bg);
+  --color-numbered-badge-ink-bg: var(--numbered-badge-ink-bg);
 
   /* Typography — wired to next/font variables (fallbacks preserved) */
   --font-sans: var(--font-figtree), 'Segoe UI', system-ui, sans-serif;
@@ -215,6 +221,8 @@
   --shadow-proc: 0 20px 60px rgba(15, 35, 69, 0.2);
   --shadow-actions-top: 0 -4px 12px rgba(15, 35, 69, 0.04);
   --shadow-peek-tooltip: 0 2px 8px rgba(15, 35, 69, 0.25);
+  --shadow-list-card: 0 1px 2px rgba(15, 35, 69, 0.06);
+  --shadow-glow-green: 0 0 8px var(--green);
 
   /* Animations */
   --animate-spin-slow: kx-spin 1.4s linear infinite;

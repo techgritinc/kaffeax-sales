@@ -1,3 +1,4 @@
+import { BAND_ORDER } from '@/constants/bands';
 import { PROCESSING_JITTER_MS, PROCESSING_MIN_MS } from '@/constants/workflow';
 import type {
   Confidence,
@@ -11,9 +12,6 @@ import type { Band, Rubric } from '@/types/rubric.types';
 import type { DetectedSignal } from '@/types/scoring.types';
 
 import { CURATED } from './curated';
-
-/** Valid bands — mirrors the prototype's BAND lookup used by `normalize`. */
-const BANDS: readonly Band[] = ['hot', 'warm', 'cold'];
 
 export const hintFallback = (label: string): string[] =>
   label
@@ -163,7 +161,7 @@ export function normalize(p: NormalizeInput): NormalizedRecord {
     confidence: (o?.confidence || 'low') as Confidence,
   });
   const rawBand = p.lead_score?.band;
-  const band: Band = rawBand && BANDS.includes(rawBand as Band) ? (rawBand as Band) : 'cold';
+  const band: Band = rawBand && BAND_ORDER.includes(rawBand as Band) ? (rawBand as Band) : 'cold';
   return {
     contact: {
       name: cf(p.contact?.name),

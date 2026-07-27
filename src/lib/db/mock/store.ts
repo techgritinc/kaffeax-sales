@@ -1,8 +1,8 @@
 import type { RubricSignalFields } from '@/types/rubric-signal.types';
+import type { StoredTranscript } from '@/types/transcript.types';
 
 import { SEED_RUBRIC_SIGNALS } from './rubric-signals.fixture';
 import { SAMPLE_TRANSCRIPT, SEED_TRANSCRIPTS } from './transcripts.fixture';
-import type { StoredTranscript } from './types';
 
 interface MockStore {
   transcripts: Map<string, StoredTranscript>;

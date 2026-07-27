@@ -34,10 +34,7 @@ export function CaptureScreen({ onOpenRubric, className, ...transcript }: Captur
         >
           <Icon name="SlidersHorizontal" size={14} />
           <span className="max-bp720:hidden">Scoring rubric</span>
-          <span
-            className="bg-green h-2 w-2 rounded-full shadow-[0_0_8px_#41bb93]"
-            aria-hidden="true"
-          />
+          <span className="bg-green shadow-glow-green h-2 w-2 rounded-full" aria-hidden="true" />
         </button>
       </div>
 

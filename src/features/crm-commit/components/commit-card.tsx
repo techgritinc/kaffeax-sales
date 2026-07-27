@@ -52,7 +52,7 @@ export function CommitCard({ record, libraryRecord, onOpenInReview }: CommitCard
       <div className="border-border text-muted mt-[12px] flex items-center justify-between gap-[12px] border-t border-dashed pt-[10px] font-sans text-[11px]">
         <span>Written {writtenAt}</span>
         <span
-          className="border-border text-midnight rounded-[4px] border bg-[#F5F3EE] px-[8px] py-[3px] font-mono text-[11px] tracking-[0.04em]"
+          className="border-border text-midnight bg-page-bg rounded-[4px] border px-[8px] py-[3px] font-mono text-[11px] tracking-[0.04em]"
           title="Zoho activity record ID"
         >
           Zoho activity · <b className="text-bright-blue font-bold">{record.id}</b>

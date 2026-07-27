@@ -1,5 +1,6 @@
 import { Tooltip } from '@/components/ui/tooltip/tooltip';
 import { Heading } from '@/components/ui/typography/heading';
+import { BAND_BORDER_TOP_COLOR, BAND_TEXT_COLOR } from '@/constants/bands';
 import { cn } from '@/lib/utils/cn';
 import type { Band } from '@/types/rubric.types';
 import type { DetectedSignal } from '@/types/scoring.types';
@@ -11,9 +12,24 @@ export interface HeardGridProps {
 }
 
 const COLS: { key: Band; title: string; topBorder: string; titleColor: string }[] = [
-  { key: 'hot', title: '▲ Hot', topBorder: 'border-t-green-deep', titleColor: 'text-green-deep' },
-  { key: 'warm', title: '● Warm', topBorder: 'border-t-mustard', titleColor: 'text-mustard' },
-  { key: 'cold', title: '○ Cold', topBorder: 'border-t-dark-teal', titleColor: 'text-dark-teal' },
+  {
+    key: 'hot',
+    title: '▲ Hot',
+    topBorder: BAND_BORDER_TOP_COLOR.hot,
+    titleColor: BAND_TEXT_COLOR.hot,
+  },
+  {
+    key: 'warm',
+    title: '● Warm',
+    topBorder: BAND_BORDER_TOP_COLOR.warm,
+    titleColor: BAND_TEXT_COLOR.warm,
+  },
+  {
+    key: 'cold',
+    title: '○ Cold',
+    topBorder: BAND_BORDER_TOP_COLOR.cold,
+    titleColor: BAND_TEXT_COLOR.cold,
+  },
 ];
 
 /** "What we heard" — signals spatially grouped HOT / WARM / COLD with hover evidence. */

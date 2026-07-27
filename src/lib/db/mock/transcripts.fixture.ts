@@ -1,7 +1,7 @@
 import { toStoredTranscript } from '@/features/workflow/utils/transcript.mapper';
+import type { StoredTranscript } from '@/types/transcript.types';
 
 import { type SeedInput, makeSeed } from './seed-builder';
-import type { StoredTranscript } from './types';
 
 /** Fixed demo owner id for all seeded transcripts (real DB would use a real user ObjectId). */
 export const DEMO_USER_ID = '000000000000000000000001';

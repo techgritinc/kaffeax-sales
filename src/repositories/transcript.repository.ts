@@ -1,5 +1,5 @@
 import { getStore, reseedTranscripts } from '@/lib/db/mock/store';
-import type { StoredTranscript } from '@/lib/db/mock/types';
+import type { StoredTranscript } from '@/types/transcript.types';
 
 class TranscriptRepository {
   findAll(): Promise<StoredTranscript[]> {
