@@ -1,6 +1,6 @@
-# Tasks: Transcript Schema & Database Connection Layer
+﻿# Tasks: Transcript Schema & Database Connection Layer
 
-**Input**: Design documents from `specs/001-transcript-schema-db-layer/`
+**Input**: Design documents from `specs/tae-73-transcript-schema-db-layer/`
 
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/
 
@@ -182,7 +182,7 @@ File must be under 150 lines. No `any`. No `!`.
 
 - [X] T007 [P] Run `npm run type-check` to verify zero TypeScript errors across all new files in `src/lib/db/`
 - [X] T008 [P] Run `npm run lint` to verify zero ESLint warnings/errors and correct Prettier formatting across all new files in `src/lib/db/`
-- [ ] T009 Validate quickstart scenarios from `specs/001-transcript-schema-db-layer/quickstart.md`
+- [ ] T009 Validate quickstart scenarios from `specs/tae-73-transcript-schema-db-layer/quickstart.md`
 
 **T009 status**: Scenarios 8 (type-check) and 9 (lint) are covered by T007/T008 above — both pass with zero errors/warnings. Scenarios 1-7 require live CRUD against the `kaffea-x-dev` MongoDB Atlas cluster (connection singleton, fail-fast, dedup index, soft-delete, label snapshotting) and were deliberately **not** automated in this session — by user decision, to avoid a script writing/deleting data on a shared dev cluster without a dedicated test setup. These remain **pending manual verification** with a running dev server, per this project's current lack of test infrastructure.
 

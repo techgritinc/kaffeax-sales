@@ -1,8 +1,8 @@
-# Implementation Plan: OpenRouter API Service Wrapper
+﻿# Implementation Plan: OpenRouter API Service Wrapper
 
 **Branch**: `feat/openrouter-api-wrapper` | **Date**: 2026-07-23 | **Spec**: [spec.md](spec.md)
 
-**Input**: Feature specification from `specs/003-openrouter-api-wrapper/spec.md`
+**Input**: Feature specification from `specs/tae-81-openrouter-api-wrapper/spec.md`
 
 ## Summary
 
@@ -52,7 +52,7 @@ Create a self-contained OpenRouter integration layer at `src/integrations/openro
 ### Documentation (this feature)
 
 ```text
-specs/003-openrouter-api-wrapper/
+specs/tae-81-openrouter-api-wrapper/
 ├── plan.md                              # This file
 ├── research.md                          # OpenRouter API research
 ├── data-model.md                        # Entity definitions (reuses claude.types.ts)

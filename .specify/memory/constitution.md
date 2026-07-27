@@ -1,15 +1,71 @@
 <!--
   Sync Impact Report
   ==================
+  Version change: 1.5.0 → 1.6.0 (MINOR — New §XIX spec directory naming convention added; historical directory references updated)
+
+  Rationale: Spec directories were being named with sequential numeric prefixes (001-, 002-, etc.),
+  which lack traceability to the originating ticket and create ordering conflicts on parallel branches.
+  All existing directories have been renamed to the ticket-ID-prefix format (e.g. 001-transcript-ai-analysis
+  → tae-73-transcript-ai-analysis, 002-claude-api-wrapper → tae-81-claude-api-wrapper). §XIX is added
+  to make this naming convention a permanent constitutional rule for all future spec directories.
+  Historical references in prior Sync Impact Reports updated accordingly.
+
+  Modified sections:
+    - §XIX Spec Directory Naming Convention — new section added
+
+  Added principles: §XIX Spec Directory Naming Convention
+  Added sections: §XIX Spec Directory Naming Convention
+  Removed sections: None
+
+  Templates:
+    ✅ .specify/templates/plan-template.md — no structural changes required
+    ✅ .specify/templates/spec-template.md — no structural changes required
+    ✅ .specify/templates/tasks-template.md — no structural changes required
+
+  Follow-up TODOs:
+    - Ensure all future spec directories created by /speckit-specify follow the <ticket-id>-<short-description> format.
+-->
+
+<!--
+  Sync Impact Report
+  ==================
+  Version change: 1.4.0 → 1.5.0 (MINOR — New §XVIII camelCase naming convention added)
+
+  Rationale: During the Summary Scoring & Prompt Engineering feature (tae-82-summary-scoring-prompt),
+  the AI response contract was initially designed with snake_case JSON fields, requiring a mapping
+  layer to convert to camelCase TypeScript types. The team mandated camelCase everywhere — in all
+  data structures, JSON schemas, and AI response contracts — eliminating the snake_case → camelCase
+  mapper entirely. This rule is now a permanent constitutional principle covering all code in the
+  repository, including structured output contracts with external services and AI models.
+
+  Modified sections:
+    - §XVIII camelCase Naming Convention — new section added
+
+  Added principles: §XVIII camelCase Naming Convention
+  Added sections: §XVIII camelCase Naming Convention
+  Removed sections: None
+
+  Templates:
+    ✅ .specify/templates/plan-template.md — no structural changes required
+    ✅ .specify/templates/spec-template.md — no structural changes required
+    ✅ .specify/templates/tasks-template.md — no structural changes required
+
+  Follow-up TODOs:
+    - Audit existing codebase for any snake_case fields in data structures or schemas and convert them.
+-->
+
+<!--
+  Sync Impact Report
+  ==================
   Version change: 1.3.0 → 1.4.0 (MINOR — New §XVII prohibiting barrel imports/exports added)
 
-  Rationale: During the Claude API wrapper implementation (002-claude-api-wrapper), Phase 5
+  Rationale: During the Claude API wrapper implementation (tae-81-claude-api-wrapper), Phase 5
   originally planned to create a `src/integrations/claude/index.ts` barrel that re-exports
   TranscriptSummarizer and related types to give consumers a single import path. The team
   explicitly rejected this pattern: barrels silently pull entire modules into consumer bundles
   (defeating tree-shaking), create non-obvious circular dependency risks, and obscure the real
   dependency graph. Consumers must import directly from the source file that declares the symbol.
-  This rule was applied retroactively to the 002-claude-api-wrapper spec and tasks, cancelling
+  This rule was applied retroactively to the tae-81-claude-api-wrapper spec and tasks, cancelling
   T012, and is now a permanent constitutional prohibition.
 
   Modified sections:
@@ -275,6 +331,56 @@ import { TranscriptSummarizer } from '@/integrations/claude/transcript-summarize
 import type { SummarizationResponse } from '@/types/claude.types';
 ```
 
+### XVIII. camelCase Naming Convention
+
+- All data structures, interfaces, types, JSON schemas, and external API response contracts MUST use **camelCase** field names. **snake_case is categorically prohibited** in any data structure anywhere in the codebase.
+- This applies to: TypeScript interfaces, Zod schemas, AI/LLM structured output contracts, API request/response payloads, and any JSON schema definitions.
+- When integrating with external services or AI models that return structured JSON, the prompt or contract MUST instruct the service to use camelCase field names. Do NOT accept snake_case and map it afterward — require camelCase at the source.
+- Database field names stored in MongoDB MUST also use camelCase (Mongoose schemas already default to this).
+
+**Rationale**: A single casing convention eliminates mapping layers between AI responses and application types, reduces bug surface area from casing mismatches, and keeps the codebase consistent from database to UI.
+
+**Bad:**
+```ts
+interface AiResponse {
+  what_we_heard: string[];
+  action_items: ActionItem[];
+  lead_score_band: string;
+}
+```
+
+**Good:**
+```ts
+interface AiResponse {
+  whatWeHeard: string[];
+  actionItems: ActionItem[];
+  leadScoreBand: string;
+}
+```
+
+### XIX. Spec Directory Naming Convention
+
+- All spec directories MUST be named using the ticket ID as a prefix, followed by a short kebab-case description. Format: `<ticket-id>-<short-description>` (all lowercase).
+  - Examples: `tae-82-summary-scoring-prompt`, `tae-81-claude-api-wrapper`, `tae-73-transcript-ai-analysis`
+- Sequential numbering (e.g., `001-`, `002-`) is **categorically prohibited**. Ticket IDs provide unambiguous traceability to the originating task and avoid ordering conflicts on parallel branches.
+- The ticket ID MUST exactly match the project ticket identifier (e.g., `TAE-82` in lowercase becomes `tae-82-`). The short description MUST be a concise kebab-case slug derived from the feature name.
+- When a single ticket produces multiple spec directories (e.g., TAE-81 produced both `api-wrapper` and `openrouter-api-wrapper`), each directory MUST carry the same ticket-ID prefix with a distinct suffix.
+- The `.specify/feature.json` `feature_directory` field MUST point to the ticket-ID-prefixed path at all times.
+
+**Bad:**
+```
+specs/001-transcript-ai-analysis/
+specs/002-claude-api-wrapper/
+specs/003-openrouter-api-wrapper/
+```
+
+**Good:**
+```
+specs/tae-73-transcript-ai-analysis/
+specs/tae-81-claude-api-wrapper/
+specs/tae-81-openrouter-api-wrapper/
+```
+
 ### XVI. Git & Deployment Standards
 
 - **Branch naming** MUST follow `type/short-description`. Permitted types: `feat`, `fix`, `hotfix`, `perf`, `refactor`, `docs`, `test`, `chore`, `build`, `ci`, `revert`. Description MUST be lowercase alphanumeric with hyphens only.
@@ -365,4 +471,4 @@ Pre-commit hooks enforce lint-staged and type-checking locally. Pre-push hooks e
   3. Update to this file and propagation to dependent templates.
 - The `rulebook.md` file at the repository root serves as the upstream source for constitutional principles. Changes to the rulebook MUST be reflected here.
 
-**Version**: 1.4.0 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-07-23
+**Version**: 1.6.0 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-07-27

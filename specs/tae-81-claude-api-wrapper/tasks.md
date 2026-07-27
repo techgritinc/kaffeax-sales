@@ -1,6 +1,6 @@
-# Tasks: Claude API Service Wrapper
+﻿# Tasks: Claude API Service Wrapper
 
-**Input**: Design documents from `specs/002-claude-api-wrapper/`
+**Input**: Design documents from `specs/tae-81-claude-api-wrapper/`
 
 **Prerequisites**: plan.md (required), spec.md (required), research.md, data-model.md, contracts/claude-integration.md, quickstart.md
 

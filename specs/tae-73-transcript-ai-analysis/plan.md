@@ -1,8 +1,8 @@
-# Implementation Plan: Transcript AI Analysis & Scoring
+﻿# Implementation Plan: Transcript AI Analysis & Scoring
 
 **Branch**: `feat/tae-82-summary-scoring-prompt-engineering` | **Date**: 2026-07-24 | **Spec**: [spec.md](spec.md)
 
-**Input**: Feature specification from `/specs/001-transcript-ai-analysis/spec.md`
+**Input**: Feature specification from `/specs/tae-73-transcript-ai-analysis/spec.md`
 
 ## Summary
 
@@ -63,7 +63,7 @@ Post-design re-check: No violations introduced. `recapEmail` field removed from 
 ### Documentation (this feature)
 
 ```text
-specs/001-transcript-ai-analysis/
+specs/tae-73-transcript-ai-analysis/
 ├── plan.md              # This file
 ├── research.md          # Phase 0 — Claude API integration patterns
 ├── data-model.md        # Phase 1 — entity changes and type extensions

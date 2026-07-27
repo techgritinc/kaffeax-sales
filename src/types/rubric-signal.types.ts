@@ -12,3 +12,10 @@ export interface RubricSignalFields {
   hints: string[];
   isActive: boolean;
 }
+
+export interface SimplifiedSignal {
+  id: string;
+  label: string;
+  tier: SignalWeight;
+  hints?: string[];
+}

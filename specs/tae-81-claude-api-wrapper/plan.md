@@ -1,8 +1,8 @@
-# Implementation Plan: Claude API Service Wrapper
+﻿# Implementation Plan: Claude API Service Wrapper
 
-**Branch**: `002-claude-api-wrapper` | **Date**: 2026-07-23 | **Spec**: [spec.md](spec.md)
+**Branch**: `tae-81-claude-api-wrapper` | **Date**: 2026-07-23 | **Spec**: [spec.md](spec.md)
 
-**Input**: Feature specification from `specs/002-claude-api-wrapper/spec.md`
+**Input**: Feature specification from `specs/tae-81-claude-api-wrapper/spec.md`
 
 ## Summary
 
@@ -51,7 +51,7 @@ Create a service wrapper in `src/integrations/claude/` that encapsulates all com
 ### Documentation (this feature)
 
 ```text
-specs/002-claude-api-wrapper/
+specs/tae-81-claude-api-wrapper/
 ├── plan.md              # This file
 ├── research.md          # Phase 0 output — SDK patterns, error taxonomy
 ├── data-model.md        # Phase 1 output — types and entities

@@ -1,8 +1,8 @@
-# Implementation Plan: Transcript Schema & Database Connection Layer
+﻿# Implementation Plan: Transcript Schema & Database Connection Layer
 
 **Branch**: `chore/mongoose-setup` | **Date**: 2026-07-22 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `specs/001-transcript-schema-db-layer/spec.md`
+**Input**: Feature specification from `specs/tae-73-transcript-schema-db-layer/spec.md`
 
 ## Summary
 
@@ -53,7 +53,7 @@ Establish the MongoDB data layer for the Kaffea-X Sales application: Mongoose sc
 ### Documentation (this feature)
 
 ```text
-specs/001-transcript-schema-db-layer/
+specs/tae-73-transcript-schema-db-layer/
 ├── plan.md              # This file
 ├── spec.md              # Feature specification
 ├── research.md          # Phase 0: technical decisions
