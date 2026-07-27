@@ -1,8 +1,10 @@
 import { env } from '@env';
 import { z } from 'zod';
 
-import { determineBand } from '@/lib/utils/scoring.utils';
-import { AiSummaryResponseSchema } from '@/schemas/ai-summary-response.schema';
+import {
+  buildSummarizationPrompt,
+  processStructuredResponse,
+} from '@/lib/utils/structured-analysis.utils';
 import type {
   StructuredSummarizationResult,
   SummarizationOptions,
@@ -10,7 +12,6 @@ import type {
   SummarizationResult,
 } from '@/types/claude.types';
 import type { SimplifiedSignal } from '@/types/rubric-signal.types';
-import type { TranscriptLeadScore, TranscriptSummary } from '@/types/transcript.types';
 
 import client, {
   APIConnectionError,
@@ -19,7 +20,6 @@ import client, {
   BadRequestError,
   RateLimitError,
 } from './client';
-import { buildSummarizationPrompt } from './prompt';
 
 const transcriptSchema = z.string().min(1);
 
@@ -95,90 +95,18 @@ export class TranscriptSummarizer {
       return acc;
     }, '');
 
-    const cleanedText = rawText
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```\s*$/i, '')
-      .trim();
-
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(cleanedText);
-    } catch {
-      return {
-        success: false,
-        category: 'api_error',
-        message: 'AI response could not be parsed. Please try again.',
-        retryAfterMs: null,
-      };
-    }
-
-    const zodResult = AiSummaryResponseSchema.safeParse(parsed);
-    if (!zodResult.success) {
-      console.warn(
-        '[TranscriptSummarizer] AI response failed schema validation',
-        zodResult.error.issues,
-      );
-      return {
-        success: false,
-        category: 'api_error',
-        message: 'AI response structure was unexpected. Please try again.',
-        retryAfterMs: null,
-      };
-    }
-
-    const validated = zodResult.data;
-
-    const inputIds = new Set(signals.map((s) => s.id));
-    const filteredSignals = validated.detectedSignals.filter((ds) => {
-      if (!inputIds.has(ds.id)) {
-        console.warn('[TranscriptSummarizer] Hallucinated signal stripped from response', {
-          id: ds.id,
-        });
-        return false;
-      }
-      return true;
-    });
-
-    const band = determineBand(filteredSignals, signals);
-
-    if (band !== validated.leadScoreBand) {
-      console.warn('[TranscriptSummarizer] Band discrepancy', {
-        computed: band,
-        aiSuggested: validated.leadScoreBand,
-      });
-    }
-
-    const summary: TranscriptSummary = {
-      narrative: validated.narrative,
-      whatWeHeard: validated.whatWeHeard,
-      whatWasCovered: validated.whatWasCovered,
-      whatWasDecided: validated.whatWasDecided,
-      actionItems: validated.actionItems.map((item) => ({
-        description: item.description,
-        owner: item.owner,
-        ...(item.dueDate != null ? { dueDate: item.dueDate } : {}),
-      })),
-      attendees: validated.attendees,
-    };
-
-    const leadScore: TranscriptLeadScore = {
-      band,
-      detectedSignals: filteredSignals,
-      rationale: validated.scoreRationale,
-    };
-
-    const result: StructuredSummarizationResult = {
+    const processed = processStructuredResponse(rawText, signals);
+    if (!processed.success) return processed;
+    return {
       success: true,
-      summary,
-      leadScore,
+      summary: processed.summary,
+      leadScore: processed.leadScore,
       model: response.model,
       usage: {
         inputTokens: response.usage.input_tokens,
         outputTokens: response.usage.output_tokens,
       },
-    };
-
-    return result;
+    } satisfies StructuredSummarizationResult;
   }
 
   private handleSdkError(error: unknown): SummarizationResponse {

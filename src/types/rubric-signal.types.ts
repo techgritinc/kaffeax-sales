@@ -10,6 +10,7 @@ export interface RubricSignalFields {
   weight: SignalWeight;
   source: SignalSource;
   hints: string[];
+  numericWeight: number;
   isActive: boolean;
 }
 
@@ -18,4 +19,5 @@ export interface SimplifiedSignal {
   label: string;
   tier: SignalWeight;
   hints?: string[];
+  numericWeight: number;
 }

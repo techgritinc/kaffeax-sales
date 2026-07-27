@@ -42,6 +42,7 @@ export interface TranscriptLeadScore {
   band?: LeadScoreBand;
   detectedSignals: DetectedSignal[];
   rationale: string;
+  scorePercentage?: number;
 }
 
 export interface TranscriptFields {
