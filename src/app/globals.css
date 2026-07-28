@@ -38,6 +38,33 @@
   --chat-bg-start: #f5f3ee;
   --chat-bg-end: #ebe7da;
 
+  /* Supporting fills / tints reproduced from the prototype */
+  --midnight-hover: #182b4a;
+  --midnight-send-hover: #1a3562;
+  --sidebar-muted: #8090b0;
+  --sidebar-group-count: #6b7a99;
+  --sidebar-status-draft-text: #e6c778;
+  --sidebar-status-saved-text: #a6e6ca;
+  --sidebar-text-strong: #e8eaf0;
+  --sidebar-new-text: #e8f6f0;
+  --transcript-bg: #fafaf6;
+  --contact-panel-bg: #fbf9f2;
+  --band-tile-bg: #fcfaf4;
+  --chip-bg: #f0ede5;
+  --compose-bg: #f6fcf9;
+  --rust-tint: #fbeae7;
+  --input-warn-bg: #fdf3f1;
+  --toast-text-dark: #6c4a00;
+  --cream-50: #fdfbf5;
+  --cream-25: #fbf9f2;
+  --shimmer-a: #ede7d8;
+  --shimmer-b: #faf6ea;
+  --proc-active-bg: #fbeed0;
+  --ink-blue: #1b2e4e;
+  --numbered-badge-warm-bg: rgba(214, 168, 54, 0.22);
+  --numbered-badge-green-bg: rgba(65, 187, 147, 0.18);
+  --numbered-badge-ink-bg: rgba(15, 35, 69, 0.1);
+
   /* Type Scale */
   --fs-2xs: 8px;
   --fs-xs: 9px;
@@ -62,6 +89,8 @@
 @theme inline {
   /* Brand */
   --color-midnight: var(--midnight);
+  --color-midnight-hover: var(--midnight-hover);
+  --color-midnight-send-hover: var(--midnight-send-hover);
   --color-dark-blue: var(--dark-blue);
   --color-bright-blue: var(--bright-blue);
   --color-light-blue: var(--light-blue);
@@ -92,12 +121,38 @@
   --color-card-bg: var(--card-bg);
   --color-sidebar-bg: var(--sidebar-bg);
   --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-group-count: var(--sidebar-group-count);
+  --color-sidebar-status-draft-text: var(--sidebar-status-draft-text);
+  --color-sidebar-status-saved-text: var(--sidebar-status-saved-text);
+  --color-sidebar-text-strong: var(--sidebar-text-strong);
+  --color-sidebar-new-text: var(--sidebar-new-text);
   --color-chat-bg-start: var(--chat-bg-start);
   --color-chat-bg-end: var(--chat-bg-end);
 
-  /* Typography */
-  --font-sans: 'Figtree', 'Segoe UI', system-ui, sans-serif;
-  --font-display: 'Playfair Display', Georgia, serif;
+  /* Supporting fills */
+  --color-transcript-bg: var(--transcript-bg);
+  --color-contact-panel-bg: var(--contact-panel-bg);
+  --color-band-tile-bg: var(--band-tile-bg);
+  --color-chip-bg: var(--chip-bg);
+  --color-compose-bg: var(--compose-bg);
+  --color-rust-tint: var(--rust-tint);
+  --color-input-warn-bg: var(--input-warn-bg);
+  --color-toast-text-dark: var(--toast-text-dark);
+  --color-cream-50: var(--cream-50);
+  --color-cream-25: var(--cream-25);
+  --color-shimmer-a: var(--shimmer-a);
+  --color-shimmer-b: var(--shimmer-b);
+  --color-proc-active-bg: var(--proc-active-bg);
+  --color-ink-blue: var(--ink-blue);
+  --color-numbered-badge-warm-bg: var(--numbered-badge-warm-bg);
+  --color-numbered-badge-green-bg: var(--numbered-badge-green-bg);
+  --color-numbered-badge-ink-bg: var(--numbered-badge-ink-bg);
+
+  /* Typography — wired to next/font variables (fallbacks preserved) */
+  --font-sans: var(--font-figtree), 'Segoe UI', system-ui, sans-serif;
+  --font-display: var(--font-playfair), Georgia, serif;
+  --font-mono: 'Consolas', 'SF Mono', 'IBM Plex Mono', 'Courier New', monospace;
 
   /* Type Scale */
   --text-2xs: var(--fs-2xs);
@@ -116,11 +171,132 @@
   --text-5xl: var(--fs-5xl);
   --text-6xl: var(--fs-6xl);
   --text-7xl: var(--fs-7xl);
+
+  /* Radii */
+  --radius-tight: 2px;
+  --radius-input-sm: 4px;
+  --radius-input: 6px;
+  --radius-btn-sm: 6px;
+  --radius-btn: 8px;
+  --radius-card-sm: 10px;
+  --radius-card: 12px;
+  --radius-pill: 20px;
+
+  /* Custom breakpoints (prototype max-width stops) */
+  --breakpoint-bp400: 400px;
+  --breakpoint-bp560: 560px;
+  --breakpoint-bp640: 640px;
+  --breakpoint-bp720: 720px;
+  --breakpoint-bp900: 900px;
+  --breakpoint-bp1100: 1100px;
+
+  /* Shadows (midnight/green tinted — reproduced from the prototype) */
+  --shadow-header: 0 1px 2px rgba(15, 35, 69, 0.04);
+  --shadow-btn: 0 1px 2px rgba(15, 35, 69, 0.08);
+  --shadow-btn-primary-hover: 0 2px 6px rgba(65, 187, 147, 0.32);
+  --shadow-tooltip: 0 2px 8px rgba(15, 35, 69, 0.25);
+  --shadow-drawer: 0 12px 32px rgba(15, 35, 69, 0.28);
+  --shadow-fab: 0 6px 18px rgba(15, 35, 69, 0.35);
+  --shadow-fab-hover: 0 8px 22px rgba(15, 35, 69, 0.42);
+  --shadow-rubric-fab: 0 4px 14px rgba(15, 35, 69, 0.22), 0 0 0 2px rgba(65, 187, 147, 0.35);
+  --shadow-rubric-fab-hover: 0 10px 28px rgba(15, 35, 69, 0.32), 0 0 0 2px var(--green);
+  --shadow-overlay: 0 24px 60px rgba(15, 35, 69, 0.35);
+  --shadow-card: 0 1px 3px rgba(15, 35, 69, 0.05), 0 4px 16px rgba(15, 35, 69, 0.03);
+  --shadow-card-hover: 0 2px 6px rgba(15, 35, 69, 0.08), 0 8px 22px rgba(15, 35, 69, 0.05);
+  --shadow-signal-hover: 0 2px 6px rgba(15, 35, 69, 0.06);
+  --shadow-add-signal: 0 1px 2px rgba(65, 187, 147, 0.25);
+  --shadow-add-signal-hover: 0 2px 6px rgba(65, 187, 147, 0.35);
+  --shadow-compose: 0 2px 8px rgba(65, 187, 147, 0.15);
+  --shadow-commit: 0 1px 3px rgba(15, 35, 69, 0.05), 0 4px 14px rgba(15, 35, 69, 0.03);
+  --shadow-commit-hover: 0 2px 6px rgba(15, 35, 69, 0.08), 0 8px 22px rgba(15, 35, 69, 0.05);
+  --shadow-strip: 0 1px 3px rgba(15, 35, 69, 0.05);
+  --shadow-narrative: 0 1px 3px rgba(15, 35, 69, 0.04);
+  --shadow-metric-hover: 0 2px 8px rgba(15, 35, 69, 0.08);
+  --shadow-attendee-hover: 0 2px 8px rgba(15, 35, 69, 0.06);
+  --shadow-bcard: 0 1px 2px rgba(15, 35, 69, 0.06);
+  --shadow-bitem: 0 1px 2px rgba(15, 35, 69, 0.05);
+  --shadow-heard-col: 0 1px 2px rgba(15, 35, 69, 0.04);
+  --shadow-evidence: 0 6px 20px rgba(15, 35, 69, 0.22);
+  --shadow-letter: 0 2px 8px rgba(15, 35, 69, 0.05);
+  --shadow-proc: 0 20px 60px rgba(15, 35, 69, 0.2);
+  --shadow-actions-top: 0 -4px 12px rgba(15, 35, 69, 0.04);
+  --shadow-peek-tooltip: 0 2px 8px rgba(15, 35, 69, 0.25);
+  --shadow-list-card: 0 1px 2px rgba(15, 35, 69, 0.06);
+  --shadow-glow-green: 0 0 8px var(--green);
+
+  /* Animations */
+  --animate-spin-slow: kx-spin 1.4s linear infinite;
+  --animate-shimmer: kx-shimmer-slide 1.4s linear infinite;
+  --animate-toast-in: kx-toast-in 0.2s ease-out;
+  --animate-fade-in: kx-fade-in 0.15s ease-out;
+  --animate-chat-slide-up: kx-chat-slide-up 0.22s ease-out;
+}
+
+/* ─── Keyframes ─── */
+
+@keyframes kx-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes kx-shimmer-slide {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes kx-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes kx-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes kx-chat-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── Base Styles ─── */
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
 body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow: hidden;
   background: var(--page-bg);
   color: var(--text);
   font-family: var(--font-sans);
