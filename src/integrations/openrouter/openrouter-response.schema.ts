@@ -6,6 +6,7 @@ export const openRouterResponseSchema = z.object({
   usage: z.object({
     prompt_tokens: z.number(),
     completion_tokens: z.number(),
+    cost: z.number().optional(),
   }),
 });
 

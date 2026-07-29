@@ -56,6 +56,19 @@ export async function runAiSummarization(input: {
       summary: result.summary,
       leadScore: result.leadScore,
       aiProcessingStatus: 'success',
+      aiUsage: {
+        model: result.model,
+        provider: result.provider,
+        inputTokens: result.usage.inputTokens,
+        outputTokens: result.usage.outputTokens,
+        cacheCreationTokens: result.usage.cacheCreationTokens,
+        cacheReadTokens: result.usage.cacheReadTokens,
+        inputCostUsd: result.usage.inputCostUsd,
+        outputCostUsd: result.usage.outputCostUsd,
+        cacheCreationCostUsd: result.usage.cacheCreationCostUsd,
+        cacheReadCostUsd: result.usage.cacheReadCostUsd,
+        totalCostUsd: result.usage.totalCostUsd,
+      },
     });
     if (!updated) {
       throw new Error(`Transcript ${id} not found after update`);

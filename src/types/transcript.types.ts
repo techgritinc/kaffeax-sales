@@ -1,3 +1,25 @@
+export const AI_PROVIDERS = ['anthropic', 'openrouter'] as const;
+
+export type AiProvider = (typeof AI_PROVIDERS)[number];
+
+export interface AiUsage {
+  model: string;
+  provider: AiProvider;
+  inputTokens: number;
+  outputTokens: number;
+  /** Prompt-cache write tokens (Anthropic only; 0 for OpenRouter). */
+  cacheCreationTokens: number;
+  /** Prompt-cache read tokens (Anthropic only; 0 for OpenRouter). */
+  cacheReadTokens: number;
+  inputCostUsd: number;
+  outputCostUsd: number;
+  /** Cost of prompt-cache writes (0 when unused). */
+  cacheCreationCostUsd: number;
+  /** Cost of prompt-cache reads (0 when unused). */
+  cacheReadCostUsd: number;
+  totalCostUsd: number;
+}
+
 export const TRANSCRIPT_STATUSES = ['draft', 'saved'] as const;
 export const TRANSCRIPT_SOURCES = ['manual', 'zoom', 'ms_teams', 'google_meet'] as const;
 export const ATTENDEE_SIDES = ['kaffeax', 'prospect'] as const;
@@ -62,6 +84,7 @@ export interface TranscriptFields {
   leadScore: TranscriptLeadScore;
   recapEmail: string | null;
   zohoLeadId: string | null;
+  aiUsage?: AiUsage;
 }
 
 /** A transcript record as persisted in the store, keyed by id. */

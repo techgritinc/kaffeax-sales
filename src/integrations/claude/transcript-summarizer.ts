@@ -1,6 +1,7 @@
 import { env } from '@env';
 import { z } from 'zod';
 
+import { computeAnthropicCost } from '@/lib/utils/ai-cost.utils';
 import {
   MAX_STRUCTURED_ATTEMPTS,
   buildSummarizationPrompt,
@@ -53,13 +54,27 @@ export class TranscriptSummarizer {
         return acc;
       }, '');
 
+      const inputTokens = response.usage.input_tokens;
+      const outputTokens = response.usage.output_tokens;
+      const cacheCreationTokens = response.usage.cache_creation_input_tokens ?? 0;
+      const cacheReadTokens = response.usage.cache_read_input_tokens ?? 0;
       const result: SummarizationResult = {
         success: true,
         content,
         model: response.model,
+        provider: 'anthropic',
         usage: {
-          inputTokens: response.usage.input_tokens,
-          outputTokens: response.usage.output_tokens,
+          inputTokens,
+          outputTokens,
+          cacheCreationTokens,
+          cacheReadTokens,
+          ...computeAnthropicCost(
+            response.model,
+            inputTokens,
+            outputTokens,
+            cacheCreationTokens,
+            cacheReadTokens,
+          ),
         },
       };
 
@@ -96,15 +111,29 @@ export class TranscriptSummarizer {
 
       const processed = processStructuredResponse(rawText, signals);
       if (processed.success) {
+        const inputTokens = response.usage.input_tokens;
+        const outputTokens = response.usage.output_tokens;
+        const cacheCreationTokens = response.usage.cache_creation_input_tokens ?? 0;
+        const cacheReadTokens = response.usage.cache_read_input_tokens ?? 0;
         return {
           success: true,
           meetingTitle: processed.meetingTitle,
           summary: processed.summary,
           leadScore: processed.leadScore,
           model: response.model,
+          provider: 'anthropic',
           usage: {
-            inputTokens: response.usage.input_tokens,
-            outputTokens: response.usage.output_tokens,
+            inputTokens,
+            outputTokens,
+            cacheCreationTokens,
+            cacheReadTokens,
+            ...computeAnthropicCost(
+              response.model,
+              inputTokens,
+              outputTokens,
+              cacheCreationTokens,
+              cacheReadTokens,
+            ),
           },
         } satisfies StructuredSummarizationResult;
       }

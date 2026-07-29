@@ -1,5 +1,6 @@
 import { env } from '@env';
 
+import { computeOpenRouterCost } from '@/lib/utils/ai-cost.utils';
 import {
   MAX_STRUCTURED_ATTEMPTS,
   buildSummarizationPrompt,
@@ -67,16 +68,22 @@ export async function summarizeStructured(
 
       const processed = processStructuredResponse(firstChoice.message.content, signals);
       if (processed.success) {
+        const inputTokens = parsed.data.usage.prompt_tokens;
+        const outputTokens = parsed.data.usage.completion_tokens;
+        const cost = computeOpenRouterCost(
+          parsed.data.model,
+          inputTokens,
+          outputTokens,
+          parsed.data.usage.cost,
+        );
         return {
           success: true,
           meetingTitle: processed.meetingTitle,
           summary: processed.summary,
           leadScore: processed.leadScore,
           model: parsed.data.model,
-          usage: {
-            inputTokens: parsed.data.usage.prompt_tokens,
-            outputTokens: parsed.data.usage.completion_tokens,
-          },
+          provider: 'openrouter',
+          usage: { inputTokens, outputTokens, cacheCreationTokens: 0, cacheReadTokens: 0, ...cost },
         } satisfies StructuredSummarizationResult;
       }
 
