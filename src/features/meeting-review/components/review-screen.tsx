@@ -1,6 +1,5 @@
 'use client';
 
-import { SCORE_BY_BAND } from '@/constants/bands';
 import type { MeetingRecord } from '@/types/meeting.types';
 
 import { ActionItems } from './action-items';
@@ -26,14 +25,14 @@ export function ReviewScreen({
   onApprove,
   onReject,
 }: ReviewScreenProps) {
-  const band = draft.lead_score.band;
-  const score = SCORE_BY_BAND[band];
-  const title = draft.summary.meeting_title || 'Untitled meeting';
+  const band = draft.leadScore.band;
+  const score = draft.leadScore.scorePercentage;
+  const title = draft.summary.meetingTitle || 'Untitled meeting';
   const emailMissing = !draft.contact.email.value.trim();
 
   const onEmail = () => {
-    const subject = draft.recap_email.subject || '';
-    const body = draft.recap_email.body || '';
+    const subject = draft.recapEmail.subject || '';
+    const body = draft.recapEmail.body || '';
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
@@ -56,12 +55,12 @@ export function ReviewScreen({
       />
       <SummaryBlock narrative={draft.summary.narrative} />
       <HeardGrid
-        signals={draft.lead_score.detected_signals}
+        signals={draft.leadScore.detectedSignals}
         band={band}
-        rationale={draft.lead_score.rationale}
+        rationale={draft.leadScore.rationale}
       />
       <CoveredDecided topics={draft.summary.topics} decisions={draft.summary.decisions} />
-      <ActionItems nextSteps={draft.summary.next_steps} commitments={draft.summary.commitments} />
+      <ActionItems nextSteps={draft.summary.nextSteps} commitments={draft.summary.commitments} />
     </div>
   );
 }

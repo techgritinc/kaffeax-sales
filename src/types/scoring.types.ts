@@ -11,6 +11,7 @@ export interface DetectedSignal {
 /** The computed lead score attached to a meeting record. */
 export interface LeadScore {
   band: Band;
-  detected_signals: DetectedSignal[];
+  detectedSignals: DetectedSignal[];
   rationale: string;
+  scorePercentage: number;
 }

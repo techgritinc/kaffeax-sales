@@ -59,12 +59,3 @@ export async function deleteRubricSignal(id: string): Promise<Rubric> {
     logAndThrow('deleteRubricSignal', error, RUBRIC_SAVE_ERROR);
   }
 }
-
-export async function resetRubric(): Promise<Rubric> {
-  try {
-    await rubricSignalRepository.reset();
-    return await readRubric();
-  } catch (error) {
-    logAndThrow('resetRubric', error, RUBRIC_SAVE_ERROR);
-  }
-}

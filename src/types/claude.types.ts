@@ -2,7 +2,14 @@ import type { SimplifiedSignal } from '@/types/rubric-signal.types';
 import type { TranscriptLeadScore, TranscriptSummary } from '@/types/transcript.types';
 
 export type SummarizationErrorCategory =
-  'authentication' | 'rate_limit' | 'invalid_request' | 'network' | 'api_error';
+  | 'authentication'
+  | 'rate_limit'
+  | 'invalid_request'
+  | 'network'
+  | 'api_error'
+  // The AI call itself succeeded but the content wasn't valid/matching JSON — usually a
+  // one-off generation glitch, and a good candidate for an automatic same-request retry.
+  | 'malformed_response';
 
 export interface SummarizationError {
   success: false;
@@ -23,6 +30,7 @@ export interface SummarizationResult {
 
 export interface StructuredSummarizationResult {
   success: true;
+  meetingTitle: string;
   summary: TranscriptSummary;
   leadScore: TranscriptLeadScore;
   model: string;

@@ -14,7 +14,7 @@ export const env = createEnv({
     CLAUDE_DEFAULT_MODEL: z.string().min(1).optional().default('claude-sonnet-4-6'),
     CLAUDE_MAX_TOKENS: z.coerce.number().int().positive().optional().default(16384),
     OPENROUTER_API_KEY: z.string().min(1),
-    OPENROUTER_DEFAULT_MODEL: z.string().min(1).optional().default('google/gemma-4-31b-it:free'),
+    OPENROUTER_DEFAULT_MODEL: z.string().min(1).optional().default('nvidia/nemotron-3.5-content-safety:free'),
     OPENROUTER_MAX_TOKENS: z.coerce.number().int().positive().optional().default(16384),
   },
 

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const AiSummaryResponseSchema = z.object({
+  meetingTitle: z.string().min(1),
   narrative: z.string().min(1),
   whatWeHeard: z.array(z.string()).default([]),
   whatWasCovered: z.array(z.string()).default([]),

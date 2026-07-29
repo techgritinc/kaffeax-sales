@@ -1,5 +1,6 @@
 import type { Band } from './rubric.types';
 import type { LeadScore } from './scoring.types';
+import type { AiProcessingStatus } from './transcript.types';
 
 /** Extraction confidence for a captured contact field. */
 export type Confidence = 'high' | 'medium' | 'low';
@@ -29,7 +30,7 @@ export interface Attendee {
 export interface NextStep {
   description: string;
   owner: string;
-  due_date: string;
+  dueDate: string;
 }
 
 export interface Commitment {
@@ -39,13 +40,13 @@ export interface Commitment {
 
 /** The structured meeting summary produced by the extraction. */
 export interface Summary {
-  meeting_title: string;
+  meetingTitle: string;
   narrative: string;
   attendees: Attendee[];
   topics: string[];
   decisions: string[];
-  open_questions: string[];
-  next_steps: NextStep[];
+  openQuestions: string[];
+  nextSteps: NextStep[];
   commitments: Commitment[];
 }
 
@@ -60,23 +61,9 @@ export interface MeetingRecord {
   when: string;
   committed: boolean;
   band: Band;
+  aiProcessingStatus: AiProcessingStatus;
   contact: Contact;
   summary: Summary;
-  lead_score: LeadScore;
-  recap_email: RecapEmail;
-}
-
-export interface TranscriptPresentation {
-  when: string;
-  recapSubject: string;
-  contact: {
-    name: ConfidentField;
-    company: ConfidentField;
-    title: ConfidentField;
-    emailConfidence: Confidence;
-  };
-  summary: {
-    openQuestions: string[];
-    commitments: Commitment[];
-  };
+  leadScore: LeadScore;
+  recapEmail: RecapEmail;
 }

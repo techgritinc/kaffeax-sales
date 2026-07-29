@@ -10,15 +10,12 @@ export const BAND_LABEL: Record<Band, string> = {
   cold: 'COLD',
 };
 
-/** Fixed demo score shown out of 100, keyed by band. */
-export const SCORE_BY_BAND: Record<Band, number> = {
-  hot: 93,
-  warm: 68,
-  cold: 34,
+/** Numeric scoring weight per band tier — drives percentage-based lead scoring. */
+export const WEIGHT_NUMERIC_VALUE: Record<Band, number> = {
+  hot: 3,
+  warm: 2,
+  cold: 1,
 };
-
-/** Total the score is presented against. */
-export const SCORE_TOTAL = 100;
 
 /** Rubric summary banding rule. */
 export const RUBRIC_BANDING_RULE =

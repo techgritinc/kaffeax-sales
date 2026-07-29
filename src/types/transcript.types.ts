@@ -1,14 +1,14 @@
-import type { TranscriptPresentation } from '@/types/meeting.types';
-
-export const TRANSCRIPT_STATUSES = ['processing', 'draft', 'saved', 'failed'] as const;
+export const TRANSCRIPT_STATUSES = ['draft', 'saved'] as const;
 export const TRANSCRIPT_SOURCES = ['manual', 'zoom', 'ms_teams', 'google_meet'] as const;
 export const ATTENDEE_SIDES = ['kaffeax', 'prospect'] as const;
 export const LEAD_SCORE_BANDS = ['hot', 'warm', 'cold'] as const;
+export const AI_PROCESSING_STATUSES = ['pending', 'success', 'failed'] as const;
 
 export type TranscriptStatus = (typeof TRANSCRIPT_STATUSES)[number];
 export type TranscriptSource = (typeof TRANSCRIPT_SOURCES)[number];
 export type AttendeeSide = (typeof ATTENDEE_SIDES)[number];
 export type LeadScoreBand = (typeof LEAD_SCORE_BANDS)[number];
+export type AiProcessingStatus = (typeof AI_PROCESSING_STATUSES)[number];
 
 export interface ActionItem {
   description: string;
@@ -51,6 +51,7 @@ export interface TranscriptFields {
   userId: string;
   title: string;
   status: TranscriptStatus;
+  aiProcessingStatus: AiProcessingStatus;
   source: TranscriptSource;
   externalMeetingId: string | null;
   webhookPayload: unknown;
@@ -67,5 +68,6 @@ export interface TranscriptFields {
 export interface StoredTranscript {
   id: string;
   fields: TranscriptFields;
-  presentation: TranscriptPresentation;
+  createdAt: Date;
+  updatedAt: Date;
 }

@@ -3,6 +3,8 @@
 import { AppHeader } from '@/components/common/app-header/app-header';
 import { Stepper } from '@/components/common/stepper/stepper';
 import { Toast } from '@/components/ui/toast/toast';
+import { RUBRIC_BANDING_RULE } from '@/constants/bands';
+import { DEFAULT_CHAT_COMPANY, DEFAULT_CHAT_SIGNALS } from '@/constants/workflow';
 import { ChatFab } from '@/features/assistant-chat/components/chat-fab';
 import { ChatPanel } from '@/features/assistant-chat/components/chat-panel';
 import { CommitScreen } from '@/features/crm-commit/components/commit-screen';
@@ -12,8 +14,12 @@ import { Sidebar } from '@/features/meeting-library/components/sidebar';
 import { SidebarRail } from '@/features/meeting-library/components/sidebar-rail';
 import { ReviewScreen } from '@/features/meeting-review/components/review-screen';
 import { RubricModal } from '@/features/scoring-rubric/components/rubric-modal';
+import { persist } from '@/features/workflow/utils/persist';
 import { cn } from '@/lib/utils/cn';
+import { useRecents } from '@/providers/recents/recents-context';
+import { useRubricSignals } from '@/providers/rubric-signals/rubric-signals-context';
 import { useWorkflow } from '@/providers/workflow/workflow-context';
+import type { Rubric } from '@/types/rubric.types';
 
 const SHELL_COLS = {
   sidebarChat:
@@ -28,6 +34,9 @@ const SHELL_COLS = {
 /** Application shell: fixed header + the responsive [sidebar | main | chat] grid. */
 export function AppShell() {
   const wf = useWorkflow();
+  const { recents } = useRecents();
+  const rubricSignals = useRubricSignals();
+  const rubric: Rubric = { signals: rubricSignals.signals, banding: RUBRIC_BANDING_RULE };
   const canReview = wf.draft !== null || wf.isCommitted;
   const showChat = wf.step !== 'capture';
   const chatVisible = showChat && wf.chatOpen;
@@ -41,8 +50,8 @@ export function AppShell() {
       : SHELL_COLS.railOnly;
 
   const chatContext = {
-    company: wf.draft?.contact.company.value || wf.crm[0]?.contact.company.value || 'Cascade Ember',
-    signals: 'distribution pain, price-transparency pain, and a listing/marketplace need',
+    company: wf.draft?.contact.company.value || DEFAULT_CHAT_COMPANY,
+    signals: DEFAULT_CHAT_SIGNALS,
   };
 
   return (
@@ -59,9 +68,9 @@ export function AppShell() {
 
         {wf.sidebarOpen ? (
           <Sidebar
-            library={wf.library}
+            recents={recents}
             activeId={wf.activeId}
-            onSelect={wf.openFromLibrary}
+            onSelect={(item) => void wf.openFromRecent(item.id)}
             onNew={wf.newCapture}
             onCollapse={() => wf.setSidebarOpen(false)}
           />
@@ -92,7 +101,7 @@ export function AppShell() {
                 onFile={wf.handleFile}
                 onLoadSample={wf.loadSample}
                 onClear={() => wf.setTranscript('')}
-                onSummarise={wf.process}
+                onSummarise={() => void wf.summarize()}
                 onOpenRubric={() => wf.setRubricOpen(true)}
               />
             )}
@@ -102,18 +111,16 @@ export function AppShell() {
                 draft={wf.draft}
                 committed={wf.isCommitted}
                 onPatch={wf.patch}
-                onApprove={wf.approve}
-                onReject={wf.reject}
+                onApprove={() => void wf.approve()}
+                onReject={() => void wf.reject()}
               />
             )}
 
             {wf.step === 'commit' && (
               <CommitScreen
-                crm={wf.crm}
-                activeId={wf.activeId}
-                library={wf.library}
+                record={wf.draft}
                 onNewCapture={wf.newCapture}
-                onOpenInReview={wf.openFromLibrary}
+                onOpenInReview={(id) => void wf.openFromRecent(id)}
               />
             )}
           </div>
@@ -126,11 +133,15 @@ export function AppShell() {
 
       <RubricModal
         open={wf.rubricOpen}
-        rubric={wf.rubric}
+        rubric={rubric}
         onClose={() => wf.setRubricOpen(false)}
-        onAddSignal={wf.addSignal}
-        onUpdateSignal={wf.updateSignal}
-        onRemoveSignal={wf.removeSignal}
+        onAddSignal={(label, weight) =>
+          persist('addSignal', rubricSignals.addSignal({ label, weight }))
+        }
+        onUpdateSignal={(id, patch) =>
+          persist('updateSignal', rubricSignals.updateSignal(id, patch))
+        }
+        onRemoveSignal={(id) => persist('removeSignal', rubricSignals.removeSignal(id))}
       />
 
       {wf.toast !== null && <Toast message={wf.toast.message} tone={wf.toast.tone} />}
