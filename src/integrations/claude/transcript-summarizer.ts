@@ -2,6 +2,7 @@ import { env } from '@env';
 import { z } from 'zod';
 
 import {
+  MAX_STRUCTURED_ATTEMPTS,
   buildSummarizationPrompt,
   processStructuredResponse,
 } from '@/lib/utils/structured-analysis.utils';
@@ -13,13 +14,8 @@ import type {
 } from '@/types/claude.types';
 import type { SimplifiedSignal } from '@/types/rubric-signal.types';
 
-import client, {
-  APIConnectionError,
-  APIError,
-  AuthenticationError,
-  BadRequestError,
-  RateLimitError,
-} from './client';
+import client from './client';
+import { handleSdkError } from './sdk-error.utils';
 
 const transcriptSchema = z.string().min(1);
 
@@ -69,7 +65,7 @@ export class TranscriptSummarizer {
 
       return result;
     } catch (error) {
-      return this.handleSdkError(error);
+      return handleSdkError(error);
     }
   }
 
@@ -80,87 +76,55 @@ export class TranscriptSummarizer {
   ): Promise<SummarizationResponse> {
     const { system } = buildSummarizationPrompt(signals);
 
-    const stream = client.messages.stream({
-      model: options.model ?? env.CLAUDE_DEFAULT_MODEL,
-      max_tokens: options.maxTokens ?? env.CLAUDE_MAX_TOKENS,
-      system,
-      thinking: { type: 'adaptive' },
-      messages: [{ role: 'user', content: transcript }],
-    });
+    let lastResult: SummarizationResponse | null = null;
 
-    const response = await stream.finalMessage();
+    for (let attempt = 1; attempt <= MAX_STRUCTURED_ATTEMPTS; attempt++) {
+      const stream = client.messages.stream({
+        model: options.model ?? env.CLAUDE_DEFAULT_MODEL,
+        max_tokens: options.maxTokens ?? env.CLAUDE_MAX_TOKENS,
+        system,
+        thinking: { type: 'adaptive' },
+        messages: [{ role: 'user', content: transcript }],
+      });
 
-    const rawText = response.content.reduce<string>((acc, block) => {
-      if (block.type === 'text') return acc + block.text;
-      return acc;
-    }, '');
+      const response = await stream.finalMessage();
 
-    const processed = processStructuredResponse(rawText, signals);
-    if (!processed.success) return processed;
-    return {
-      success: true,
-      summary: processed.summary,
-      leadScore: processed.leadScore,
-      model: response.model,
-      usage: {
-        inputTokens: response.usage.input_tokens,
-        outputTokens: response.usage.output_tokens,
-      },
-    } satisfies StructuredSummarizationResult;
-  }
+      const rawText = response.content.reduce<string>((acc, block) => {
+        if (block.type === 'text') return acc + block.text;
+        return acc;
+      }, '');
 
-  private handleSdkError(error: unknown): SummarizationResponse {
-    if (error instanceof AuthenticationError) {
-      return {
-        success: false,
-        category: 'authentication',
-        message: 'API authentication failed. Contact your administrator.',
-        retryAfterMs: null,
-      };
+      const processed = processStructuredResponse(rawText, signals);
+      if (processed.success) {
+        return {
+          success: true,
+          meetingTitle: processed.meetingTitle,
+          summary: processed.summary,
+          leadScore: processed.leadScore,
+          model: response.model,
+          usage: {
+            inputTokens: response.usage.input_tokens,
+            outputTokens: response.usage.output_tokens,
+          },
+        } satisfies StructuredSummarizationResult;
+      }
+
+      lastResult = processed;
+      if (processed.category !== 'malformed_response' || attempt === MAX_STRUCTURED_ATTEMPTS) {
+        return processed;
+      }
+      console.warn(
+        `[TranscriptSummarizer] Malformed AI response, retrying (attempt ${attempt + 1}/${MAX_STRUCTURED_ATTEMPTS})`,
+      );
     }
-    if (error instanceof RateLimitError) {
-      const retryAfter = error.headers?.get('retry-after');
-      const seconds = retryAfter != null ? parseInt(retryAfter, 10) : NaN;
-      return {
-        success: false,
-        category: 'rate_limit',
-        message: 'Service is temporarily busy. Please try again shortly.',
-        retryAfterMs: isNaN(seconds) ? null : seconds * 1000,
-      };
-    }
-    if (error instanceof BadRequestError) {
-      return {
-        success: false,
-        category: 'invalid_request',
-        message: 'The request could not be processed. The transcript may be too long.',
-        retryAfterMs: null,
-      };
-    }
-    if (error instanceof APIConnectionError) {
-      return {
-        success: false,
-        category: 'network',
-        message: 'Unable to reach the summarization service. Check your connection.',
-        retryAfterMs: null,
-      };
-    }
-    if (error instanceof APIError) {
-      return {
+
+    return (
+      lastResult ?? {
         success: false,
         category: 'api_error',
         message: 'An unexpected error occurred. Please try again.',
         retryAfterMs: null,
-      };
-    }
-    console.error(
-      '[TranscriptSummarizer] Unexpected non-SDK error',
-      error instanceof Error ? error.message : 'Unknown error',
+      }
     );
-    return {
-      success: false,
-      category: 'api_error',
-      message: 'An unexpected error occurred. Please try again.',
-      retryAfterMs: null,
-    };
   }
 }
