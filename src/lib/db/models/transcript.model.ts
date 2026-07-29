@@ -2,8 +2,10 @@ import mongoose, { type HydratedDocument, type Model, Schema } from 'mongoose';
 
 import {
   AI_PROCESSING_STATUSES,
+  AI_PROVIDERS,
   ATTENDEE_SIDES,
   type ActionItem,
+  type AiUsage,
   type Attendee,
   type DetectedSignal,
   LEAD_SCORE_BANDS,
@@ -61,6 +63,23 @@ const summarySchema = new Schema<TranscriptSummary>(
 
 const contactSchema = new Schema<TranscriptContact>({ email: { type: String } }, { _id: false });
 
+const aiUsageSchema = new Schema<AiUsage>(
+  {
+    model: { type: String, required: true },
+    provider: { type: String, required: true, enum: AI_PROVIDERS },
+    inputTokens: { type: Number, required: true },
+    outputTokens: { type: Number, required: true },
+    cacheCreationTokens: { type: Number, required: true, default: 0 },
+    cacheReadTokens: { type: Number, required: true, default: 0 },
+    inputCostUsd: { type: Number, required: true },
+    outputCostUsd: { type: Number, required: true },
+    cacheCreationCostUsd: { type: Number, required: true, default: 0 },
+    cacheReadCostUsd: { type: Number, required: true, default: 0 },
+    totalCostUsd: { type: Number, required: true },
+  },
+  { _id: false },
+);
+
 const leadScoreSchema = new Schema<TranscriptLeadScore>(
   {
     band: { type: String, enum: LEAD_SCORE_BANDS },
@@ -95,6 +114,7 @@ const transcriptSchema = new Schema<TranscriptSchemaFields>(
     leadScore: { type: leadScoreSchema, default: {} },
     recapEmail: { type: String, default: null },
     zohoLeadId: { type: String },
+    aiUsage: { type: aiUsageSchema },
   },
   // minimize: false — otherwise Mongoose strips empty nested objects (e.g. contact: {})
   // from both the persisted document and toObject() output, before contact.email is ever set.

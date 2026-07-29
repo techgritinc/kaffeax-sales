@@ -13,13 +13,13 @@ export const env = createEnv({
 
     // CLAUDE
     CLAUDE_API_KEY: z.string().min(1),
-    CLAUDE_DEFAULT_MODEL: z.string().min(1).optional().default('claude-sonnet-4-6'),
-    CLAUDE_MAX_TOKENS: z.coerce.number().int().positive().optional().default(16384),
+    CLAUDE_DEFAULT_MODEL: z.string().min(1),
+    CLAUDE_MAX_TOKENS: z.coerce.number().int().positive(),
 
     // OPEROUTER
     OPENROUTER_API_KEY: z.string().min(1),
-    OPENROUTER_DEFAULT_MODEL: z.string().min(1).optional().default('nvidia/nemotron-3.5-content-safety:free'),
-    OPENROUTER_MAX_TOKENS: z.coerce.number().int().positive().optional().default(16384),
+    OPENROUTER_DEFAULT_MODEL: z.string().min(1),
+    OPENROUTER_MAX_TOKENS: z.coerce.number().int().positive(),
 
     // ZOHO
     ZOHO_CLIENT_ID: z.string().min(1),

@@ -1,6 +1,7 @@
 import { env } from '@env';
 import { z } from 'zod';
 
+import { computeOpenRouterCost } from '@/lib/utils/ai-cost.utils';
 import type {
   SummarizationOptions,
   SummarizationResponse,
@@ -67,14 +68,20 @@ export class TranscriptSummarizer {
         };
       }
 
+      const inputTokens = parsed.data.usage.prompt_tokens;
+      const outputTokens = parsed.data.usage.completion_tokens;
+      const cost = computeOpenRouterCost(
+        parsed.data.model,
+        inputTokens,
+        outputTokens,
+        parsed.data.usage.cost,
+      );
       const result: SummarizationResult = {
         success: true,
         content: firstChoice.message.content,
         model: parsed.data.model,
-        usage: {
-          inputTokens: parsed.data.usage.prompt_tokens,
-          outputTokens: parsed.data.usage.completion_tokens,
-        },
+        provider: 'openrouter',
+        usage: { inputTokens, outputTokens, cacheCreationTokens: 0, cacheReadTokens: 0, ...cost },
       };
 
       return result;

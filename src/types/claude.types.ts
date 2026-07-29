@@ -1,5 +1,5 @@
 import type { SimplifiedSignal } from '@/types/rubric-signal.types';
-import type { TranscriptLeadScore, TranscriptSummary } from '@/types/transcript.types';
+import type { AiProvider, TranscriptLeadScore, TranscriptSummary } from '@/types/transcript.types';
 
 export type SummarizationErrorCategory =
   | 'authentication'
@@ -22,9 +22,17 @@ export interface SummarizationResult {
   success: true;
   content: string;
   model: string;
+  provider: AiProvider;
   usage: {
     inputTokens: number;
     outputTokens: number;
+    cacheCreationTokens: number;
+    cacheReadTokens: number;
+    inputCostUsd: number;
+    outputCostUsd: number;
+    cacheCreationCostUsd: number;
+    cacheReadCostUsd: number;
+    totalCostUsd: number;
   };
 }
 
@@ -34,9 +42,17 @@ export interface StructuredSummarizationResult {
   summary: TranscriptSummary;
   leadScore: TranscriptLeadScore;
   model: string;
+  provider: AiProvider;
   usage: {
     inputTokens: number;
     outputTokens: number;
+    cacheCreationTokens: number;
+    cacheReadTokens: number;
+    inputCostUsd: number;
+    outputCostUsd: number;
+    cacheCreationCostUsd: number;
+    cacheReadCostUsd: number;
+    totalCostUsd: number;
   };
 }
 
