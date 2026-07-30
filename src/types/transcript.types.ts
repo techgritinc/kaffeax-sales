@@ -85,6 +85,14 @@ export interface TranscriptFields {
   recapEmail: string | null;
   zohoLeadId: string | null;
   aiUsage?: AiUsage;
+  /**
+   * The chat panel's suggested question chips, generated once per analysis.
+   * Always 0 or exactly 3 entries — a partial set is never stored, because two
+   * chips where three are expected reads as a bug rather than a shorter list.
+   */
+  suggestedQuestions: string[];
+  /** Cost of the suggestion call, kept separate from `aiUsage` so each call stays attributable. */
+  suggestionUsage?: AiUsage;
 }
 
 /** A transcript record as persisted in the store, keyed by id. */

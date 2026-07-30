@@ -22,13 +22,6 @@ export const MEETING_DATE = 'June 24, 2026';
 /** Accepted transcript upload extensions. */
 export const TRANSCRIPT_FILE_ACCEPT = '.txt,.md,.vtt,.srt';
 
-/** Fallback company name shown in the chat panel when no draft is loaded. */
-export const DEFAULT_CHAT_COMPANY = 'Cascade Ember';
-
-/** Fallback signals description shown in the chat panel when no draft is loaded. */
-export const DEFAULT_CHAT_SIGNALS =
-  'distribution pain, price-transparency pain, and a listing/marketplace need';
-
 /** ID prefix for rubric signals created by the user (not sourced from the client). */
 export const CUSTOM_SIGNAL_ID_PREFIX = 'custom_';
 

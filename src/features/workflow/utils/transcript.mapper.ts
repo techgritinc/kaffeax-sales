@@ -79,6 +79,9 @@ export function toMeetingRecord(stored: StoredTranscript, rubric: Rubric): Meeti
       scorePercentage: leadScore?.scorePercentage ?? 0,
     },
     recapEmail: { subject: '', body: fields.recapEmail ?? '' },
+    // `?? []` covers documents written before the field existed — they are read
+    // back without it, and no backfill is planned.
+    suggestedQuestions: fields.suggestedQuestions ?? [],
   };
 }
 
@@ -99,7 +102,14 @@ export function toRecentItem(stored: StoredTranscript): RecentItem {
   };
 }
 
-/** Decompose a `MeetingRecord` into a persistence patch (never touches raw/cleaned transcript). */
+/**
+ * Decompose a `MeetingRecord` into a persistence patch (never touches raw/cleaned transcript).
+ *
+ * `suggestedQuestions` is deliberately absent and must stay that way. This patch
+ * is built from client-held state and applied with `findByIdAndUpdate`, so an
+ * omitted key is preserved — while including it would let any save from the
+ * review screen overwrite the generated set with whatever the browser holds.
+ */
 export function toTranscriptPatch(record: MeetingRecord): Partial<TranscriptFields> {
   const { summary, leadScore, recapEmail, contact } = record;
   return {

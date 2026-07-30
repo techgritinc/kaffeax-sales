@@ -66,4 +66,11 @@ export interface MeetingRecord {
   summary: Summary;
   leadScore: LeadScore;
   recapEmail: RecapEmail;
+  /**
+   * The chat panel's suggested chips — 3 entries, or empty when this meeting has
+   * none. Top level rather than inside `summary` deliberately: `summary` is
+   * rewritten wholesale from this view-model on every save, which would erase
+   * anything nested in it.
+   */
+  suggestedQuestions: string[];
 }

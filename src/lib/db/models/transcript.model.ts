@@ -63,7 +63,8 @@ const summarySchema = new Schema<TranscriptSummary>(
 
 const contactSchema = new Schema<TranscriptContact>({ email: { type: String } }, { _id: false });
 
-const aiUsageSchema = new Schema<AiUsage>(
+/** Exported so the chat-exchange model can record usage in the same shape. */
+export const aiUsageSchema = new Schema<AiUsage>(
   {
     model: { type: String, required: true },
     provider: { type: String, required: true, enum: AI_PROVIDERS },
@@ -115,6 +116,10 @@ const transcriptSchema = new Schema<TranscriptSchemaFields>(
     recapEmail: { type: String, default: null },
     zohoLeadId: { type: String },
     aiUsage: { type: aiUsageSchema },
+    // No index: only ever read as part of a document already fetched by id or by
+    // the userId indexes above, and never queried on.
+    suggestedQuestions: { type: [String], default: [] },
+    suggestionUsage: { type: aiUsageSchema },
   },
   // minimize: false — otherwise Mongoose strips empty nested objects (e.g. contact: {})
   // from both the persisted document and toObject() output, before contact.email is ever set.

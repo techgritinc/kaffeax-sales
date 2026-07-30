@@ -14,9 +14,17 @@ export interface Toast {
 
 export type ChatRole = 'user' | 'ai';
 
+/**
+ * How an AI chat bubble should read. Answers and refusals render identically —
+ * a refusal is the assistant working correctly. Only `failure` is styled apart.
+ * `failure` exists for the live session only; it is never persisted.
+ */
+export type ChatMessageKind = 'answer' | 'refusal' | 'failure';
+
 export interface ChatMessage {
   id: string;
   role: ChatRole;
   text: string;
   pending?: boolean;
+  kind?: ChatMessageKind;
 }
