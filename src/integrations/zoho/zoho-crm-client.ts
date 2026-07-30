@@ -31,6 +31,7 @@ class ZohoCrmClient {
 
       if (response.ok) {
         const data = (await response.json()) as ZohoLeadSearchResponse;
+        console.log(data);
         return data.data[0] ?? null;
       }
 
@@ -62,6 +63,8 @@ class ZohoCrmClient {
       body: { data: [payload], trigger: ['workflow'] },
     });
 
+    console.log(response);
+
     if (!response.ok) {
       const errorBody = (await response.json().catch(() => ({}))) as Record<string, unknown>;
       console.error('[ZohoCrm] Lead update failed:', {
@@ -72,7 +75,19 @@ class ZohoCrmClient {
       throw new Error('Failed to update lead in CRM');
     }
 
-    return (await response.json()) as ZohoUpdateResponse;
+    const result = (await response.json()) as ZohoUpdateResponse;
+    const detail = result.data[0];
+    console.log(detail);
+    if (!detail || detail.status !== 'success') {
+      console.error('[ZohoCrm] Lead update rejected by Zoho:', {
+        recordId,
+        code: detail?.code,
+        message: detail?.message,
+      });
+      throw new Error('Failed to update lead in CRM');
+    }
+
+    return result;
   }
 }
 

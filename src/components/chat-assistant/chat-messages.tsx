@@ -4,7 +4,7 @@ import { Avatar } from '@/components/ui/avatar/avatar';
 import { cn } from '@/lib/utils/cn';
 import type { ChatMessage } from '@/types/workflow.types';
 
-import { useAutoScroll } from '../hooks/use-auto-scroll';
+import { useAutoScroll } from '../../hooks/chat-assistant/use-auto-scroll';
 
 export interface ChatMessagesProps {
   messages: ChatMessage[];

@@ -7,7 +7,6 @@ interface ZohoCredentials {
   clientId: string;
   clientSecret: string;
   refreshToken: string;
-  organizationId: string;
   tokenUrl: string;
 }
 
@@ -20,7 +19,6 @@ class ZohoAuthService {
       clientId: env.ZOHO_CLIENT_ID,
       clientSecret: env.ZOHO_CLIENT_SECRET,
       refreshToken: env.ZOHO_REFRESH_TOKEN,
-      organizationId: env.ZOHO_ORGANIZATION_ID,
       tokenUrl: env.ZOHO_TOKEN_URL,
     };
     this.validateCredentials();
@@ -91,7 +89,7 @@ class ZohoAuthService {
   ): Promise<Response> {
     const authHeaders = await this.getAuthHeaders();
     const mergedHeaders: Record<string, string> = {
-      'Content-Type': 'application/json',
+      ...(options?.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
       ...authHeaders,
       ...options?.headers,
     };

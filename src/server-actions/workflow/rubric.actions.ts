@@ -1,11 +1,11 @@
 'use server';
 
-import { toRubric, toRubricSignalFields } from '@/features/workflow/utils/rubric.mapper';
+import { toRubric, toRubricSignalFields } from '@/lib/utils/workflow/rubric.mapper';
 import { rubricSignalRepository } from '@/repositories/rubric-signal.repository';
 import type { RubricSignalFields } from '@/types/rubric-signal.types';
 import type { Rubric, RubricSignal } from '@/types/rubric.types';
 
-import { RUBRIC_LOAD_ERROR, RUBRIC_SAVE_ERROR } from '../constants/action.constants';
+import { RUBRIC_LOAD_ERROR, RUBRIC_SAVE_ERROR } from '../../constants/workflow/action.constants';
 
 /** Log with context and surface a user-safe error (never leak internals) — constitution §XIV. */
 function logAndThrow(op: string, error: unknown, message: string): never {

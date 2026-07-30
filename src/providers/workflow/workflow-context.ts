@@ -17,6 +17,7 @@ export interface WorkflowContextValue {
   sidebarOpen: boolean;
   rubricOpen: boolean;
   chatOpen: boolean;
+  isCommitting: boolean;
 
   // --- Derived (computed in render) ---
   isCommitted: boolean;

@@ -1,15 +1,17 @@
 import { PROC_TICK_MS } from '@/constants/workflow';
-import { runAiSummarization } from '@/features/workflow/actions/transcript-ai.actions';
+import { commitToCrm } from '@/server-actions/crm-commit/commit-to-crm';
+import { runAiSummarization } from '@/server-actions/workflow/transcript-ai.actions';
 import {
   createDraftTranscript,
   deleteTranscript,
-  updateTranscript,
-} from '@/features/workflow/actions/transcript.actions';
-import { toSimplifiedSignals } from '@/features/workflow/utils/rubric.mapper';
-import { formatWhen } from '@/features/workflow/utils/transcript.mapper';
+  getTranscriptById,
+  updateTranscriptEmail,
+} from '@/server-actions/workflow/transcript.actions';
+import { toSimplifiedSignals } from '@/lib/utils/workflow/rubric.mapper';
+import { formatWhen } from '@/lib/utils/workflow/transcript.mapper';
 import type { RecentItem } from '@/providers/recents/recents-context';
 
-import type { NotifyFn, WorkflowActionDeps } from '../types/workflow-action-deps.types';
+import type { NotifyFn, WorkflowActionDeps } from '../../types/workflow/workflow-action-deps.types';
 
 export async function runSummarize(deps: WorkflowActionDeps): Promise<void> {
   const {
@@ -77,22 +79,41 @@ export async function runSummarize(deps: WorkflowActionDeps): Promise<void> {
 }
 
 export async function runApprove(deps: WorkflowActionDeps, notify: NotifyFn): Promise<void> {
-  const { draft, isCommitted, updateRecent, setDraft } = deps;
+  const { draft, updateRecent, setDraft, setStep, setIsCommitting } = deps;
   if (!draft) return;
+  setIsCommitting(true);
   try {
-    const updated = await updateTranscript({ ...draft, committed: true });
+    // Persist the (possibly corrected) email first — commitToCrm re-reads the transcript
+    // from the DB by id, so the CRM lookup must see this saved value, not the in-memory
+    // draft. This targets only the email field; see updateTranscriptEmail's doc comment.
+    const persistedOk = await updateTranscriptEmail(draft.id, draft.contact.email.value);
+    if (!persistedOk) {
+      notify('That summary could not be found.', 'reject');
+      return;
+    }
+
+    const result = await commitToCrm(draft.id);
+    if (!result.success) {
+      notify(result.error ?? 'Unable to save changes. Please try again.', 'reject');
+      return;
+    }
+
+    const updated = await getTranscriptById(draft.id);
     if (!updated) {
       notify('That summary could not be found.', 'reject');
       return;
     }
     updateRecent(updated.id, { status: 'CRM' });
     setDraft(updated);
-    notify(isCommitted ? 'CRM record updated.' : 'Approved and written to CRM.', 'success');
+    notify('Approved and written to CRM.', 'success');
+    setStep('commit');
   } catch (err) {
     notify(
       err instanceof Error ? err.message : 'Unable to save changes. Please try again.',
       'reject',
     );
+  } finally {
+    setIsCommitting(false);
   }
 }
 

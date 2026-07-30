@@ -5,7 +5,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Icon } from '@/components/ui/icon/icon';
 import type { ChatMessage } from '@/types/workflow.types';
 
-import { cannedResponse } from '../hooks/use-canned-response';
+import { cannedResponse } from '../../hooks/chat-assistant/use-canned-response';
 import { ChatMessages } from './chat-messages';
 
 export interface ChatPanelProps {

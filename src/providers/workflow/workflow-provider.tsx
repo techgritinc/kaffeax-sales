@@ -3,7 +3,7 @@
 import { type ReactNode, useState } from 'react';
 
 import { SIDEBAR_OPEN_MIN_WIDTH } from '@/constants/workflow';
-import { useWorkflowActions } from '@/features/workflow/hooks/use-workflow-actions';
+import { useWorkflowActions } from '@/hooks/workflow/use-workflow-actions';
 import { useRecents } from '@/providers/recents/recents-context';
 import { useRubricSignals } from '@/providers/rubric-signals/rubric-signals-context';
 import type { MeetingRecord } from '@/types/meeting.types';
@@ -34,6 +34,7 @@ export function WorkflowProvider({ children, initialSample }: WorkflowProviderPr
   );
   const [rubricOpen, setRubricOpen] = useState<boolean>(false);
   const [chatOpen, setChatOpen] = useState<boolean>(true);
+  const [isCommitting, setIsCommitting] = useState<boolean>(false);
 
   // --- Derived selectors (recomputed each render) ---
   const isCommitted = !!draft?.committed;
@@ -60,6 +61,7 @@ export function WorkflowProvider({ children, initialSample }: WorkflowProviderPr
     setToast,
     setStep,
     setProcTick,
+    setIsCommitting,
   });
 
   const value: WorkflowContextValue = {
@@ -74,6 +76,7 @@ export function WorkflowProvider({ children, initialSample }: WorkflowProviderPr
     sidebarOpen,
     rubricOpen,
     chatOpen,
+    isCommitting,
     isCommitted,
     score,
     emailMissing,

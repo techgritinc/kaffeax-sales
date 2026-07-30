@@ -18,10 +18,11 @@
 ZOHO_CLIENT_ID=<your-client-id>
 ZOHO_CLIENT_SECRET=<your-client-secret>
 ZOHO_REFRESH_TOKEN=<your-refresh-token>
-ZOHO_ORGANIZATION_ID=<your-org-id>
 ZOHO_TOKEN_URL=https://accounts.zoho.com/oauth/v2/token
 ZOHO_CRM_API_BASE_URL=https://www.zohoapis.com/crm/v7
 ```
+
+(`ZOHO_ORGANIZATION_ID` was removed 2026-07-30 — unused by any Zoho CRM v7 call this integration makes.)
 
 2. Start the dev server:
 
@@ -78,11 +79,53 @@ npm run dev
 2. Call `commitToCrm(transcriptId)`
 3. **Expected**:
    - Lead found by email
-   - Meeting data mapped and sent to Zoho
-   - If CRM fields exist: lead record updated (verify in Zoho UI)
-   - If CRM fields are still placeholders: Zoho may reject with "invalid field" — this is expected until real API names are configured
+   - Meeting data mapped (using the real field API names in `ZOHO_CRM_FIELD_MAP`) and sent to Zoho
+   - Lead record updated (verify in Zoho UI) — `Meeting_Title`, `Meeting_Band`, `Meeting_Score`, `Meeting_Summary`, `What_We_Heard`, `Detected_Signals`, `What_Was_Covered`, `What_Was_Decided`, `Action_Items`
+   - If Zoho rejects any field (e.g., a picklist type mismatch on a custom field), this is now surfaced correctly as a failure (2026-07-30 fix) — `commitToCrm` inspects the per-record `status` even on an HTTP 200 response, so a rejection is never mistaken for success
    - Transcript's `zohoLeadId` field is updated with the Zoho record ID
    - Returns `{ success: true }`
+
+### V7: Approve Wiring End-to-End (Read-Only Review + Status Gating)
+
+**Goal**: Confirm the Review screen is read-only and that Approve only marks a transcript `saved` when the CRM write actually succeeds.
+
+1. Open a **draft** transcript on the Review screen — confirm only the prospect email field is editable; every other field (summary, score, signals, action items) is read-only, and Approve/Reject are the only actions.
+2. With a transcript whose email matches a real dev-CRM lead, click Approve → confirm the transcript's status becomes `saved` in the DB and it moves to the "Saved to CRM" group in the sidebar.
+3. With a transcript whose email does **not** match any lead, click Approve → confirm a "No matching lead found" error toast appears, the transcript's status remains `draft`, and it stays in the "Drafts" group.
+4. Click Approve again on the same failed transcript → confirm the full flow (token check → search → update) re-runs without needing a page reload or special retry action.
+
+### V8: Toast Positioning Stability
+
+**Goal**: Confirm toasts no longer visibly shift after appearing.
+
+1. Trigger a failure toast (Approve with a non-matching email) and a success toast (Approve with a matching lead) in separate runs.
+2. **Expected**: In both cases, the toast appears already centered in its final position — no visible leftward-then-rightward jump immediately after it renders.
+
+### V9: Approve Loading Overlay & Auto-Navigation
+
+**Goal**: Confirm the full-viewport spinner overlay appears during the CRM write and gates navigation correctly on success vs. failure.
+
+1. Click Approve on a transcript with a valid, matching email.
+2. **Expected**: A full-viewport overlay with a green rotating spinner (no text) appears immediately; clicking anywhere on the page (including outside the spinner) has no effect while it's showing.
+3. **Expected**: Once the write completes, the overlay disappears and the app automatically lands on the CRM confirmation ("commit") screen.
+4. Repeat with a transcript whose email doesn't match any lead.
+5. **Expected**: The overlay appears and disappears the same way, but the app stays on the Review screen and shows the failure toast — no navigation to the confirmation screen.
+
+### V10: CRM Confirmation Screen Content
+
+**Goal**: Confirm the confirmation screen shows only real, captured data.
+
+1. Open the CRM confirmation screen for a just-approved meeting.
+2. **Expected**: The heading shows the meeting's title (not "Unnamed company"); only the band badge is shown (no "Saved to CRM" pill); the contact line shows `{name} · {email}` with no job-title text.
+
+### V11: Email Field Lock on Saved Meetings
+
+**Goal**: Confirm the prospect email field is only editable before a meeting is saved to CRM.
+
+1. Open an already-saved (`status: 'saved'`) meeting via "Open in Review" from the confirmation screen.
+2. **Expected**: The prospect email field is disabled and cannot be typed into.
+3. Start a new capture and reach the Review screen for a fresh draft.
+4. **Expected**: The prospect email field is fully editable, unaffected by Scenario 1.
 
 ### V6: Validation Pipeline
 
@@ -94,6 +137,6 @@ npm run validate
 
 **Expected**: Zero type errors, zero lint warnings, build succeeds.
 
-## Placeholder Field Names
+## CRM Field API Names (real, as of 2026-07-30)
 
-The CRM update will use placeholder field API names (e.g., `Meeting_Summary_Placeholder`). These will cause a Zoho rejection until the real custom fields are created on the Leads module and the `ZOHO_CRM_FIELD_MAP` in `src/constants/zoho-field-map.ts` is updated. This is documented and expected — the integration is structurally complete; only the field name constants need swapping.
+`ZOHO_CRM_FIELD_MAP` in `src/constants/zoho-field-map.ts` now uses the real Zoho Leads module field API names supplied by the user, superseding the earlier placeholders: `Meeting_Title`, `Meeting_Band`, `Meeting_Score`, `Meeting_Summary`, `What_We_Heard`, `Detected_Signals`, `What_Was_Covered`, `What_Was_Decided`, `Action_Items`. Only these 9 fields are sent — no rationale or attendees field is written. If the Leads module's custom fields are ever renamed, this is still the single file to update.

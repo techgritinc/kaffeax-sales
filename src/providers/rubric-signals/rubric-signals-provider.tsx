@@ -7,8 +7,8 @@ import {
   createRubricSignal,
   deleteRubricSignal,
   updateRubricSignal,
-} from '@/features/workflow/actions/rubric.actions';
-import { buildCustomSignal } from '@/features/workflow/utils/rubric-signal.utils';
+} from '@/server-actions/workflow/rubric.actions';
+import { buildCustomSignal } from '@/lib/utils/workflow/rubric-signal.utils';
 import type { Rubric, RubricSignal } from '@/types/rubric.types';
 
 import { type NewSignalInput, RubricSignalsContext } from './rubric-signals-context';

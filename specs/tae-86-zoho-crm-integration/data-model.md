@@ -42,23 +42,21 @@ Represents a lead record as returned by the Zoho CRM Leads search endpoint. Part
 
 ### CrmMeetingPayload (plain type — `src/types/zoho.types.ts`)
 
-The mapped payload sent to Zoho CRM to update a lead record with meeting data. Field keys are Zoho CRM API names (placeholders until real fields are created).
+The mapped payload sent to Zoho CRM to update a lead record with meeting data. Field keys are the real Zoho CRM Leads module API names (updated 2026-07-30, superseding the original placeholders).
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| Meeting_Title | string | Yes | Title of the meeting |
-| Meeting_Summary | string | Yes | Narrative summary |
-| Meeting_Score_Band | string | Yes | Lead score band (hot/warm/cold) |
-| Meeting_Score_Percentage | number | No | Numeric score percentage |
-| Meeting_Score_Rationale | string | Yes | Why this score was assigned |
-| Meeting_What_We_Heard | string | Yes | Signals heard (joined string) |
-| Meeting_What_Was_Covered | string | Yes | Topics covered (joined string) |
-| Meeting_What_Was_Decided | string | Yes | Decisions made (joined string) |
-| Meeting_Action_Items | string | Yes | Action items (formatted string) |
-| Meeting_Attendees | string | Yes | Attendees list (formatted string) |
-| Meeting_Detected_Signals | string | Yes | Detected signals with evidence (formatted string) |
+| Meeting_Title | string | Yes | Title of the meeting — sent verbatim from `transcript.title` |
+| Meeting_Band | string | Yes | Lead score band (hot/warm/cold) |
+| Meeting_Score | number | No | Numeric score percentage |
+| Meeting_Summary | string | Yes | Narrative summary — sent verbatim from `transcript.summary.narrative` |
+| What_We_Heard | string | Yes | Signals heard (joined string) |
+| Detected_Signals | string | Yes | Detected signals grouped under a HOT/WARM/COLD heading per each signal's rubric band |
+| What_Was_Covered | string | Yes | Topics covered (joined string) |
+| What_Was_Decided | string | Yes | Decisions made (joined string) |
+| Action_Items | string | Yes | Action items (formatted string) |
 
-**Note**: All field names above are placeholders. The actual Zoho CRM API names will be provided by the user after creating custom fields on the Leads module. The `ZOHO_CRM_FIELD_MAP` constant in `src/constants/zoho-field-map.ts` is the single place to swap them.
+**Note**: Only these 9 fields are sent to Zoho. The originally-planned `Meeting_Score_Rationale` and `Meeting_Attendees` fields were dropped 2026-07-30 — they were not in the user-supplied list of real fields to write. The `ZOHO_CRM_FIELD_MAP` constant in `src/constants/zoho-field-map.ts` remains the single place to update if the underlying Zoho custom fields are ever renamed.
 
 ### ZohoApiResponse<T> (plain type — `src/types/zoho.types.ts`)
 
@@ -124,3 +122,7 @@ Structured error returned by Zoho API.
 | Transcript must have contact.email | `commitToCrm()` — returns error if missing |
 | All env variables must be present | `env.mjs` — crashes at startup if missing |
 | Credentials must be valid | `ZohoAuthService` constructor — throws if missing |
+
+## User Story 4 (UI Polish) — No New Persisted Entities
+
+The Phase 7 UI fixes (toast positioning, Approve loading overlay, CRM confirmation screen content, email-field lock) introduce one new piece of **transient, client-only** state — `isCommitting: boolean` on `WorkflowContextValue` — which is never persisted and exists only for the duration of a single Approve click. No MongoDB schema, Zoho payload, or plain type changes are needed for this story.

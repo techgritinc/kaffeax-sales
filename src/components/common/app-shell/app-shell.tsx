@@ -2,19 +2,20 @@
 
 import { AppHeader } from '@/components/common/app-header/app-header';
 import { Stepper } from '@/components/common/stepper/stepper';
+import { LoadingOverlay } from '@/components/ui/overlay/loading-overlay';
 import { Toast } from '@/components/ui/toast/toast';
 import { RUBRIC_BANDING_RULE } from '@/constants/bands';
 import { DEFAULT_CHAT_COMPANY, DEFAULT_CHAT_SIGNALS } from '@/constants/workflow';
-import { ChatFab } from '@/features/assistant-chat/components/chat-fab';
-import { ChatPanel } from '@/features/assistant-chat/components/chat-panel';
-import { CommitScreen } from '@/features/crm-commit/components/commit-screen';
-import { CaptureScreen } from '@/features/meeting-capture/components/capture-screen';
-import { ProcessingModal } from '@/features/meeting-capture/components/processing-modal';
-import { Sidebar } from '@/features/meeting-library/components/sidebar';
-import { SidebarRail } from '@/features/meeting-library/components/sidebar-rail';
-import { ReviewScreen } from '@/features/meeting-review/components/review-screen';
-import { RubricModal } from '@/features/scoring-rubric/components/rubric-modal';
-import { persist } from '@/features/workflow/utils/persist';
+import { ChatFab } from '@/components/chat-assistant/chat-fab';
+import { ChatPanel } from '@/components/chat-assistant/chat-panel';
+import { CommitScreen } from '@/components/crm-screen/commit-screen';
+import { CaptureScreen } from '@/components/capture-screen/capture-screen';
+import { ProcessingModal } from '@/components/capture-screen/processing-modal';
+import { Sidebar } from '@/components/meeting-library/sidebar';
+import { SidebarRail } from '@/components/meeting-library/sidebar-rail';
+import { ReviewScreen } from '@/components/review-screen/review-screen';
+import { RubricModal } from '@/components/rubric-signals/rubric-modal';
+import { persist } from '@/lib/utils/workflow/persist';
 import { cn } from '@/lib/utils/cn';
 import { useRecents } from '@/providers/recents/recents-context';
 import { useRubricSignals } from '@/providers/rubric-signals/rubric-signals-context';
@@ -90,6 +91,7 @@ export function AppShell() {
 
           <div className="max-bp900:p-[10px_20px_28px] max-bp560:p-[8px_14px_24px] min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-[12px_40px_40px]">
             {wf.status === 'processing' && <ProcessingModal procTick={wf.procTick} />}
+            {wf.isCommitting && <LoadingOverlay />}
 
             {wf.step === 'capture' && wf.status !== 'processing' && (
               <CaptureScreen

@@ -1,8 +1,8 @@
 import { AppShell } from '@/components/common/app-shell/app-shell';
 import { SAMPLE_TRANSCRIPT } from '@/constants/workflow';
-import { getRubric } from '@/features/workflow/actions/rubric.actions';
-import { getTranscripts } from '@/features/workflow/actions/transcript.actions';
-import { toRecentItem } from '@/features/workflow/utils/transcript.mapper';
+import { getRubric } from '@/server-actions/workflow/rubric.actions';
+import { getTranscripts } from '@/server-actions/workflow/transcript.actions';
+import { toRecentItem } from '@/lib/utils/workflow/transcript.mapper';
 import { RecentsProvider } from '@/providers/recents/recents-provider';
 import { RubricSignalsProvider } from '@/providers/rubric-signals/rubric-signals-provider';
 import { WorkflowProvider } from '@/providers/workflow/workflow-provider';

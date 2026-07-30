@@ -126,6 +126,7 @@ export function toTranscriptPatch(record: MeetingRecord): Partial<TranscriptFiel
         evidence: s.evidence,
       })),
       rationale: leadScore.rationale,
+      scorePercentage: leadScore.scorePercentage,
     },
     recapEmail: recapEmail.body,
   };

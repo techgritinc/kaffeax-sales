@@ -3,14 +3,14 @@
 import { useEffect, useRef } from 'react';
 
 import { TOAST_DURATION_MS } from '@/constants/workflow';
-import { getTranscriptById } from '@/features/workflow/actions/transcript.actions';
+import { getTranscriptById } from '@/server-actions/workflow/transcript.actions';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { Step, ToastTone } from '@/types/workflow.types';
 
-import type { WorkflowActionDeps } from '../types/workflow-action-deps.types';
+import type { WorkflowActionDeps } from '../../types/workflow/workflow-action-deps.types';
 import { runApprove, runReject, runSummarize } from './workflow-actions.utils';
 
-export type { WorkflowActionDeps } from '../types/workflow-action-deps.types';
+export type { WorkflowActionDeps } from '../../types/workflow/workflow-action-deps.types';
 
 export function useWorkflowActions(deps: WorkflowActionDeps) {
   const {
@@ -59,6 +59,7 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
     reader.readAsText(file);
   }
 
+  /** Client-side draft mutation — the prospect email is the only field the Review screen exposes for editing. */
   function patch(path: string, value: unknown) {
     setDraft((d: MeetingRecord | null) => {
       if (!d) return d;

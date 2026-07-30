@@ -1,12 +1,12 @@
 'use server';
 
 import { DEFAULT_USER_ID } from '@/constants/user';
-import { toRubric } from '@/features/workflow/utils/rubric.mapper';
+import { toRubric } from '@/lib/utils/workflow/rubric.mapper';
 import {
   formatWhen,
   toMeetingRecord,
   toTranscriptPatch,
-} from '@/features/workflow/utils/transcript.mapper';
+} from '@/lib/utils/workflow/transcript.mapper';
 import { logAndThrow } from '@/lib/utils/server-action.utils';
 import { cleanTranscript } from '@/lib/utils/transcript-cleaner.utils';
 import { rubricSignalRepository } from '@/repositories/rubric-signal.repository';
@@ -20,7 +20,7 @@ import {
   ACTION_LOAD_ERROR,
   ACTION_SAVE_ERROR,
   DRAFT_CREATE_ERROR,
-} from '../constants/action.constants';
+} from '../../constants/workflow/action.constants';
 
 export async function currentRubric(): Promise<Rubric> {
   return toRubric(await rubricSignalRepository.findActive());
@@ -52,6 +52,21 @@ export async function updateTranscript(record: MeetingRecord): Promise<MeetingRe
     return stored ? toMeetingRecord(stored, await currentRubric()) : null;
   } catch (error) {
     logAndThrow('updateTranscript', error, ACTION_SAVE_ERROR);
+  }
+}
+
+/**
+ * Persists only the prospect email — the Review screen's one editable field.
+ * Deliberately bypasses `toTranscriptPatch`/`updateTranscript`: that mapper rebuilds the
+ * whole `summary` sub-document from the client-side view-model, which has no `whatWeHeard`
+ * field, silently wiping the AI-populated value on every save.
+ */
+export async function updateTranscriptEmail(id: string, email: string): Promise<boolean> {
+  try {
+    const updated = await transcriptRepository.update(id, { contact: { email } });
+    return updated !== null;
+  } catch (error) {
+    logAndThrow('updateTranscriptEmail', error, ACTION_SAVE_ERROR);
   }
 }
 

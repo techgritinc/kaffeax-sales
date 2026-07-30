@@ -70,3 +70,14 @@
 **Alternatives considered**:
 - **Return all matches and let the server action choose**: Adds complexity with no current use case. Rejected.
 - **Throw on multiple matches**: Too strict; Zoho data may have legitimate duplicates. Rejected.
+
+## R8: Toast Position Flicker Root Cause (2026-07-30)
+
+**Decision**: Rewrite `@keyframes kx-toast-in` in `globals.css` to animate the CSS `translate` property instead of `transform`, with the same `-50%` X value on both the `from` and `to` frames.
+
+**Rationale**: `toast.tsx` applies both the Tailwind utility `-translate-x-1/2` and the `animate-toast-in` animation on the same element. Tailwind v4 compiles `-translate-x-1/2` to the CSS `translate` property (a behavior change from v3, which used `transform`). The hand-written `@keyframes kx-toast-in`, however, still uses the legacy `transform: translate(-50%, ...)` syntax. `translate` and `transform` are independent CSS properties that compose (both apply simultaneously) — during the 0.2s animation the two -50% X offsets stack, over-shifting the toast left; when the animation ends (no `animation-fill-mode: forwards`), its `transform` override lapses and only the static `translate: -50%` from the Tailwind class remains, producing the visible rightward snap the user reported ("shows... then shifts slightly rightwards"). Animating the same `translate` property in the keyframes — with matching values at the `to` frame — eliminates the property conflict and guarantees the animated end-state exactly equals the static resting state, so there is nothing left to snap to.
+
+**Alternatives considered**:
+- **Add `animation-fill-mode: forwards`**: Would keep the keyframe's `transform` value applied after the animation ends, but doesn't fix the root conflict — the two properties would still stack during the animation itself (visible as an initial over-shift, just without the end-of-animation snap). Rejected as a partial fix.
+- **Remove the Tailwind `-translate-x-1/2` class and center via `left: 50%; margin-left: -{width}/2`**: Requires knowing the toast's width up front (it doesn't have a fixed width — message length varies), so this is not viable without JS measurement. Rejected as unnecessarily complex.
+- **Drop the animation entirely, keep only the Tailwind utility**: Simplest, but removes the intended fade/slide-in polish. Rejected — the fix above preserves the animation with zero added complexity.

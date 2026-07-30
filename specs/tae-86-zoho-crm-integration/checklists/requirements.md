@@ -32,5 +32,6 @@
 ## Notes
 
 - All items passed validation on first iteration.
-- Field API Names are explicitly called out as placeholders — this is a known dependency on the user, not a spec gap.
+- Field API Names were originally placeholders pending the user; real names were supplied 2026-07-30 and the spec has been updated accordingly.
 - The spec references the existing `zohocredentials` collection and existing Review screen data model, both confirmed to exist in the codebase.
+- User Story 4 (2026-07-30) covers UI polish (toast stability, Approve loading overlay, CRM confirmation screen content, email-field lock after save) found during real-world testing — re-validated against the same checklist criteria, all still pass.

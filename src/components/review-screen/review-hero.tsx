@@ -70,23 +70,7 @@ export function ReviewHero({
         >
           Email
         </Button>
-        {committed ? (
-          <Button
-            variant="approve"
-            size="sm"
-            iconStart="RefreshCw"
-            iconSize={11}
-            onClick={onApprove}
-            disabled={emailMissing}
-            title={
-              emailMissing
-                ? 'Prospect email is required to update the CRM record'
-                : 'Update the CRM record'
-            }
-          >
-            Update CRM
-          </Button>
-        ) : (
+        {!committed && (
           <>
             <Button variant="reject" size="sm" onClick={onReject}>
               Reject

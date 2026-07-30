@@ -6,7 +6,7 @@ import { Icon } from '@/components/ui/icon/icon';
 import { SearchInput } from '@/components/ui/input/search-input';
 import type { RecentItem } from '@/providers/recents/recents-context';
 
-import { useLibrarySearch } from '../hooks/use-library-search';
+import { useLibrarySearch } from '@/hooks/meeting-library/use-library-search';
 import { SidebarItem } from './sidebar-item';
 
 export interface SidebarProps {

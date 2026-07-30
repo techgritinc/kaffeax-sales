@@ -1,6 +1,6 @@
 'use server';
 
-import { toMeetingRecord } from '@/features/workflow/utils/transcript.mapper';
+import { toMeetingRecord } from '@/lib/utils/workflow/transcript.mapper';
 import { getTranscriptSummarizer } from '@/integrations/transcript-summarizer.factory';
 import { logAndThrow } from '@/lib/utils/server-action.utils';
 import { transcriptRepository } from '@/repositories/transcript.repository';
@@ -8,7 +8,7 @@ import { runAiSummarizationSchema } from '@/schemas/transcript.schema';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { SimplifiedSignal } from '@/types/rubric-signal.types';
 
-import { AI_SUMMARIZATION_ERROR } from '../constants/action.constants';
+import { AI_SUMMARIZATION_ERROR } from '../../constants/workflow/action.constants';
 import { currentRubric } from './transcript.actions';
 
 const transcriptSummarizer = getTranscriptSummarizer();

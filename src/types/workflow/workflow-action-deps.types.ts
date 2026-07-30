@@ -26,4 +26,5 @@ export interface WorkflowActionDeps {
   setToast: Dispatch<SetStateAction<Toast | null>>;
   setStep: Dispatch<SetStateAction<Step>>;
   setProcTick: Dispatch<SetStateAction<number>>;
+  setIsCommitting: Dispatch<SetStateAction<boolean>>;
 }
