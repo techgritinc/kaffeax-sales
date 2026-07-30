@@ -2,8 +2,8 @@
 
 import { type ReactNode, useCallback, useState } from 'react';
 
-import { getTranscripts } from '@/server-actions/workflow/transcript.actions';
 import { toRecentItem } from '@/lib/utils/workflow/transcript.mapper';
+import { getTranscripts } from '@/server-actions/workflow/transcript.actions';
 
 import { type RecentItem, RecentsContext } from './recents-context';
 

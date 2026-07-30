@@ -1,8 +1,8 @@
 'use server';
 
-import { toMeetingRecord } from '@/lib/utils/workflow/transcript.mapper';
 import { getTranscriptSummarizer } from '@/integrations/transcript-summarizer.factory';
 import { logAndThrow } from '@/lib/utils/server-action.utils';
+import { toMeetingRecord } from '@/lib/utils/workflow/transcript.mapper';
 import { transcriptRepository } from '@/repositories/transcript.repository';
 import { runAiSummarizationSchema } from '@/schemas/transcript.schema';
 import type { MeetingRecord } from '@/types/meeting.types';

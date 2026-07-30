@@ -1,4 +1,7 @@
 import { PROC_TICK_MS } from '@/constants/workflow';
+import { toSimplifiedSignals } from '@/lib/utils/workflow/rubric.mapper';
+import { formatWhen } from '@/lib/utils/workflow/transcript.mapper';
+import type { RecentItem } from '@/providers/recents/recents-context';
 import { commitToCrm } from '@/server-actions/crm-commit/commit-to-crm';
 import { runAiSummarization } from '@/server-actions/workflow/transcript-ai.actions';
 import {
@@ -7,9 +10,6 @@ import {
   getTranscriptById,
   updateTranscriptEmail,
 } from '@/server-actions/workflow/transcript.actions';
-import { toSimplifiedSignals } from '@/lib/utils/workflow/rubric.mapper';
-import { formatWhen } from '@/lib/utils/workflow/transcript.mapper';
-import type { RecentItem } from '@/providers/recents/recents-context';
 
 import type { NotifyFn, WorkflowActionDeps } from '../../types/workflow/workflow-action-deps.types';
 
