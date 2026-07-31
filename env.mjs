@@ -8,7 +8,6 @@ export const env = createEnv({
   },
 
   server: {
-    NODE_ENV: z.enum(['development', 'production', 'test']),
     MONGO_URI: z.string().min(1),
 
     // CLAUDE
