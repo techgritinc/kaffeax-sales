@@ -1,6 +1,7 @@
 'use server';
 
 import { DEFAULT_USER_ID } from '@/constants/user';
+import { RECENTS_PAGE_SIZE } from '@/constants/workflow/recents.constants';
 import { logAndThrow } from '@/lib/utils/server-action.utils';
 import { cleanTranscript } from '@/lib/utils/transcript-cleaner.utils';
 import { toRubric } from '@/lib/utils/workflow/rubric.mapper';
@@ -13,6 +14,7 @@ import { rubricSignalRepository } from '@/repositories/rubric-signal.repository'
 import { transcriptRepository } from '@/repositories/transcript.repository';
 import { createDraftTranscriptSchema } from '@/schemas/transcript.schema';
 import type { MeetingRecord } from '@/types/meeting.types';
+import type { RecentsPageResult } from '@/types/recents.types';
 import type { Rubric } from '@/types/rubric.types';
 import type { StoredTranscript } from '@/types/transcript.types';
 
@@ -95,5 +97,25 @@ export async function createDraftTranscript(input: {
     return { id: stored.id };
   } catch (error) {
     logAndThrow('createDraftTranscript', error, DRAFT_CREATE_ERROR);
+  }
+}
+
+export async function getTranscriptPage(
+  page: number,
+  limit: number = RECENTS_PAGE_SIZE,
+): Promise<RecentsPageResult> {
+  try {
+    return await transcriptRepository.findPage(Math.max(1, page), limit);
+  } catch (error) {
+    logAndThrow('getTranscriptPage', error, ACTION_LOAD_ERROR);
+  }
+}
+
+export async function searchTranscripts(query: string): Promise<StoredTranscript[]> {
+  if (!query.trim()) return [];
+  try {
+    return await transcriptRepository.searchByTitle(query);
+  } catch (error) {
+    logAndThrow('searchTranscripts', error, ACTION_LOAD_ERROR);
   }
 }

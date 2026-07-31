@@ -19,8 +19,12 @@ export interface RecentItem {
 /** The shared recents-bar state and its mutators. */
 export interface RecentsContextValue {
   recents: RecentItem[];
+  total: number;
+  hasMore: boolean;
+  isLoadingMore: boolean;
   prependRecent: (item: RecentItem) => void;
   updateRecent: (id: string, patch: Partial<RecentItem>) => void;
+  loadMore: () => Promise<void>;
   refreshRecents: () => Promise<void>;
 }
 

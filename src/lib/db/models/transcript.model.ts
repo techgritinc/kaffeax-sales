@@ -125,6 +125,7 @@ transcriptSchema.index({ userId: 1, status: 1, createdAt: -1 });
 transcriptSchema.index({ userId: 1, createdAt: -1 });
 transcriptSchema.index({ externalMeetingId: 1 }, { unique: true, sparse: true });
 transcriptSchema.index({ zohoLeadId: 1 }, { sparse: true });
+transcriptSchema.index({ title: 1 }, { collation: { locale: 'en', strength: 2 } });
 
 export type TranscriptDocument = HydratedDocument<TranscriptSchemaFields>;
 

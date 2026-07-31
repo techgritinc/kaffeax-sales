@@ -17,7 +17,6 @@ import { RUBRIC_BANDING_RULE } from '@/constants/bands';
 import { DEFAULT_CHAT_COMPANY, DEFAULT_CHAT_SIGNALS } from '@/constants/workflow';
 import { cn } from '@/lib/utils/cn';
 import { persist } from '@/lib/utils/workflow/persist';
-import { useRecents } from '@/providers/recents/recents-context';
 import { useRubricSignals } from '@/providers/rubric-signals/rubric-signals-context';
 import { useWorkflow } from '@/providers/workflow/workflow-context';
 import type { Rubric } from '@/types/rubric.types';
@@ -35,7 +34,6 @@ const SHELL_COLS = {
 /** Application shell: fixed header + the responsive [sidebar | main | chat] grid. */
 export function AppShell() {
   const wf = useWorkflow();
-  const { recents } = useRecents();
   const rubricSignals = useRubricSignals();
   const rubric: Rubric = { signals: rubricSignals.signals, banding: RUBRIC_BANDING_RULE };
   const canReview = wf.draft !== null || wf.isCommitted;
@@ -69,7 +67,6 @@ export function AppShell() {
 
         {wf.sidebarOpen ? (
           <Sidebar
-            recents={recents}
             activeId={wf.activeId}
             onSelect={(item) => void wf.openFromRecent(item.id)}
             onNew={wf.newCapture}
