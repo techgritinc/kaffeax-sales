@@ -5,26 +5,25 @@ import { Shimmer } from '@/components/ui/shimmer/shimmer';
 import { AccentBar } from '@/components/ui/typography/accent-bar';
 import { Eyebrow } from '@/components/ui/typography/eyebrow';
 import { Heading } from '@/components/ui/typography/heading';
+import { PROCESSING_STEPS } from '@/constants/workflow';
 import { cn } from '@/lib/utils/cn';
+import type { ProcessingStage } from '@/types/workflow/processing.types';
 
 export interface ProcessingModalProps {
-  procTick: number;
+  procStage: ProcessingStage;
   className?: string;
 }
 
 type StepState = 'pending' | 'active' | 'done';
 
-interface ProcStep {
-  label: string;
-  icon: IconName;
-}
+const STEP_ICONS: IconName[] = ['FileText', 'Sparkles', 'UserCheck'];
 
-const PROC_STEPS: ProcStep[] = [
-  { label: 'Reading transcript', icon: 'FileText' },
-  { label: 'Extracting entities', icon: 'UserCheck' },
-  { label: 'Scoring intent', icon: 'Flag' },
-  { label: 'Drafting recap', icon: 'Mail' },
-];
+const STAGE_INDEX: Record<ProcessingStage, number> = {
+  idle: -1,
+  preparing: 0,
+  processing: 1,
+  extracting: 2,
+};
 
 const ICON_LOOK: Record<StepState, string> = {
   pending: 'bg-card-bg border-border-strong text-muted',
@@ -39,8 +38,8 @@ const LABEL_LOOK: Record<StepState, string> = {
 };
 
 /** Full-screen processing overlay — prototype `ProcessingModal` (3289–3339). */
-export function ProcessingModal({ procTick, className }: ProcessingModalProps) {
-  const active = Math.min(procTick, PROC_STEPS.length - 1);
+export function ProcessingModal({ procStage, className }: ProcessingModalProps) {
+  const activeIdx = STAGE_INDEX[procStage];
 
   return (
     <div
@@ -51,14 +50,14 @@ export function ProcessingModal({ procTick, className }: ProcessingModalProps) {
     >
       <div className="rounded-input-sm shadow-proc w-[460px] max-w-[92vw] bg-white px-[36px] py-[32px]">
         <Eyebrow inline>Processing</Eyebrow>
-        <Heading level={2}>Reading your transcript…</Heading>
+        <Heading level={2}>Analysing your transcript…</Heading>
         <AccentBar variant="h2" />
         <p className="text-muted mb-[20px] text-[13px] leading-[1.55]">
-          Claude is drafting the summary, score, and recap. About 3 seconds.
+          Agent is processing the transcript and extracting summary details.
         </p>
 
-        {PROC_STEPS.map((step, i) => {
-          const state: StepState = i < active ? 'done' : i === active ? 'active' : 'pending';
+        {PROCESSING_STEPS.map((step, i) => {
+          const state: StepState = i < activeIdx ? 'done' : i === activeIdx ? 'active' : 'pending';
           return (
             <Fragment key={step.label}>
               <div
@@ -70,7 +69,7 @@ export function ProcessingModal({ procTick, className }: ProcessingModalProps) {
                     ICON_LOOK[state],
                   )}
                 >
-                  <Icon name={state === 'done' ? 'Check' : step.icon} size={14} />
+                  <Icon name={state === 'done' ? 'Check' : STEP_ICONS[i]} size={14} />
                 </div>
                 <div className={cn('flex-1 font-sans text-[13.5px]', LABEL_LOOK[state])}>
                   {step.label}

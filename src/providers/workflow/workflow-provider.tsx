@@ -8,6 +8,7 @@ import { useRecents } from '@/providers/recents/recents-context';
 import { useRubricSignals } from '@/providers/rubric-signals/rubric-signals-context';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { Step, Toast, WorkflowStatus } from '@/types/workflow.types';
+import type { ProcessingStage } from '@/types/workflow/processing.types';
 
 import { WorkflowContext, type WorkflowContextValue } from './workflow-context';
 
@@ -28,7 +29,7 @@ export function WorkflowProvider({ children, initialSample }: WorkflowProviderPr
   const [activeId, setActiveId] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [step, setStep] = useState<Step>('capture');
-  const [procTick, setProcTick] = useState<number>(0);
+  const [procStage, setProcStage] = useState<ProcessingStage>('idle');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(() =>
     typeof window === 'undefined' ? true : window.innerWidth > SIDEBAR_OPEN_MIN_WIDTH,
   );
@@ -60,7 +61,7 @@ export function WorkflowProvider({ children, initialSample }: WorkflowProviderPr
     setActiveId,
     setToast,
     setStep,
-    setProcTick,
+    setProcStage,
     setIsCommitting,
   });
 
@@ -72,7 +73,7 @@ export function WorkflowProvider({ children, initialSample }: WorkflowProviderPr
     activeId,
     toast,
     step,
-    procTick,
+    procStage,
     sidebarOpen,
     rubricOpen,
     chatOpen,

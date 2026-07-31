@@ -1,4 +1,5 @@
-import { PROC_TICK_MS } from '@/constants/workflow';
+import { AI_SUMMARIZATION_ERROR } from '@/constants/workflow/action.constants';
+import { RECENT_STATUS } from '@/constants/workflow/recents.constants';
 import { toSimplifiedSignals } from '@/lib/utils/workflow/rubric.mapper';
 import { formatWhen } from '@/lib/utils/workflow/transcript.mapper';
 import type { RecentItem } from '@/providers/recents/recents-context';
@@ -25,7 +26,7 @@ export async function runSummarize(deps: WorkflowActionDeps): Promise<void> {
     setActiveId,
     setDraft,
     setStep,
-    setProcTick,
+    setProcStage,
   } = deps;
 
   const rawTranscript = transcript.trim();
@@ -33,8 +34,7 @@ export async function runSummarize(deps: WorkflowActionDeps): Promise<void> {
 
   setStatus('processing');
   setError('');
-  setProcTick(0);
-  const ticker = window.setInterval(() => setProcTick((t: number) => t + 1), PROC_TICK_MS);
+  setProcStage('preparing');
 
   let id: string | undefined = activeId ?? undefined;
   try {
@@ -47,15 +47,17 @@ export async function runSummarize(deps: WorkflowActionDeps): Promise<void> {
       prependRecent({
         id,
         title: `Meeting on ${now}`,
-        status: 'DRAFT',
+        status: RECENT_STATUS.DRAFT,
         aiProcessingStatus: 'pending',
         when: now,
       });
     }
 
+    setProcStage('processing');
     const result = await runAiSummarization({ id, signals: toSimplifiedSignals(signals) });
 
     if (result.success) {
+      setProcStage('extracting');
       updateRecent(id, {
         title: result.record.summary.meetingTitle,
         aiProcessingStatus: 'success',
@@ -69,12 +71,12 @@ export async function runSummarize(deps: WorkflowActionDeps): Promise<void> {
       setError(result.error);
       setStatus('error');
     }
-  } catch (err) {
+  } catch {
     if (id) updateRecent(id, { aiProcessingStatus: 'failed' });
-    setError(err instanceof Error ? err.message : 'Could not process the transcript.');
+    setError(AI_SUMMARIZATION_ERROR);
     setStatus('error');
   } finally {
-    window.clearInterval(ticker);
+    setProcStage('idle');
   }
 }
 
@@ -103,7 +105,7 @@ export async function runApprove(deps: WorkflowActionDeps, notify: NotifyFn): Pr
       notify('That summary could not be found.', 'reject');
       return;
     }
-    updateRecent(updated.id, { status: 'CRM' });
+    updateRecent(updated.id, { status: RECENT_STATUS.CRM });
     setDraft(updated);
     notify('Approved and written to CRM.', 'success');
     setStep('commit');

@@ -2,6 +2,7 @@ import type { JSX } from 'react';
 
 import { StatusChip } from '@/components/ui/chip/status-chip';
 import { BAND_SIDEBAR_DOT_CLASS } from '@/constants/bands';
+import { RECENT_STATUS } from '@/constants/workflow/recents.constants';
 import { cn } from '@/lib/utils/cn';
 import type { RecentItem } from '@/providers/recents/recents-context';
 import type { Band } from '@/types/rubric.types';
@@ -51,8 +52,8 @@ export function SidebarItem({ item, active, onSelect }: SidebarItemProps): JSX.E
         <div className="text-sidebar-text-strong truncate text-[13px] font-bold">{item.title}</div>
         <div className="text-sidebar-muted mt-0.5 text-[11px]">{meta}</div>
       </div>
-      <StatusChip tone={item.status === 'CRM' ? 'saved' : 'draft'}>
-        {item.status === 'CRM' ? 'CRM' : 'Draft'}
+      <StatusChip tone={item.status === RECENT_STATUS.CRM ? 'saved' : 'draft'}>
+        {item.status === RECENT_STATUS.CRM ? RECENT_STATUS.CRM : RECENT_STATUS.DRAFT}
       </StatusChip>
     </button>
   );

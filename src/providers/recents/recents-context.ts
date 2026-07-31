@@ -1,8 +1,9 @@
 import { createContext, useContext } from 'react';
 
+import { RECENT_STATUS } from '@/constants/workflow/recents.constants';
 import type { AiProcessingStatus } from '@/types/transcript.types';
 
-export type RecentStatus = 'DRAFT' | 'CRM';
+export type RecentStatus = (typeof RECENT_STATUS)[keyof typeof RECENT_STATUS];
 export type RecentBadge = 'HOT' | 'WARM' | 'COLD';
 
 /** A single recents-bar entry — a display projection of a persisted transcript. */

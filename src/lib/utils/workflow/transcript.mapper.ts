@@ -1,3 +1,4 @@
+import { RECENT_STATUS } from '@/constants/workflow/recents.constants';
 import type { RecentItem } from '@/providers/recents/recents-context';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { Rubric, Weight } from '@/types/rubric.types';
@@ -92,7 +93,7 @@ export function toRecentItem(stored: StoredTranscript): RecentItem {
   return {
     id,
     title: fields.title,
-    status: fields.status === 'saved' ? 'CRM' : 'DRAFT',
+    status: fields.status === 'saved' ? RECENT_STATUS.CRM : RECENT_STATUS.DRAFT,
     badge,
     aiProcessingStatus: fields.aiProcessingStatus,
     when: formatWhen(updatedAt),

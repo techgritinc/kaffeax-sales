@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { SEARCH_DEBOUNCE_MS } from '@/constants/workflow/recents.constants';
+import { RECENT_STATUS, SEARCH_DEBOUNCE_MS } from '@/constants/workflow/recents.constants';
 import { toRecentItem } from '@/lib/utils/workflow/transcript.mapper';
 import { useRecents } from '@/providers/recents/recents-context';
 import type { RecentItem } from '@/providers/recents/recents-context';
@@ -57,8 +57,8 @@ export function useLibrarySearch(): UseLibrarySearch {
   }, [query, isSearchActive]);
 
   const source = isSearchActive ? searchResults : recents;
-  const drafts = source.filter((item) => item.status === 'DRAFT');
-  const saved = source.filter((item) => item.status === 'CRM');
+  const drafts = source.filter((item) => item.status === RECENT_STATUS.DRAFT);
+  const saved = source.filter((item) => item.status === RECENT_STATUS.CRM);
 
   return {
     query,

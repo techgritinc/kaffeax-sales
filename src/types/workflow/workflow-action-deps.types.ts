@@ -4,6 +4,7 @@ import type { RecentItem } from '@/providers/recents/recents-context';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { RubricSignal } from '@/types/rubric.types';
 import type { Step, Toast, ToastTone, WorkflowStatus } from '@/types/workflow.types';
+import type { ProcessingStage } from '@/types/workflow/processing.types';
 
 export type NotifyFn = (message: string, tone?: ToastTone) => void;
 
@@ -25,6 +26,6 @@ export interface WorkflowActionDeps {
   setActiveId: Dispatch<SetStateAction<string | null>>;
   setToast: Dispatch<SetStateAction<Toast | null>>;
   setStep: Dispatch<SetStateAction<Step>>;
-  setProcTick: Dispatch<SetStateAction<number>>;
+  setProcStage: Dispatch<SetStateAction<ProcessingStage>>;
   setIsCommitting: Dispatch<SetStateAction<boolean>>;
 }
