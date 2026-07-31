@@ -11,11 +11,11 @@ export const env = createEnv({
     NODE_ENV: z.enum(['development', 'production', 'test']),
     MONGO_URI: z.string().min(1),
     CLAUDE_API_KEY: z.string().min(1),
-    CLAUDE_DEFAULT_MODEL: z.string().min(1).optional().default('claude-sonnet-4-6'),
-    CLAUDE_MAX_TOKENS: z.coerce.number().int().positive().optional().default(16384),
+    CLAUDE_DEFAULT_MODEL: z.string().min(1),
+    CLAUDE_MAX_TOKENS: z.coerce.number().int().positive(),
     OPENROUTER_API_KEY: z.string().min(1),
-    OPENROUTER_DEFAULT_MODEL: z.string().min(1).optional().default('google/gemma-4-31b-it:free'),
-    OPENROUTER_MAX_TOKENS: z.coerce.number().int().positive().optional().default(16384),
+    OPENROUTER_DEFAULT_MODEL: z.string().min(1),
+    OPENROUTER_MAX_TOKENS: z.coerce.number().int().positive(),
   },
 
   runtimeEnv: {

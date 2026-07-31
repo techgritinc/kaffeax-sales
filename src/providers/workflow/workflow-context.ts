@@ -1,27 +1,15 @@
 import { createContext, useContext } from 'react';
 
 import type { MeetingRecord } from '@/types/meeting.types';
-import type { Rubric, RubricSignal, Weight } from '@/types/rubric.types';
-import type {
-  AuditEntry,
-  CrmRecord,
-  Step,
-  Toast,
-  ToastTone,
-  WorkflowStatus,
-} from '@/types/workflow.types';
+import type { Step, Toast, ToastTone, WorkflowStatus } from '@/types/workflow.types';
 
-/** The full shared workflow state, derived selectors, and dispatchable actions. */
+/** The capture-session workflow state, derived selectors, and dispatchable actions. */
 export interface WorkflowContextValue {
   // --- State ---
   transcript: string;
-  rubric: Rubric;
   status: WorkflowStatus;
   draft: MeetingRecord | null;
   error: string;
-  crm: CrmRecord[];
-  audit: AuditEntry[];
-  library: MeetingRecord[];
   activeId: string | null;
   toast: Toast | null;
   step: Step;
@@ -31,7 +19,6 @@ export interface WorkflowContextValue {
   chatOpen: boolean;
 
   // --- Derived (computed in render) ---
-  activeRecord: MeetingRecord | null;
   isCommitted: boolean;
   score: number;
   emailMissing: boolean;
@@ -41,21 +28,17 @@ export interface WorkflowContextValue {
   setTranscript: (text: string) => void;
   loadSample: () => void;
   handleFile: (file: File) => void;
-  process: () => void;
   patch: (path: string, value: unknown) => void;
-  approve: () => void;
-  reject: () => void;
   goTo: (step: Step) => void;
-  resetDemo: () => void;
   newCapture: () => void;
   notify: (message: string, tone?: ToastTone) => void;
-  openFromLibrary: (record: MeetingRecord) => void;
+  openFromRecent: (id: string) => Promise<void>;
+  summarize: () => Promise<void>;
+  approve: () => Promise<void>;
+  reject: () => Promise<void>;
   setSidebarOpen: (open: boolean) => void;
   setRubricOpen: (open: boolean) => void;
   setChatOpen: (open: boolean) => void;
-  addSignal: (label: string, weight: Weight) => void;
-  updateSignal: (id: string, patch: Partial<RubricSignal>) => void;
-  removeSignal: (id: string) => void;
 }
 
 /** The workflow context — `null` until a `WorkflowProvider` supplies a value. */

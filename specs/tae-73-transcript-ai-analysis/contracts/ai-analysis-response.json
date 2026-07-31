@@ -1,0 +1,174 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TranscriptAnalysisResponse",
+  "description": "JSON Schema passed to Claude output_config.format.schema. Defines the exact structure the AI must return. Application validates against the Zod counterpart in src/integrations/claude/prompt.ts.",
+  "type": "object",
+  "required": ["title", "summary", "leadScore", "contact"],
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Descriptive meeting title derived from transcript content and the determined score band (e.g. 'HOT: Platform Demo — Budget Approved, POC Agreed')"
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "narrative",
+        "whatWeHeard",
+        "whatWasCovered",
+        "whatWasDecided",
+        "actionItems",
+        "attendees",
+        "commitments",
+        "openQuestions"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "narrative": {
+          "type": "string",
+          "description": "Single paragraph summarizing the meeting outcome. Must reference the score band and explain why that band was assigned based on detected signals."
+        },
+        "whatWeHeard": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Key points, concerns, or statements heard from the prospect side during the meeting."
+        },
+        "whatWasCovered": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Distinct topics discussed during the meeting as concise summary points."
+        },
+        "whatWasDecided": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Decisions made or agreed upon during the meeting."
+        },
+        "actionItems": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["description", "owner"],
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "What needs to be done."
+              },
+              "owner": {
+                "type": "string",
+                "description": "Name or role of the person responsible."
+              },
+              "dueDate": {
+                "type": "string",
+                "description": "Due date as stated in the transcript (e.g. 'end of week', '2026-08-01'). Omit if not mentioned."
+              }
+            }
+          }
+        },
+        "attendees": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "side"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Full name of the attendee as mentioned in the transcript."
+              },
+              "side": {
+                "type": "string",
+                "enum": ["kaffeax", "prospect"],
+                "description": "'kaffeax' for internal team members; 'prospect' for client-side participants."
+              }
+            }
+          }
+        },
+        "commitments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["description", "side"],
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "What was committed to."
+              },
+              "side": {
+                "type": "string",
+                "enum": ["kaffeax", "prospect"],
+                "description": "Which side made this commitment."
+              }
+            }
+          },
+          "description": "Commitments made by each side during the meeting. Each commitment is attributed to either the internal team (kaffeax) or the prospect."
+        },
+        "openQuestions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Questions or topics raised during the meeting that were not resolved or answered by the end of the meeting."
+        }
+      }
+    },
+    "leadScore": {
+      "type": "object",
+      "required": ["bandSuggestion", "detectedSignals", "rationale", "hasAgreedNextStep"],
+      "additionalProperties": false,
+      "properties": {
+        "bandSuggestion": {
+          "type": "string",
+          "enum": ["hot", "warm", "cold"],
+          "description": "The AI's assessment of the lead score band. Application code verifies this against deterministic rules and overrides if they diverge (FR-025)."
+        },
+        "detectedSignals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["signalId", "label", "evidence"],
+            "additionalProperties": false,
+            "properties": {
+              "signalId": {
+                "type": "string",
+                "description": "The signalId from the rubric context block injected into the prompt. Must exactly match one of the provided signal IDs."
+              },
+              "label": {
+                "type": "string",
+                "description": "The signal label from the rubric context block."
+              },
+              "evidence": {
+                "type": "string",
+                "description": "Verbatim or near-verbatim excerpt from the transcript that demonstrates this signal is present. Must be traceable to actual transcript content."
+              }
+            }
+          },
+          "description": "Signals from the rubric that are present in this transcript. Only include signals that are clearly evidenced. Do not hallucinate evidence."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Human-readable explanation of the band assignment. Must reference the detected signals and the applicable banding rule (e.g. 'Scored HOT because a hot-weight signal was detected and a concrete next step was agreed')."
+        },
+        "hasAgreedNextStep": {
+          "type": "boolean",
+          "description": "Whether a concrete next step was agreed during the meeting (e.g. a follow-up call, a POC, a proposal review). Required for the HOT band determination rule."
+        }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "required": ["confidence"],
+      "additionalProperties": false,
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Prospect email address if found in the transcript. Omit if no email address was mentioned."
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["high", "medium", "low"],
+          "description": "'high' = email was stated explicitly and clearly; 'medium' = inferred or partially stated; 'low' = not found or very uncertain."
+        }
+      }
+    }
+  }
+}

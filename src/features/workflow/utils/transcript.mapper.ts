@@ -1,8 +1,8 @@
+import type { RecentItem } from '@/providers/recents/recents-context';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { Rubric, Weight } from '@/types/rubric.types';
 import type { DetectedSignal } from '@/types/scoring.types';
-import type { StoredTranscript } from '@/types/transcript.types';
-import type { AttendeeSide } from '@/types/transcript.types';
+import type { AttendeeSide, StoredTranscript, TranscriptFields } from '@/types/transcript.types';
 
 /** View `Side` ↔ persistence `AttendeeSide` (differ only in the kaffea_x spelling). */
 const toAttendeeSide = (side: 'kaffea_x' | 'prospect'): AttendeeSide =>
@@ -17,102 +17,116 @@ const weightBySignalId = (rubric: Rubric): Record<string, Weight> =>
     return acc;
   }, {});
 
+/** Display-formatted date/time for the recents bar and review header. */
+export const formatWhen = (date: Date): string =>
+  new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date);
+
 /** Compose a `MeetingRecord` (view-model) from a stored transcript + the active rubric. */
 export function toMeetingRecord(stored: StoredTranscript, rubric: Rubric): MeetingRecord {
-  const { id, fields, presentation } = stored;
+  const { id, fields, updatedAt } = stored;
   const weights = weightBySignalId(rubric);
-  const detected_signals: DetectedSignal[] = fields.leadScore.detectedSignals.map((s) => ({
+  const summary = fields.summary;
+  const leadScore = fields.leadScore;
+  const detectedSignals: DetectedSignal[] = (leadScore?.detectedSignals ?? []).map((s) => ({
     id: s.id,
     label: s.label,
     evidence: s.evidence,
     weight: weights[s.id] ?? 'cold',
   }));
-  const band = fields.leadScore.band ?? 'cold';
+  const band = leadScore?.band ?? 'cold';
   return {
     id,
-    when: presentation.when,
+    when: formatWhen(updatedAt),
     committed: fields.status === 'saved',
     band,
+    aiProcessingStatus: fields.aiProcessingStatus,
     contact: {
-      name: presentation.contact.name,
-      company: presentation.contact.company,
-      title: presentation.contact.title,
+      name: { value: '', confidence: 'low' },
+      company: { value: '', confidence: 'low' },
+      title: { value: '', confidence: 'low' },
       email: {
-        value: fields.contact.email ?? '',
-        confidence: presentation.contact.emailConfidence,
+        value: fields.contact?.email ?? '',
+        confidence: fields.contact?.email ? 'high' : 'low',
       },
     },
     summary: {
-      meeting_title: fields.title,
-      narrative: fields.summary.narrative,
-      attendees: fields.summary.attendees.map((a) => ({
+      meetingTitle: fields.title,
+      narrative: summary?.narrative ?? '',
+      attendees: (summary?.attendees ?? []).map((a) => ({
         name: a.name,
         side: fromAttendeeSide(a.side),
       })),
-      topics: fields.summary.whatWasCovered,
-      decisions: fields.summary.whatWasDecided,
-      open_questions: presentation.summary.openQuestions,
-      next_steps: fields.summary.actionItems.map((a) => ({
+      topics: summary?.whatWasCovered ?? [],
+      decisions: summary?.whatWasDecided ?? [],
+      openQuestions: [],
+      nextSteps: (summary?.actionItems ?? []).map((a) => ({
         description: a.description,
         owner: a.owner,
-        due_date: a.dueDate ?? '',
+        dueDate: a.dueDate ?? '',
       })),
-      commitments: presentation.summary.commitments,
+      commitments: [],
     },
-    lead_score: { band, detected_signals, rationale: fields.leadScore.rationale },
-    recap_email: { subject: presentation.recapSubject, body: fields.recapEmail ?? '' },
+    leadScore: {
+      band,
+      detectedSignals,
+      rationale: leadScore?.rationale ?? '',
+      scorePercentage: leadScore?.scorePercentage ?? 0,
+    },
+    recapEmail: { subject: '', body: fields.recapEmail ?? '' },
   };
 }
 
-/** Decompose a `MeetingRecord` back into a stored transcript (persistence + supplement). */
-export function toStoredTranscript(record: MeetingRecord, userId: string): StoredTranscript {
-  const { contact, summary, lead_score, recap_email } = record;
+/** Project a stored transcript into the lightweight recents-bar display shape. */
+export function toRecentItem(stored: StoredTranscript): RecentItem {
+  const { id, fields, updatedAt } = stored;
+  const badge =
+    fields.aiProcessingStatus === 'success' && fields.leadScore?.band
+      ? (fields.leadScore.band.toUpperCase() as RecentItem['badge'])
+      : undefined;
   return {
-    id: record.id,
-    fields: {
-      userId,
-      title: summary.meeting_title,
-      status: record.committed ? 'saved' : 'draft',
-      source: 'zoom',
-      externalMeetingId: null,
-      webhookPayload: null,
-      originalTranscript: '',
-      cleanedTranscript: '',
-      summary: {
-        narrative: summary.narrative,
-        whatWeHeard: [],
-        whatWasCovered: summary.topics,
-        whatWasDecided: summary.decisions,
-        actionItems: summary.next_steps.map((s) => ({
-          description: s.description,
-          owner: s.owner,
-          dueDate: s.due_date,
-        })),
-        attendees: summary.attendees.map((a) => ({ name: a.name, side: toAttendeeSide(a.side) })),
-      },
-      contact: { email: contact.email.value },
-      leadScore: {
-        band: lead_score.band,
-        detectedSignals: lead_score.detected_signals.map((s) => ({
-          id: s.id,
-          label: s.label,
-          evidence: s.evidence,
-        })),
-        rationale: lead_score.rationale,
-      },
-      recapEmail: recap_email.body,
-      zohoLeadId: record.committed ? record.id : null,
+    id,
+    title: fields.title,
+    status: fields.status === 'saved' ? 'CRM' : 'DRAFT',
+    badge,
+    aiProcessingStatus: fields.aiProcessingStatus,
+    when: formatWhen(updatedAt),
+  };
+}
+
+/** Decompose a `MeetingRecord` into a persistence patch (never touches raw/cleaned transcript). */
+export function toTranscriptPatch(record: MeetingRecord): Partial<TranscriptFields> {
+  const { summary, leadScore, recapEmail, contact } = record;
+  return {
+    title: summary.meetingTitle,
+    status: record.committed ? 'saved' : 'draft',
+    summary: {
+      narrative: summary.narrative,
+      whatWeHeard: [],
+      whatWasCovered: summary.topics,
+      whatWasDecided: summary.decisions,
+      actionItems: summary.nextSteps.map((s) => ({
+        description: s.description,
+        owner: s.owner,
+        dueDate: s.dueDate,
+      })),
+      attendees: summary.attendees.map((a) => ({ name: a.name, side: toAttendeeSide(a.side) })),
     },
-    presentation: {
-      when: record.when,
-      recapSubject: recap_email.subject,
-      contact: {
-        name: contact.name,
-        company: contact.company,
-        title: contact.title,
-        emailConfidence: contact.email.confidence,
-      },
-      summary: { openQuestions: summary.open_questions, commitments: summary.commitments },
+    contact: { email: contact.email.value },
+    leadScore: {
+      band: leadScore.band,
+      detectedSignals: leadScore.detectedSignals.map((s) => ({
+        id: s.id,
+        label: s.label,
+        evidence: s.evidence,
+      })),
+      rationale: leadScore.rationale,
     },
+    recapEmail: recapEmail.body,
   };
 }

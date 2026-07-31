@@ -1,30 +1,34 @@
 'use server';
 
+import { DEFAULT_USER_ID } from '@/constants/user';
 import { toRubric } from '@/features/workflow/utils/rubric.mapper';
-import { toMeetingRecord, toStoredTranscript } from '@/features/workflow/utils/transcript.mapper';
-import { DEMO_USER_ID } from '@/lib/db/mock/transcripts.fixture';
+import {
+  formatWhen,
+  toMeetingRecord,
+  toTranscriptPatch,
+} from '@/features/workflow/utils/transcript.mapper';
+import { logAndThrow } from '@/lib/utils/server-action.utils';
+import { cleanTranscript } from '@/lib/utils/transcript-cleaner.utils';
 import { rubricSignalRepository } from '@/repositories/rubric-signal.repository';
 import { transcriptRepository } from '@/repositories/transcript.repository';
+import { createDraftTranscriptSchema } from '@/schemas/transcript.schema';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { Rubric } from '@/types/rubric.types';
+import type { StoredTranscript } from '@/types/transcript.types';
 
-import { ACTION_LOAD_ERROR, ACTION_SAVE_ERROR } from '../constants/action.constants';
+import {
+  ACTION_LOAD_ERROR,
+  ACTION_SAVE_ERROR,
+  DRAFT_CREATE_ERROR,
+} from '../constants/action.constants';
 
-/** Log with context and surface a user-safe error (never leak internals) — constitution §XIV. */
-function logAndThrow(op: string, error: unknown, message: string): never {
-  console.error(`[transcript.actions] ${op} failed`, error);
-  throw new Error(message);
-}
-
-/** The current rubric is the source of truth for detected-signal weights. */
-async function currentRubric(): Promise<Rubric> {
+export async function currentRubric(): Promise<Rubric> {
   return toRubric(await rubricSignalRepository.findActive());
 }
 
-export async function getTranscripts(): Promise<MeetingRecord[]> {
+export async function getTranscripts(): Promise<StoredTranscript[]> {
   try {
-    const [stored, rubric] = await Promise.all([transcriptRepository.findAll(), currentRubric()]);
-    return stored.map((t) => toMeetingRecord(t, rubric));
+    return await transcriptRepository.findAll();
   } catch (error) {
     logAndThrow('getTranscripts', error, ACTION_LOAD_ERROR);
   }
@@ -42,30 +46,9 @@ export async function getTranscriptById(id: string): Promise<MeetingRecord | nul
   }
 }
 
-export async function getSampleTranscript(): Promise<string> {
-  try {
-    return await transcriptRepository.getSample();
-  } catch (error) {
-    logAndThrow('getSampleTranscript', error, ACTION_LOAD_ERROR);
-  }
-}
-
-export async function createTranscript(record: MeetingRecord): Promise<MeetingRecord> {
-  try {
-    const stored = await transcriptRepository.create(toStoredTranscript(record, DEMO_USER_ID));
-    return toMeetingRecord(stored, await currentRubric());
-  } catch (error) {
-    logAndThrow('createTranscript', error, ACTION_SAVE_ERROR);
-  }
-}
-
 export async function updateTranscript(record: MeetingRecord): Promise<MeetingRecord | null> {
   try {
-    const decomposed = toStoredTranscript(record, DEMO_USER_ID);
-    const stored = await transcriptRepository.update(record.id, {
-      fields: decomposed.fields,
-      presentation: decomposed.presentation,
-    });
+    const stored = await transcriptRepository.update(record.id, toTranscriptPatch(record));
     return stored ? toMeetingRecord(stored, await currentRubric()) : null;
   } catch (error) {
     logAndThrow('updateTranscript', error, ACTION_SAVE_ERROR);
@@ -80,10 +63,22 @@ export async function deleteTranscript(id: string): Promise<{ ok: boolean }> {
   }
 }
 
-export async function resetTranscripts(): Promise<void> {
+export async function createDraftTranscript(input: {
+  rawTranscript: string;
+}): Promise<{ id: string }> {
   try {
-    await transcriptRepository.reset();
+    const { rawTranscript } = createDraftTranscriptSchema.parse(input);
+    const stored = await transcriptRepository.create({
+      userId: DEFAULT_USER_ID,
+      title: `Meeting on ${formatWhen(new Date())}`,
+      status: 'draft',
+      aiProcessingStatus: 'pending',
+      source: 'manual',
+      originalTranscript: rawTranscript,
+      cleanedTranscript: cleanTranscript(rawTranscript),
+    });
+    return { id: stored.id };
   } catch (error) {
-    logAndThrow('resetTranscripts', error, ACTION_SAVE_ERROR);
+    logAndThrow('createDraftTranscript', error, DRAFT_CREATE_ERROR);
   }
 }

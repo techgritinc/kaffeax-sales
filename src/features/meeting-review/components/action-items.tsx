@@ -21,7 +21,7 @@ export function ActionItems({ nextSteps, commitments }: ActionItemsProps) {
     ...nextSteps.map((ns) => ({
       owner: ns.owner || null,
       text: ns.description,
-      due: ns.due_date || null,
+      due: ns.dueDate || null,
     })),
     ...commitments.map((c) => ({
       owner: SIDE_LABEL[c.side] ?? null,

@@ -1,8 +1,11 @@
 import mongoose, { type HydratedDocument, type Model, Schema } from 'mongoose';
 
 import {
+  AI_PROCESSING_STATUSES,
+  AI_PROVIDERS,
   ATTENDEE_SIDES,
   type ActionItem,
+  type AiUsage,
   type Attendee,
   type DetectedSignal,
   LEAD_SCORE_BANDS,
@@ -16,6 +19,8 @@ import {
 
 type TranscriptSchemaFields = Omit<TranscriptFields, 'userId'> & {
   userId: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 const actionItemSchema = new Schema<ActionItem>(
@@ -58,11 +63,29 @@ const summarySchema = new Schema<TranscriptSummary>(
 
 const contactSchema = new Schema<TranscriptContact>({ email: { type: String } }, { _id: false });
 
+const aiUsageSchema = new Schema<AiUsage>(
+  {
+    model: { type: String, required: true },
+    provider: { type: String, required: true, enum: AI_PROVIDERS },
+    inputTokens: { type: Number, required: true },
+    outputTokens: { type: Number, required: true },
+    cacheCreationTokens: { type: Number, required: true, default: 0 },
+    cacheReadTokens: { type: Number, required: true, default: 0 },
+    inputCostUsd: { type: Number, required: true },
+    outputCostUsd: { type: Number, required: true },
+    cacheCreationCostUsd: { type: Number, required: true, default: 0 },
+    cacheReadCostUsd: { type: Number, required: true, default: 0 },
+    totalCostUsd: { type: Number, required: true },
+  },
+  { _id: false },
+);
+
 const leadScoreSchema = new Schema<TranscriptLeadScore>(
   {
     band: { type: String, enum: LEAD_SCORE_BANDS },
     detectedSignals: { type: [detectedSignalSchema], default: [] },
     rationale: { type: String, default: '' },
+    scorePercentage: { type: Number, default: 0 },
   },
   { _id: false },
 );
@@ -71,9 +94,18 @@ const transcriptSchema = new Schema<TranscriptSchemaFields>(
   {
     userId: { type: Schema.Types.ObjectId, required: true },
     title: { type: String, required: true },
-    status: { type: String, required: true, enum: TRANSCRIPT_STATUSES, default: 'processing' },
+    status: { type: String, required: true, enum: TRANSCRIPT_STATUSES, default: 'draft' },
+    aiProcessingStatus: {
+      type: String,
+      required: true,
+      enum: AI_PROCESSING_STATUSES,
+      default: 'pending',
+    },
     source: { type: String, required: true, enum: TRANSCRIPT_SOURCES },
-    externalMeetingId: { type: String, default: null },
+    // No `default: null` — the unique+sparse index below only excludes documents where the
+    // field is entirely absent; an explicit `null` default would make every draft "have" the
+    // field with the same value and collide on the second document ever created.
+    externalMeetingId: { type: String },
     webhookPayload: { type: Schema.Types.Mixed, default: null },
     originalTranscript: { type: String, required: true },
     cleanedTranscript: { type: String, default: '' },
@@ -81,9 +113,12 @@ const transcriptSchema = new Schema<TranscriptSchemaFields>(
     contact: { type: contactSchema, default: {} },
     leadScore: { type: leadScoreSchema, default: {} },
     recapEmail: { type: String, default: null },
-    zohoLeadId: { type: String, default: null },
+    zohoLeadId: { type: String },
+    aiUsage: { type: aiUsageSchema },
   },
-  { timestamps: true },
+  // minimize: false — otherwise Mongoose strips empty nested objects (e.g. contact: {})
+  // from both the persisted document and toObject() output, before contact.email is ever set.
+  { timestamps: true, minimize: false },
 );
 
 transcriptSchema.index({ userId: 1, status: 1, createdAt: -1 });

@@ -3,36 +3,25 @@ import { AccentBar } from '@/components/ui/typography/accent-bar';
 import { Eyebrow } from '@/components/ui/typography/eyebrow';
 import { Heading } from '@/components/ui/typography/heading';
 import type { MeetingRecord } from '@/types/meeting.types';
-import type { CrmRecord } from '@/types/workflow.types';
 
 import { CommitCard } from './commit-card';
 
 export interface CommitScreenProps {
-  crm: CrmRecord[];
-  activeId: string | null;
-  library: MeetingRecord[];
+  record: MeetingRecord | null;
   onNewCapture: () => void;
-  onOpenInReview: (record: MeetingRecord) => void;
+  onOpenInReview: (id: string) => void;
 }
 
-/** CRM confirmation screen — shows the activity record just written to Zoho. */
-export function CommitScreen({
-  crm,
-  activeId,
-  library,
-  onNewCapture,
-  onOpenInReview,
-}: CommitScreenProps) {
-  const records = crm.filter((r) => r.id === activeId);
-
+/** CRM confirmation screen — shows the record just saved to CRM. */
+export function CommitScreen({ record, onNewCapture, onOpenInReview }: CommitScreenProps) {
   return (
     <div className="w-full">
       <div className="mb-5">
-        <Eyebrow>Written to CRM</Eyebrow>
-        <Heading level={1}>This meeting is now in Zoho</Heading>
+        <Eyebrow>Saved to CRM</Eyebrow>
+        <Heading level={1}>This meeting is saved</Heading>
         <AccentBar />
         <p className="text-muted mb-6 text-[14px] leading-[1.55]">
-          The activity record below was just written to the Zoho CRM
+          The activity record below has been saved and marked CRM.
         </p>
       </div>
 
@@ -42,19 +31,12 @@ export function CommitScreen({
         </Button>
       </div>
 
-      {records.length === 0 ? (
+      {record === null || !record.committed ? (
         <div className="text-muted p-[18px_4px] font-sans text-[12px] leading-[1.55]">
-          Approve a draft on the Review step to see the CRM activity here.
+          Approve a draft on the Review step to see it here.
         </div>
       ) : (
-        records.map((r) => (
-          <CommitCard
-            key={r.id}
-            record={r}
-            libraryRecord={library.find((l) => l.id === r.id) ?? null}
-            onOpenInReview={onOpenInReview}
-          />
-        ))
+        <CommitCard record={record} onOpenInReview={onOpenInReview} />
       )}
     </div>
   );

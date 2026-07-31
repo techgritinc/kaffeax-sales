@@ -4,33 +4,33 @@ import type { JSX } from 'react';
 
 import { Icon } from '@/components/ui/icon/icon';
 import { SearchInput } from '@/components/ui/input/search-input';
-import type { MeetingRecord } from '@/types/meeting.types';
+import type { RecentItem } from '@/providers/recents/recents-context';
 
 import { useLibrarySearch } from '../hooks/use-library-search';
 import { SidebarItem } from './sidebar-item';
 
 export interface SidebarProps {
-  library: MeetingRecord[];
+  recents: RecentItem[];
   activeId: string | null;
-  onSelect: (record: MeetingRecord) => void;
+  onSelect: (item: RecentItem) => void;
   onNew: () => void;
   onCollapse: () => void;
 }
 
 interface SidebarGroup {
   label: string;
-  entries: MeetingRecord[];
+  entries: RecentItem[];
   empty: string;
 }
 
 export function Sidebar({
-  library,
+  recents,
   activeId,
   onSelect,
   onNew,
   onCollapse,
 }: SidebarProps): JSX.Element {
-  const { query, setQuery, drafts, saved } = useLibrarySearch(library);
+  const { query, setQuery, drafts, saved } = useLibrarySearch(recents);
 
   const groups: SidebarGroup[] = [
     { label: 'Drafts', entries: drafts, empty: 'No drafts pending.' },
@@ -62,40 +62,48 @@ export function Sidebar({
         </div>
       </div>
 
-      <div className="relative mx-3 mb-3.5">
-        <SearchInput
-          placeholder="Search meetings…"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
-      </div>
-
-      {groups.map((group) => (
-        <div key={group.label} className="mb-1.5">
-          <div className="flex items-center justify-between px-[18px] pt-[10px] pb-1">
-            <span className="text-sidebar-muted font-sans text-[10px] font-extrabold tracking-[0.08em] uppercase">
-              {group.label}
-            </span>
-            <span className="text-sidebar-group-count rounded-[10px] bg-white/[0.06] px-1.5 py-px text-[10px] font-extrabold tracking-[0.06em]">
-              {group.entries.length}
-            </span>
-          </div>
-          {group.entries.length === 0 ? (
-            <div className="text-sidebar-group-count px-[18px] pt-1 pb-2 text-[11px] italic">
-              {group.empty}
-            </div>
-          ) : (
-            group.entries.map((record) => (
-              <SidebarItem
-                key={record.id}
-                record={record}
-                active={record.id === activeId}
-                onSelect={onSelect}
-              />
-            ))
-          )}
+      {recents.length === 0 ? (
+        <div className="text-sidebar-group-count px-[18px] pt-1 pb-2 text-[12px] italic">
+          No summaries yet — capture and summarize a transcript to see it here.
         </div>
-      ))}
+      ) : (
+        <>
+          <div className="relative mx-3 mb-3.5">
+            <SearchInput
+              placeholder="Search meetings…"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </div>
+
+          {groups.map((group) => (
+            <div key={group.label} className="mb-1.5">
+              <div className="flex items-center justify-between px-[18px] pt-[10px] pb-1">
+                <span className="text-sidebar-muted font-sans text-[10px] font-extrabold tracking-[0.08em] uppercase">
+                  {group.label}
+                </span>
+                <span className="text-sidebar-group-count rounded-[10px] bg-white/[0.06] px-1.5 py-px text-[10px] font-extrabold tracking-[0.06em]">
+                  {group.entries.length}
+                </span>
+              </div>
+              {group.entries.length === 0 ? (
+                <div className="text-sidebar-group-count px-[18px] pt-1 pb-2 text-[11px] italic">
+                  {group.empty}
+                </div>
+              ) : (
+                group.entries.map((item) => (
+                  <SidebarItem
+                    key={item.id}
+                    item={item}
+                    active={item.id === activeId}
+                    onSelect={onSelect}
+                  />
+                ))
+              )}
+            </div>
+          ))}
+        </>
+      )}
     </aside>
   );
 }

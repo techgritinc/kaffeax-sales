@@ -13,6 +13,7 @@ const rubricSignalSchema = new Schema<RubricSignalFields>(
     weight: { type: String, required: true, enum: SIGNAL_WEIGHTS },
     source: { type: String, required: true, enum: SIGNAL_SOURCES },
     hints: { type: [String], default: [] },
+    numericWeight: { type: Number, required: true, min: 0 },
     isActive: { type: Boolean, required: true, default: true },
   },
   { timestamps: true },
