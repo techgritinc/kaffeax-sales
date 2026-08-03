@@ -5,6 +5,7 @@ import { ProcessingModal } from '@/components/capture-screen/processing-modal';
 import { ChatFab } from '@/components/chat-assistant/chat-fab';
 import { ChatPanel } from '@/components/chat-assistant/chat-panel';
 import { AppHeader } from '@/components/common/app-header/app-header';
+import { shellColsFor } from '@/components/common/app-shell/shell-cols';
 import { Stepper } from '@/components/common/stepper/stepper';
 import { CommitScreen } from '@/components/crm-screen/commit-screen';
 import { Sidebar } from '@/components/meeting-library/sidebar';
@@ -14,22 +15,12 @@ import { RubricModal } from '@/components/rubric-signals/rubric-modal';
 import { LoadingOverlay } from '@/components/ui/overlay/loading-overlay';
 import { Toast } from '@/components/ui/toast/toast';
 import { RUBRIC_BANDING_RULE } from '@/constants/bands';
-import { DEFAULT_CHAT_COMPANY, DEFAULT_CHAT_SIGNALS } from '@/constants/workflow';
+import { buildOpeningMessage } from '@/lib/utils/chat-assistant/opening-message';
 import { cn } from '@/lib/utils/cn';
 import { persist } from '@/lib/utils/workflow/persist';
 import { useRubricSignals } from '@/providers/rubric-signals/rubric-signals-context';
 import { useWorkflow } from '@/providers/workflow/workflow-context';
 import type { Rubric } from '@/types/rubric.types';
-
-const SHELL_COLS = {
-  sidebarChat:
-    'grid-cols-[260px_minmax(0,1fr)_340px] max-bp1100:grid-cols-[220px_minmax(0,1fr)_300px] max-bp900:grid-cols-[minmax(0,1fr)]',
-  sidebarOnly:
-    'grid-cols-[260px_minmax(0,1fr)] max-bp1100:grid-cols-[220px_minmax(0,1fr)] max-bp900:grid-cols-[minmax(0,1fr)]',
-  railChat:
-    'grid-cols-[56px_minmax(0,1fr)_340px] max-bp1100:grid-cols-[56px_minmax(0,1fr)_300px] max-bp900:grid-cols-[56px_minmax(0,1fr)]',
-  railOnly: 'grid-cols-[56px_minmax(0,1fr)] max-bp900:grid-cols-[56px_minmax(0,1fr)]',
-};
 
 /** Application shell: fixed header + the responsive [sidebar | main | chat] grid. */
 export function AppShell() {
@@ -39,19 +30,8 @@ export function AppShell() {
   const canReview = wf.draft !== null || wf.isCommitted;
   const showChat = wf.step !== 'capture';
   const chatVisible = showChat && wf.chatOpen;
-
-  const shellCols = wf.sidebarOpen
-    ? chatVisible
-      ? SHELL_COLS.sidebarChat
-      : SHELL_COLS.sidebarOnly
-    : chatVisible
-      ? SHELL_COLS.railChat
-      : SHELL_COLS.railOnly;
-
-  const chatContext = {
-    company: wf.draft?.contact.company.value || DEFAULT_CHAT_COMPANY,
-    signals: DEFAULT_CHAT_SIGNALS,
-  };
+  const shellCols = shellColsFor(wf.sidebarOpen, chatVisible);
+  const openingMessage = buildOpeningMessage(wf.draft);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -125,7 +105,14 @@ export function AppShell() {
           </div>
         </main>
 
-        {chatVisible && <ChatPanel context={chatContext} onClose={() => wf.setChatOpen(false)} />}
+        {chatVisible && (
+          <ChatPanel
+            transcriptId={wf.activeId}
+            openingMessage={openingMessage}
+            suggestedQuestions={wf.draft?.suggestedQuestions ?? []}
+            onClose={() => wf.setChatOpen(false)}
+          />
+        )}
       </div>
 
       {showChat && !wf.chatOpen && <ChatFab onClick={() => wf.setChatOpen(true)} />}

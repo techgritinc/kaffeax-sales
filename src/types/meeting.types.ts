@@ -66,4 +66,5 @@ export interface MeetingRecord {
   summary: Summary;
   leadScore: LeadScore;
   recapEmail: RecapEmail;
+  suggestedQuestions: string[];
 }

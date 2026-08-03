@@ -1,22 +1,20 @@
 'use client';
 
 import { Avatar } from '@/components/ui/avatar/avatar';
+import { useAutoScroll } from '@/hooks/chat-assistant/use-auto-scroll';
 import { cn } from '@/lib/utils/cn';
 import type { ChatMessage } from '@/types/workflow.types';
 
-import { useAutoScroll } from '../../hooks/chat-assistant/use-auto-scroll';
+import { SuggestedQuestions } from './suggested-questions';
 
 export interface ChatMessagesProps {
   messages: ChatMessage[];
   pending: boolean;
+  restoring?: boolean;
+  /** This meeting's generated chips — three, or empty when it has none. */
+  suggestedQuestions: string[];
   onSend: (msg: string) => void;
 }
-
-const CHIPS = [
-  'What pricing did they mention?',
-  'Any competitor references?',
-  'Summarize next steps',
-] as const;
 
 const AI_BUBBLE =
   'bg-white border border-border rounded-[2px_12px_12px_12px] p-[12px_14px] text-[13px] leading-[1.55] flex-1 min-w-0';
@@ -27,8 +25,14 @@ function AiAvatar() {
 }
 
 /** Scrollable message list with inline suggested chips and pending row (2701–2738). */
-export function ChatMessages({ messages, pending, onSend }: ChatMessagesProps) {
-  const scrollRef = useAutoScroll<HTMLDivElement>([messages, pending]);
+export function ChatMessages({
+  messages,
+  pending,
+  restoring = false,
+  suggestedQuestions,
+  onSend,
+}: ChatMessagesProps) {
+  const scrollRef = useAutoScroll<HTMLDivElement>([messages, pending, restoring]);
 
   return (
     <div
@@ -40,7 +44,11 @@ export function ChatMessages({ messages, pending, onSend }: ChatMessagesProps) {
           {m.role === 'ai' ? (
             <div className="mb-3.5 flex items-start gap-2.5">
               <AiAvatar />
-              <div className={cn(AI_BUBBLE, 'text-text')}>{m.text}</div>
+              {/* Answers and refusals are indistinguishable — a refusal is the
+                  assistant working correctly. Only a failure is set apart. */}
+              <div className={cn(AI_BUBBLE, m.kind === 'failure' ? 'text-muted' : 'text-text')}>
+                {m.text}
+              </div>
             </div>
           ) : (
             <div className="mb-3.5 flex justify-end">
@@ -49,27 +57,19 @@ export function ChatMessages({ messages, pending, onSend }: ChatMessagesProps) {
               </div>
             </div>
           )}
+          {/* Attached to the opening bubble only — a restored conversation starts
+              with a user message, so it is never topped with a fresh chip row. */}
           {i === 0 && m.role === 'ai' && (
-            <>
-              <div className="text-muted mb-[6px] ml-[42px] font-sans text-[9.5px] font-extrabold tracking-[0.12em] uppercase">
-                Suggested
-              </div>
-              <div className="max-bp900:ml-[42px] max-bp900:mr-0 mt-[2px] mb-[14px] ml-[42px] flex flex-wrap gap-[6px]">
-                {CHIPS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    className="border-tan text-midnight hover:border-green hover:text-green-deep hover:bg-sidebar-new-text cursor-pointer rounded-[20px] border bg-white/[0.72] px-[12px] py-[6px] font-sans text-[11.5px] font-semibold transition-all"
-                    onClick={() => onSend(c)}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </>
+            <SuggestedQuestions questions={suggestedQuestions} onSelect={onSend} />
           )}
         </div>
       ))}
+      {restoring && (
+        <div className="mb-3.5 flex items-start gap-2.5">
+          <AiAvatar />
+          <div className={cn(AI_BUBBLE, 'text-muted italic')}>Loading earlier questions…</div>
+        </div>
+      )}
       {pending && (
         <div className="mb-3.5 flex items-start gap-2.5">
           <AiAvatar />
