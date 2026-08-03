@@ -3,12 +3,12 @@
 import { type ReactNode, useCallback, useState } from 'react';
 
 import { RUBRIC_BANDS_CONFIG } from '@/constants/bands';
+import { buildCustomSignal } from '@/lib/utils/workflow/rubric-signal.utils';
 import {
   createRubricSignal,
   deleteRubricSignal,
   updateRubricSignal,
-} from '@/features/workflow/actions/rubric.actions';
-import { buildCustomSignal } from '@/features/workflow/utils/rubric-signal.utils';
+} from '@/server-actions/workflow/rubric.actions';
 import type { Rubric, RubricSignal } from '@/types/rubric.types';
 
 import { type NewSignalInput, RubricSignalsContext } from './rubric-signals-context';

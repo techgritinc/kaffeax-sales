@@ -1,8 +1,14 @@
-/** Interval (ms) between processing-modal step advances. */
-export const PROC_TICK_MS = 380;
+import type { ProcessingStep } from '@/types/workflow/processing.types';
 
 /** Toast auto-dismiss delay (ms). */
 export const TOAST_DURATION_MS = 3200;
+
+/** Pipeline stages displayed in the processing modal during summarization. */
+export const PROCESSING_STEPS: ProcessingStep[] = [
+  { label: 'Preparing Transcript', stage: 'preparing' },
+  { label: 'Agent Processing', stage: 'processing' },
+  { label: 'Extracting Summary', stage: 'extracting' },
+];
 
 /** Default weight for a newly composed rubric signal. */
 export const NEW_SIGNAL_DEFAULT_WEIGHT = 'warm' as const;

@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react';
 
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { Step, Toast, ToastTone, WorkflowStatus } from '@/types/workflow.types';
+import type { ProcessingStage } from '@/types/workflow/processing.types';
 
 /** The capture-session workflow state, derived selectors, and dispatchable actions. */
 export interface WorkflowContextValue {
@@ -13,10 +14,11 @@ export interface WorkflowContextValue {
   activeId: string | null;
   toast: Toast | null;
   step: Step;
-  procTick: number;
+  procStage: ProcessingStage;
   sidebarOpen: boolean;
   rubricOpen: boolean;
   chatOpen: boolean;
+  isCommitting: boolean;
 
   // --- Derived (computed in render) ---
   isCommitted: boolean;

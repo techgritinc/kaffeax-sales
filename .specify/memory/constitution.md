@@ -1,6 +1,45 @@
 <!--
   Sync Impact Report
   ==================
+  Version change: 1.6.0 → 2.0.0 (MAJOR — Directory Architecture redefined; features/<feature>/ pattern removed)
+
+  Rationale: A 55-file restructuring on the tae-86 branch moved every category that previously lived
+  inside src/features/<feature>/{actions,components,hooks,utils,types} to a top-level directory per
+  technical category, with a <domain>/ subdirectory per feature: server actions moved to
+  server-actions/<domain>/, components to components/<domain>/, hooks to hooks/<domain>/, utils to
+  lib/utils/<domain>/, and types to types/<domain>/ (constants gained the same <domain>/ pattern).
+  src/features/ no longer exists anywhere in the codebase. The constitution's Directory Architecture
+  section, and every principle referencing src/features/<feature>/... (§V, §XI), described a structure
+  that no longer matched reality and has been rewritten to document the actual current layout exactly,
+  per an explicit "no deviations" directive. config/, lib/auth/, and a <feature>/ subdirectory under
+  app/ were also removed from the documented tree — they were never built in either the old or new
+  structure, so keeping them was aspirational fiction, not a description of a real convention.
+
+  Modified sections:
+    - Directory Architecture (full tree + Directory Principles rewritten)
+    - §V Code Modularity — no changes (kept as-is)
+    - §VII Utility Functions — feature-level utils path corrected
+    - §XI Type Isolation — feature-level types path corrected
+
+  Added principles: None (this is a redefinition of existing structure, not a new principle)
+  Added sections: None
+  Removed sections: None (config/, lib/auth/, middleware.ts leaf entries removed from the tree only,
+    since they document infrastructure that was never built)
+
+  Templates:
+    ✅ .specify/templates/plan-template.md — no structural changes required
+    ✅ .specify/templates/spec-template.md — no structural changes required
+    ✅ .specify/templates/tasks-template.md — no structural changes required
+
+  Follow-up TODOs:
+    - Two pre-existing, unrelated defects were found during this audit and are NOT fixed here:
+      (1) §XVII "No Barrel Imports" is duplicated verbatim (appears twice); (2) §XVI "Git & Deployment
+      Standards" appears out of numeric order, after §XIX. Address in a separate, explicit amendment.
+-->
+
+<!--
+  Sync Impact Report
+  ==================
   Version change: 1.5.0 → 1.6.0 (MINOR — New §XIX spec directory naming convention added; historical directory references updated)
 
   Rationale: Spec directories were being named with sequential numeric prefixes (001-, 002-, etc.),
@@ -188,7 +227,7 @@ const name = user?.profile?.name ?? 'Unknown';
 
 ### VII. Utility Functions
 
-- Pure utility functions MUST be extracted into dedicated utility files — either globally in `src/lib/utils/` or at the feature level in `src/features/<feature>/utils/`.
+- Pure utility functions MUST be extracted into dedicated utility files — either globally in `src/lib/utils/` or scoped to a domain in `src/lib/utils/<domain>/`.
 - Complex logic (formatting, calculations, transformations) MUST NOT live inside component files.
 - Utility functions MUST be pure (no side effects) and independently testable.
 
@@ -231,8 +270,8 @@ const users = await userRepository.findAll();
 ### XI. Type Isolation
 
 - NEVER dump all types into a single global file.
-- Types and interfaces MUST be isolated into dedicated `types/` directories organized strictly by feature module: `src/features/<feature>/types/` or `src/types/<domain>.ts`.
-- Shared cross-feature types live in `src/types/` with clear domain-based file names (e.g., `user.types.ts`, `api.types.ts`).
+- Types and interfaces MUST be isolated into dedicated locations under `src/types/`: domain-specific types that don't need to be shared live in `src/types/<domain>/`; types shared across domains live flat as `src/types/<domain>.types.ts`.
+- Shared cross-domain types live flat in `src/types/` with clear domain-based file names (e.g., `user.types.ts`, `api.types.ts`).
 - **Plain data types MUST be separated from persistence-layer types.** A Mongoose model file (`src/lib/db/models/<domain>.model.ts`) MUST NOT declare plain interfaces/types inline. It MUST import them from the corresponding `src/types/<domain>.types.ts` file and keep only Mongoose-specific code — `Schema` definitions, sub-schemas, indexes, the `HydratedDocument<T>` type, and the model export. This is not just backend hygiene: the plain type file has zero Mongoose dependency, so the exact same interface is directly reusable by frontend code (components, forms, server action signatures) instead of being duplicated or re-declared.
 
 **Bad:**
@@ -430,50 +469,59 @@ git push origin feat/sales-dashboard  # then open a PR
 
 ## Directory Architecture
 
+There is **no `features/<feature>/` directory**. Code is organized by technical category at the top level of `src/`; within each category, code specific to one domain (feature/screen) lives in a `<domain>/` subdirectory, and code genuinely shared across domains lives flat in that category.
+
 ```text
 src/
-├── app/                    # Next.js App Router pages & layouts
+├── app/                    # Next.js App Router pages & layouts ONLY
 │   ├── globals.css         # Design tokens (single source of truth)
 │   ├── layout.tsx          # Root layout
-│   └── <feature>/          # Route-based feature directories
+│   └── page.tsx            # Route entry points
 ├── components/
 │   ├── ui/                 # Atomic reusable UI primitives (buttons, inputs, badges, etc.)
-│   └── common/             # Shared cross-feature composed components
-├── features/               # Self-contained domain feature modules
-│   └── <feature>/
-│       ├── actions/        # Server actions
-│       ├── components/     # Feature-specific composed components
-│       ├── hooks/          # Feature-specific hooks
-│       ├── utils/          # Feature-specific utilities
-│       └── types/          # Feature-specific types
-├── lib/                    # Shared infrastructure and core libraries
-│   ├── db/                 # Database client (MongoDB connection, helpers)
-│   ├── auth/               # Authentication and authorization helpers
-│   └── utils/              # Shared utility functions
-├── integrations/           # External service integrations and API clients
-├── providers/              # React context providers
-├── repositories/           # Database abstraction layer (classes)
-├── schemas/                # Shared Zod validation schemas
-├── config/                 # Application configuration
-├── constants/              # Shared constants and configuration values
-├── types/                  # Shared cross-feature types
-└── middleware.ts           # Next.js middleware entry point
+│   ├── common/              # Shared cross-domain composed components (e.g. app-shell)
+│   └── <domain>/            # Domain-specific composed components (e.g. review-screen/, crm-screen/, capture-screen/, chat-assistant/, meeting-library/, rubric-signals/)
+├── hooks/
+│   └── <domain>/            # Domain-specific hooks (e.g. workflow/, chat-assistant/, meeting-library/)
+├── server-actions/
+│   └── <domain>/            # Next.js Server Actions ('use server'), grouped by domain (e.g. workflow/, crm-commit/)
+├── lib/                     # Shared infrastructure and core libraries
+│   ├── db/                  # MongoDB client, Mongoose models, connection helpers
+│   └── utils/
+│       ├── <shared>.ts      # Cross-domain utility files
+│       └── <domain>/        # Domain-specific utilities (e.g. workflow/)
+├── integrations/
+│   └── <service>/           # External service API clients, one subdirectory per service, self-contained
+├── providers/
+│   └── <domain>/            # React context providers, one subdirectory per provider
+├── repositories/            # Database abstraction layer (classes) — flat, one file per collection
+├── schemas/                 # Shared Zod validation schemas — flat
+├── constants/
+│   ├── <shared>.ts          # Cross-domain constants
+│   └── <domain>/            # Domain-specific constants (e.g. workflow/, crm-commit/, zoho/)
+└── types/
+    ├── <domain>.types.ts    # Cross-domain shared types, flat
+    └── <domain>/            # Domain-specific types not needed elsewhere (e.g. workflow/)
 ```
 
 **Directory Principles**
 
-- `app/` MUST contain only routing, layouts, page entry points, and route-level Server Components.
-- `features/` MUST organize code by business domain. Each feature MUST be self-contained: components, actions, hooks, utils, and types all live inside the feature directory.
-- A feature MUST NEVER import directly from another feature's internals. Cross-feature dependencies MUST flow through explicitly defined shared modules (`lib/`, `schemas/`, `types/`, `constants/`).
-- `components/` MUST contain only UI components shared across multiple features. `ui/` holds atomic primitives; `common/` holds cross-feature composed components.
-- `lib/` MUST contain shared infrastructure: database client, authentication helpers, and global utilities. No business logic belongs here.
+- `app/` MUST contain only routing, layouts, page entry points, and route-level Server Components. No business logic, no feature-specific subdirectories.
+- Code specific to a single domain MUST live in that category's `<domain>/` subdirectory (e.g. `hooks/workflow/`, `server-actions/crm-commit/`). Code genuinely shared across domains lives flat in the category root (e.g. `lib/utils/persist.ts`, `constants/bands.ts`).
+- Domain folder names are chosen per category to fit that category's convention — `components/` MAY use a screen-oriented name (e.g. `review-screen/`, `crm-screen/`) since it reflects the rendered UI, while `hooks/`, `server-actions/`, `constants/`, and `types/` typically use the underlying feature name (e.g. `workflow/`, `crm-commit/`). Names are NOT required to match 1:1 across categories for the same feature.
+- A domain's code MUST NOT import directly from another domain's internals within the same category (e.g. `hooks/workflow/` must not reach into `hooks/chat-assistant/`). Cross-domain dependencies MUST flow through `lib/`, `schemas/`, `types/`, `constants/`, `repositories/`, or `integrations/`.
+- `components/` MUST contain `ui/` (atomic primitives), `common/` (cross-domain composed components), and one subdirectory per domain for domain-specific composed components.
+- `hooks/` MUST contain one subdirectory per domain. No flat hooks files unless the hook is genuinely used by more than one domain.
+- `server-actions/` MUST contain every Next.js Server Action (`'use server'` file) in the application, grouped into one subdirectory per domain. No `/app/api/` route handlers — see §X.
+- `lib/` MUST contain shared infrastructure: `db/` (database client, Mongoose models, connection helpers) and `utils/` (shared utility functions, with domain-specific utilities in `lib/utils/<domain>/`). No business logic belongs directly in `lib/`.
 - `integrations/` MUST encapsulate all communication with external services and third-party APIs. Each integration MUST be self-contained with its own client, types, and error handling.
-- `providers/` MUST contain React context providers (e.g., auth context, theme). Providers MUST NOT contain business logic.
-- `repositories/` MUST contain all database abstraction classes. No direct database calls outside this directory.
-- `schemas/` MUST contain Zod schemas shared across multiple features. Feature-specific schemas live inside the feature directory.
-- `constants/` MUST contain named constants and configuration values used across the application. Magic numbers and magic strings MUST be extracted here.
+- `providers/` MUST contain React context providers, one subdirectory per provider. Providers MUST NOT contain business logic.
+- `repositories/` MUST contain all database abstraction classes, flat — one file per collection/entity. No direct database calls outside this directory.
+- `schemas/` MUST contain Zod schemas, flat, shared across the application.
+- `constants/` MUST contain named constants and configuration values. Domain-specific constants live in `constants/<domain>/`; cross-domain constants live flat. Magic numbers and magic strings MUST be extracted here.
+- `types/` MUST contain shared and domain-specific TypeScript types. Domain-specific types not needed elsewhere live in `types/<domain>/`; cross-domain shared types live flat as `types/<domain>.types.ts`.
 - The `@/*` path alias MUST be used for all imports from `src/`. Relative imports beyond one level (`../../`) are NEVER permitted.
-- `middleware.ts` MUST be the sole Next.js middleware entry point. Helper modules MAY be organized in a `middleware/` subdirectory imported by the entry point.
+- `middleware.ts`, if present, MUST be the sole Next.js middleware entry point at `src/middleware.ts`. Helper modules MAY be organized in a `middleware/` subdirectory imported by the entry point.
 
 ## Quality Gates & CI/CD
 
@@ -495,4 +543,4 @@ Pre-commit hooks enforce lint-staged and type-checking locally. Pre-push hooks e
   3. Update to this file and propagation to dependent templates.
 - The `rulebook.md` file at the repository root serves as the upstream source for constitutional principles. Changes to the rulebook MUST be reflected here.
 
-**Version**: 1.6.0 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-07-27
+**Version**: 2.0.0 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-07-30

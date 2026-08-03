@@ -1,23 +1,23 @@
 'use client';
 
+import { CaptureScreen } from '@/components/capture-screen/capture-screen';
+import { ProcessingModal } from '@/components/capture-screen/processing-modal';
+import { ChatFab } from '@/components/chat-assistant/chat-fab';
+import { ChatPanel } from '@/components/chat-assistant/chat-panel';
 import { AppHeader } from '@/components/common/app-header/app-header';
 import { shellColsFor } from '@/components/common/app-shell/shell-cols';
 import { Stepper } from '@/components/common/stepper/stepper';
+import { CommitScreen } from '@/components/crm-screen/commit-screen';
+import { Sidebar } from '@/components/meeting-library/sidebar';
+import { SidebarRail } from '@/components/meeting-library/sidebar-rail';
+import { ReviewScreen } from '@/components/review-screen/review-screen';
+import { RubricModal } from '@/components/rubric-signals/rubric-modal';
+import { LoadingOverlay } from '@/components/ui/overlay/loading-overlay';
 import { Toast } from '@/components/ui/toast/toast';
 import { RUBRIC_BANDING_RULE } from '@/constants/bands';
-import { ChatFab } from '@/features/assistant-chat/components/chat-fab';
-import { ChatPanel } from '@/features/assistant-chat/components/chat-panel';
-import { buildOpeningMessage } from '@/features/assistant-chat/utils/opening-message';
-import { CommitScreen } from '@/features/crm-commit/components/commit-screen';
-import { CaptureScreen } from '@/features/meeting-capture/components/capture-screen';
-import { ProcessingModal } from '@/features/meeting-capture/components/processing-modal';
-import { Sidebar } from '@/features/meeting-library/components/sidebar';
-import { SidebarRail } from '@/features/meeting-library/components/sidebar-rail';
-import { ReviewScreen } from '@/features/meeting-review/components/review-screen';
-import { RubricModal } from '@/features/scoring-rubric/components/rubric-modal';
-import { persist } from '@/features/workflow/utils/persist';
+import { buildOpeningMessage } from '@/lib/utils/chat-assistant/opening-message';
 import { cn } from '@/lib/utils/cn';
-import { useRecents } from '@/providers/recents/recents-context';
+import { persist } from '@/lib/utils/workflow/persist';
 import { useRubricSignals } from '@/providers/rubric-signals/rubric-signals-context';
 import { useWorkflow } from '@/providers/workflow/workflow-context';
 import type { Rubric } from '@/types/rubric.types';
@@ -25,7 +25,6 @@ import type { Rubric } from '@/types/rubric.types';
 /** Application shell: fixed header + the responsive [sidebar | main | chat] grid. */
 export function AppShell() {
   const wf = useWorkflow();
-  const { recents } = useRecents();
   const rubricSignals = useRubricSignals();
   const rubric: Rubric = { signals: rubricSignals.signals, banding: RUBRIC_BANDING_RULE };
   const canReview = wf.draft !== null || wf.isCommitted;
@@ -48,7 +47,6 @@ export function AppShell() {
 
         {wf.sidebarOpen ? (
           <Sidebar
-            recents={recents}
             activeId={wf.activeId}
             onSelect={(item) => void wf.openFromRecent(item.id)}
             onNew={wf.newCapture}
@@ -69,9 +67,10 @@ export function AppShell() {
           </div>
 
           <div className="max-bp900:p-[10px_20px_28px] max-bp560:p-[8px_14px_24px] min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-[12px_40px_40px]">
-            {wf.status === 'processing' && <ProcessingModal procTick={wf.procTick} />}
+            {wf.procStage !== 'idle' && <ProcessingModal procStage={wf.procStage} />}
+            {wf.isCommitting && <LoadingOverlay />}
 
-            {wf.step === 'capture' && wf.status !== 'processing' && (
+            {wf.step === 'capture' && wf.procStage === 'idle' && (
               <CaptureScreen
                 transcript={wf.transcript}
                 wordCount={wf.wordCount}

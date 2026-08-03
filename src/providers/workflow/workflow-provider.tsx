@@ -3,11 +3,12 @@
 import { type ReactNode, useState } from 'react';
 
 import { SIDEBAR_OPEN_MIN_WIDTH } from '@/constants/workflow';
-import { useWorkflowActions } from '@/features/workflow/hooks/use-workflow-actions';
+import { useWorkflowActions } from '@/hooks/workflow/use-workflow-actions';
 import { useRecents } from '@/providers/recents/recents-context';
 import { useRubricSignals } from '@/providers/rubric-signals/rubric-signals-context';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { Step, Toast, WorkflowStatus } from '@/types/workflow.types';
+import type { ProcessingStage } from '@/types/workflow/processing.types';
 
 import { WorkflowContext, type WorkflowContextValue } from './workflow-context';
 
@@ -28,12 +29,13 @@ export function WorkflowProvider({ children, initialSample }: WorkflowProviderPr
   const [activeId, setActiveId] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [step, setStep] = useState<Step>('capture');
-  const [procTick, setProcTick] = useState<number>(0);
+  const [procStage, setProcStage] = useState<ProcessingStage>('idle');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(() =>
     typeof window === 'undefined' ? true : window.innerWidth > SIDEBAR_OPEN_MIN_WIDTH,
   );
   const [rubricOpen, setRubricOpen] = useState<boolean>(false);
   const [chatOpen, setChatOpen] = useState<boolean>(true);
+  const [isCommitting, setIsCommitting] = useState<boolean>(false);
 
   // --- Derived selectors (recomputed each render) ---
   const isCommitted = !!draft?.committed;
@@ -59,7 +61,8 @@ export function WorkflowProvider({ children, initialSample }: WorkflowProviderPr
     setActiveId,
     setToast,
     setStep,
-    setProcTick,
+    setProcStage,
+    setIsCommitting,
   });
 
   const value: WorkflowContextValue = {
@@ -70,10 +73,11 @@ export function WorkflowProvider({ children, initialSample }: WorkflowProviderPr
     activeId,
     toast,
     step,
-    procTick,
+    procStage,
     sidebarOpen,
     rubricOpen,
     chatOpen,
+    isCommitting,
     isCommitted,
     score,
     emailMissing,
