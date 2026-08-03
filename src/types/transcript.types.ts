@@ -7,15 +7,11 @@ export interface AiUsage {
   provider: AiProvider;
   inputTokens: number;
   outputTokens: number;
-  /** Prompt-cache write tokens (Anthropic only; 0 for OpenRouter). */
   cacheCreationTokens: number;
-  /** Prompt-cache read tokens (Anthropic only; 0 for OpenRouter). */
   cacheReadTokens: number;
   inputCostUsd: number;
   outputCostUsd: number;
-  /** Cost of prompt-cache writes (0 when unused). */
   cacheCreationCostUsd: number;
-  /** Cost of prompt-cache reads (0 when unused). */
   cacheReadCostUsd: number;
   totalCostUsd: number;
 }
@@ -85,9 +81,10 @@ export interface TranscriptFields {
   recapEmail: string | null;
   zohoLeadId: string | null;
   aiUsage?: AiUsage;
+  suggestedQuestions: string[];
+  suggestionUsage?: AiUsage;
 }
 
-/** A transcript record as persisted in the store, keyed by id. */
 export interface StoredTranscript {
   id: string;
   fields: TranscriptFields;

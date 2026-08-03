@@ -1,10 +1,7 @@
-/** The three linear workflow steps. */
 export type Step = 'capture' | 'review' | 'commit';
 
-/** Processing status for the capture → dossier transition. */
 export type WorkflowStatus = 'idle' | 'processing' | 'error';
 
-/** Toast visual tone. */
 export type ToastTone = 'success' | 'reject' | 'info';
 
 export interface Toast {
@@ -14,9 +11,12 @@ export interface Toast {
 
 export type ChatRole = 'user' | 'ai';
 
+export type ChatMessageKind = 'answer' | 'refusal' | 'failure';
+
 export interface ChatMessage {
   id: string;
   role: ChatRole;
   text: string;
   pending?: boolean;
+  kind?: ChatMessageKind;
 }

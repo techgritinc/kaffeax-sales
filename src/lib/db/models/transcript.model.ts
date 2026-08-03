@@ -63,7 +63,8 @@ const summarySchema = new Schema<TranscriptSummary>(
 
 const contactSchema = new Schema<TranscriptContact>({ email: { type: String } }, { _id: false });
 
-const aiUsageSchema = new Schema<AiUsage>(
+/** Exported so the chat-exchange model can record usage in the same shape. */
+export const aiUsageSchema = new Schema<AiUsage>(
   {
     model: { type: String, required: true },
     provider: { type: String, required: true, enum: AI_PROVIDERS },
@@ -102,9 +103,6 @@ const transcriptSchema = new Schema<TranscriptSchemaFields>(
       default: 'pending',
     },
     source: { type: String, required: true, enum: TRANSCRIPT_SOURCES },
-    // No `default: null` — the unique+sparse index below only excludes documents where the
-    // field is entirely absent; an explicit `null` default would make every draft "have" the
-    // field with the same value and collide on the second document ever created.
     externalMeetingId: { type: String },
     webhookPayload: { type: Schema.Types.Mixed, default: null },
     originalTranscript: { type: String, required: true },
@@ -115,9 +113,9 @@ const transcriptSchema = new Schema<TranscriptSchemaFields>(
     recapEmail: { type: String, default: null },
     zohoLeadId: { type: String },
     aiUsage: { type: aiUsageSchema },
+    suggestedQuestions: { type: [String], default: [] },
+    suggestionUsage: { type: aiUsageSchema },
   },
-  // minimize: false — otherwise Mongoose strips empty nested objects (e.g. contact: {})
-  // from both the persisted document and toObject() output, before contact.email is ever set.
   { timestamps: true, minimize: false },
 );
 

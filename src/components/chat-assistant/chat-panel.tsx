@@ -1,45 +1,46 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Icon } from '@/components/ui/icon/icon';
-import type { ChatMessage } from '@/types/workflow.types';
+import { useMeetingChat } from '@/hooks/chat-assistant/use-meeting-chat';
 
-import { cannedResponse } from '../../hooks/chat-assistant/use-canned-response';
 import { ChatMessages } from './chat-messages';
 
 export interface ChatPanelProps {
-  context: { company: string; signals: string };
+  /** The meeting the panel answers about, or null when none is open. */
+  transcriptId: string | null;
+  openingMessage: string;
+  /** This meeting's generated chips. Static per meeting, so it stays out of the hook. */
+  suggestedQuestions: string[];
   onClose: () => void;
 }
 
-export function ChatPanel({ context, onClose }: ChatPanelProps) {
-  const idRef = useRef(1);
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [
-    {
-      id: 'm0',
-      role: 'ai',
-      text: `I've analyzed the meeting. ${context.company || 'This lead'} shows ${context.signals || 'distribution and pricing-transparency signals'}. What would you like to know?`,
-    },
-  ]);
+export function ChatPanel({
+  transcriptId,
+  openingMessage,
+  suggestedQuestions,
+  onClose,
+}: ChatPanelProps) {
+  const {
+    messages,
+    pending,
+    restoring,
+    send: ask,
+  } = useMeetingChat({
+    transcriptId,
+    openingMessage,
+  });
   const [text, setText] = useState('');
-  const [pending, setPending] = useState(false);
 
   const send = useCallback(
     (msg?: string) => {
       const q = (msg ?? text).trim();
       if (!q || pending) return;
-      const userId = `m${idRef.current++}`;
-      setMessages((m) => [...m, { id: userId, role: 'user', text: q }]);
+      ask(q);
       setText('');
-      setPending(true);
-      window.setTimeout(() => {
-        const aiId = `m${idRef.current++}`;
-        setMessages((m) => [...m, { id: aiId, role: 'ai', text: cannedResponse(q) }]);
-        setPending(false);
-      }, 600);
     },
-    [text, pending],
+    [ask, pending, text],
   );
 
   return (
@@ -65,7 +66,13 @@ export function ChatPanel({ context, onClose }: ChatPanelProps) {
         </button>
       </div>
 
-      <ChatMessages messages={messages} pending={pending} onSend={send} />
+      <ChatMessages
+        messages={messages}
+        pending={pending}
+        restoring={restoring}
+        suggestedQuestions={suggestedQuestions}
+        onSend={send}
+      />
 
       <div className="border-border-warm max-bp900:mt-[10px] max-bp900:pt-[10px] mt-[14px] flex gap-2 border-t pt-[12px]">
         <input

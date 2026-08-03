@@ -1,14 +1,3 @@
-/**
- * Free-tier LLMs frequently inject garbage tokens into otherwise valid JSON.
- * This uses a line-by-line strategy that handles the most common corruption
- * patterns without needing a full JSON parser:
- *
- * 1. HTML entities decoded            (&#34; → ")
- * 2. Garbage tokens between JSON keys stripped  (ներov "id" → "id")
- * 3. Missing `:` between key and value restored ("key" "val" → "key": "val")
- * 4. Bare garbage values in arrays removed      ([..., Rés, ...] → [..., ...])
- * 5. Trailing commas cleaned up                 ([a,] → [a])
- */
 export function repairJson(raw: string): string {
   let text = raw;
 
