@@ -1,4 +1,4 @@
-import type { SummarizationResponse } from '@/types/claude.types';
+import type { SummarizationError } from '@/types/claude.types';
 
 import {
   APIConnectionError,
@@ -8,7 +8,8 @@ import {
   RateLimitError,
 } from './client';
 
-export function handleSdkError(error: unknown): SummarizationResponse {
+/** Always an error — narrowed from `SummarizationResponse` so callers needn't re-narrow. */
+export function handleSdkError(error: unknown): SummarizationError {
   if (error instanceof AuthenticationError) {
     return {
       success: false,

@@ -47,23 +47,10 @@ function fromPricing(
   };
 }
 
-/**
- * Anthropic resolves alias model IDs (e.g. `claude-sonnet-4-6`) to their full
- * dated snapshot IDs (e.g. `claude-sonnet-4-6-20251114`) in the API response.
- * Strip the trailing `-YYYYMMDD` suffix so the pricing table lookup always hits
- * the canonical alias we maintain.
- */
 function normaliseAnthropicModel(model: string): string {
   return model.replace(/-\d{8}$/, '');
 }
 
-/**
- * Compute exact cost for a direct Anthropic API call.
- * Pass `response.model` (the full snapshot ID the SDK returns) — the function
- * normalises it to the alias before doing the pricing table lookup.
- * Includes prompt-cache costs when `cacheCreationTokens` or `cacheReadTokens`
- * are non-zero (both default to 0 when caching is not in use).
- */
 export function computeAnthropicCost(
   model: string,
   inputTokens: number,
@@ -80,16 +67,6 @@ export function computeAnthropicCost(
   return fromPricing(pricing, inputTokens, outputTokens, cacheCreationTokens, cacheReadTokens);
 }
 
-/**
- * Compute cost for an OpenRouter API call.
- *
- * Priority:
- * 1. Free models (`:free` suffix) → $0
- * 2. Known model in pricing table → exact calculation
- * 3. API-reported total cost → use as totalCostUsd, split proportionally if
- *    pricing is known, otherwise store as total with $0 input/output breakdown
- * 4. Unknown with no API cost → $0 with a warning
- */
 export function computeOpenRouterCost(
   model: string,
   inputTokens: number,

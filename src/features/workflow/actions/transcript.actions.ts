@@ -9,6 +9,7 @@ import {
 } from '@/features/workflow/utils/transcript.mapper';
 import { logAndThrow } from '@/lib/utils/server-action.utils';
 import { cleanTranscript } from '@/lib/utils/transcript-cleaner.utils';
+import { chatExchangeRepository } from '@/repositories/chat-exchange.repository';
 import { rubricSignalRepository } from '@/repositories/rubric-signal.repository';
 import { transcriptRepository } from '@/repositories/transcript.repository';
 import { createDraftTranscriptSchema } from '@/schemas/transcript.schema';
@@ -57,7 +58,11 @@ export async function updateTranscript(record: MeetingRecord): Promise<MeetingRe
 
 export async function deleteTranscript(id: string): Promise<{ ok: boolean }> {
   try {
-    return { ok: await transcriptRepository.delete(id) };
+    const [ok] = await Promise.all([
+      transcriptRepository.delete(id),
+      chatExchangeRepository.deleteByTranscript(id),
+    ]);
+    return { ok };
   } catch (error) {
     logAndThrow('deleteTranscript', error, ACTION_SAVE_ERROR);
   }
