@@ -4,7 +4,6 @@ import type {
   SuggestedQuestionsResult,
 } from '@/types/suggested-questions.types';
 
-
 const LOG_PREFIX = '[transcript-ai.actions]';
 const NOT_ATTEMPTED_CATEGORIES = new Set(['context_too_large']);
 const REJECTED_CATEGORIES = new Set(['malformed_response', 'rejected_set']);

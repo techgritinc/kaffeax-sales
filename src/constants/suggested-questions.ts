@@ -1,6 +1,5 @@
 import type { SuggestionValidationRule } from '@/types/suggested-questions.types';
 
-
 export const SUGGESTED_QUESTION_COUNT = 3;
 
 export const MAX_SUGGESTION_CHARS = 48;
