@@ -1,5 +1,6 @@
 'use client';
 
+import { buildEmailContent } from '@/lib/utils/workflow/email-formatter';
 import type { MeetingRecord } from '@/types/meeting.types';
 
 import { ActionItems } from './action-items';
@@ -31,8 +32,7 @@ export function ReviewScreen({
   const emailMissing = !draft.contact.email.value.trim();
 
   const onEmail = () => {
-    const subject = draft.recapEmail.subject || '';
-    const body = draft.recapEmail.body || '';
+    const { subject, body } = buildEmailContent(draft);
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
