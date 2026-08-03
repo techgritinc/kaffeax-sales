@@ -23,19 +23,6 @@ function hasDuplicates(questions: string[]): boolean {
   return seen.size !== questions.length;
 }
 
-/**
- * Parse and validate one candidate set.
- *
- * Rejection is always whole-set: three good questions and one over-length
- * question is not three chips, and it is not two — it is none. A partial row
- * reads as a bug, and the panel is specified to show nothing rather than
- * something incomplete.
- *
- * The returned `rule` is what makes prompt tuning tractable. A run of V4s means
- * the character budget is losing; a run of V5s means the diversity rule is. The
- * offending text is deliberately not carried — it is transcript-derived and may
- * not be logged.
- */
 export function validateSuggestionSet(rawText: string): SuggestionSetOutcome {
   const cleanedText = rawText
     .replace(/^```(?:json)?\s*/i, '')
@@ -62,8 +49,6 @@ export function validateSuggestionSet(rawText: string): SuggestionSetOutcome {
     .map((question) => question.trim())
     .filter((question) => question.length > 0);
 
-  // Not "take the first three": a model that returned four did not follow the
-  // contract, so its judgement about which three matter is not trustworthy either.
   if (questions.length !== SUGGESTED_QUESTION_COUNT) {
     return rejected('V3');
   }

@@ -9,14 +9,6 @@ type ChatExchangeSchemaFields = Omit<ChatExchangeFields, 'transcriptId'> & {
   updatedAt: Date;
 };
 
-/**
- * One completed question-and-answer pair, in its own collection rather than an
- * array on the transcript: `transcriptRepository.findAll()` returns full
- * documents to render the recents sidebar, so embedding conversations there
- * would make a list of meeting titles pull every conversation into memory.
- *
- * There is no update path — an exchange is immutable once written.
- */
 const chatExchangeSchema = new Schema<ChatExchangeSchemaFields>(
   {
     transcriptId: { type: Schema.Types.ObjectId, required: true },

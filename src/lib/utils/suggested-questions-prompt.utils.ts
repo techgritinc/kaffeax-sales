@@ -21,12 +21,6 @@ export interface SuggestedQuestionsPrompt {
   user: string;
 }
 
-/**
- * The injection guardrail and the delimiters are imported from the chat
- * constants rather than restated here. They protect against the same thing in
- * the same way, and two copies of a guardrail is how one of them quietly gets
- * weaker than the other.
- */
 const GUIDANCE_SECTIONS: string[] = [
   SUGGESTION_PERSONA,
   SUGGESTION_RULES,
@@ -37,20 +31,6 @@ const GUIDANCE_SECTIONS: string[] = [
 
 const GUIDANCE = GUIDANCE_SECTIONS.join('\n\n');
 
-/**
- * Assemble the suggestion prompt from the same grounding material the assistant
- * answers from — which is what makes "every question must be answerable" a
- * reachable requirement rather than a hope.
- *
- * Nothing derived from the clock, a counter, or a random source may enter either
- * string. Not for caching (there is no cache here — a meeting gets exactly one
- * suggestion call, so a cache write could never be read before it expired) but
- * for evaluation: re-analysing the same meeting must produce the same set, or
- * every regression is indistinguishable from sampling noise.
- *
- * Unlike the chat prompt there is no cache breakpoint and no split into
- * guardrail/grounding blocks, so the whole thing is one system string.
- */
 export function buildSuggestedQuestionsPrompt(context: GroundingContext): SuggestedQuestionsPrompt {
   const grounding = [
     TRANSCRIPT_DELIMITER_OPEN,

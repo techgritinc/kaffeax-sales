@@ -4,20 +4,17 @@ import type { Rubric, Weight } from '@/types/rubric.types';
 import type { DetectedSignal } from '@/types/scoring.types';
 import type { AttendeeSide, StoredTranscript, TranscriptFields } from '@/types/transcript.types';
 
-/** View `Side` ↔ persistence `AttendeeSide` (differ only in the kaffea_x spelling). */
 const toAttendeeSide = (side: 'kaffea_x' | 'prospect'): AttendeeSide =>
   side === 'kaffea_x' ? 'kaffeax' : 'prospect';
 const fromAttendeeSide = (side: AttendeeSide): 'kaffea_x' | 'prospect' =>
   side === 'kaffeax' ? 'kaffea_x' : 'prospect';
 
-/** Weight lookup from the active rubric — the rubric is the source of truth for weight. */
 const weightBySignalId = (rubric: Rubric): Record<string, Weight> =>
   rubric.signals.reduce<Record<string, Weight>>((acc, s) => {
     acc[s.id] = s.weight;
     return acc;
   }, {});
 
-/** Display-formatted date/time for the recents bar and review header. */
 export const formatWhen = (date: Date): string =>
   new Intl.DateTimeFormat('en-US', {
     month: 'short',
@@ -27,7 +24,6 @@ export const formatWhen = (date: Date): string =>
     minute: '2-digit',
   }).format(date);
 
-/** Compose a `MeetingRecord` (view-model) from a stored transcript + the active rubric. */
 export function toMeetingRecord(stored: StoredTranscript, rubric: Rubric): MeetingRecord {
   const { id, fields, updatedAt } = stored;
   const weights = weightBySignalId(rubric);
@@ -79,13 +75,10 @@ export function toMeetingRecord(stored: StoredTranscript, rubric: Rubric): Meeti
       scorePercentage: leadScore?.scorePercentage ?? 0,
     },
     recapEmail: { subject: '', body: fields.recapEmail ?? '' },
-    // `?? []` covers documents written before the field existed — they are read
-    // back without it, and no backfill is planned.
     suggestedQuestions: fields.suggestedQuestions ?? [],
   };
 }
 
-/** Project a stored transcript into the lightweight recents-bar display shape. */
 export function toRecentItem(stored: StoredTranscript): RecentItem {
   const { id, fields, updatedAt } = stored;
   const badge =
@@ -102,14 +95,6 @@ export function toRecentItem(stored: StoredTranscript): RecentItem {
   };
 }
 
-/**
- * Decompose a `MeetingRecord` into a persistence patch (never touches raw/cleaned transcript).
- *
- * `suggestedQuestions` is deliberately absent and must stay that way. This patch
- * is built from client-held state and applied with `findByIdAndUpdate`, so an
- * omitted key is preserved — while including it would let any save from the
- * review screen overwrite the generated set with whatever the browser holds.
- */
 export function toTranscriptPatch(record: MeetingRecord): Partial<TranscriptFields> {
   const { summary, leadScore, recapEmail, contact } = record;
   return {

@@ -1,22 +1,32 @@
 import { env } from '@env';
 
 import { MAX_GROUNDING_CHARS } from '@/constants/grounded-chat';
-import { MAX_SUGGESTION_ATTEMPTS, SUGGESTION_MAX_TOKENS } from '@/constants/suggested-questions';
-import { computeOpenRouterCost } from '@/lib/utils/ai-cost.utils';
+import {
+  MAX_SUGGESTION_ATTEMPTS,
+  SUGGESTION_MAX_TOKENS,
+  SUGGESTION_RETRY_TEMPERATURE,
+} from '@/constants/suggested-questions';
 import { groundingSize } from '@/lib/utils/grounding.utils';
 import { buildSuggestedQuestionsPrompt } from '@/lib/utils/suggested-questions-prompt.utils';
 import { validateSuggestionSet } from '@/lib/utils/suggested-questions.utils';
-import type { GroundingContext } from '@/types/chat.types';
+import {
+  accumulateUsage,
+  buildCorrectiveNote,
+  emptyUsage,
+  spendFields,
+} from '@/lib/utils/suggestion-attempts.utils';
+import type { ChatTokenUsage, GroundingContext } from '@/types/chat.types';
 import type {
   SuggestedQuestionsFailure,
   SuggestedQuestionsResponse,
+  SuggestionValidationRule,
 } from '@/types/suggested-questions.types';
 
 import { chatCompletion } from './client';
 import { mapHttpError } from './http-error.utils';
 import { openRouterResponseSchema } from './openrouter-response.schema';
+import { toSuggestionUsage } from './suggestion-usage.utils';
 
-/** Messages here are log-only — no suggestion failure reaches a user (FR-023). */
 const API_ERROR: SuggestedQuestionsFailure = {
   success: false,
   category: 'api_error',
@@ -34,70 +44,75 @@ export class SuggestedQuestions {
     }
 
     const { system, user } = buildSuggestedQuestionsPrompt(context);
+    let lastRule: SuggestionValidationRule | null = null;
     let lastFailure: SuggestedQuestionsFailure | null = null;
+    let usage: ChatTokenUsage = emptyUsage();
 
     for (let attempt = 1; attempt <= MAX_SUGGESTION_ATTEMPTS; attempt++) {
       try {
+        const userTurn = lastRule === null ? user : buildCorrectiveNote(user, lastRule);
         const response = await chatCompletion({
           model: env.OPENROUTER_DEFAULT_MODEL,
           messages: [
             { role: 'system', content: system },
-            { role: 'user', content: user },
+            { role: 'user', content: userTurn },
           ],
           max_tokens: SUGGESTION_MAX_TOKENS,
-          // Variety comes from the input, not from sampling: a different meeting
-          // yields different questions, and determinism keeps re-analysis of the
-          // same meeting comparable across evaluation runs.
-          temperature: 0,
+          temperature: lastRule === null ? 0 : SUGGESTION_RETRY_TEMPERATURE,
           response_format: { type: 'json_object' },
         });
 
         if (!response.ok) {
           const failure = await mapHttpError(response);
-          return { success: false, category: failure.category, message: failure.message };
+          return {
+            success: false,
+            category: failure.category,
+            message: failure.message,
+            ...spendFields(attempt, usage),
+          };
         }
 
         const json: unknown = await response.json();
         const parsed = openRouterResponseSchema.safeParse(json);
-        if (!parsed.success) {
-          console.error('[suggested-questions] malformed API response', parsed.error.message);
-          return API_ERROR;
+        const firstChoice = parsed.success ? parsed.data.choices[0] : undefined;
+        if (!parsed.success || firstChoice === undefined) {
+          const detail = parsed.success
+            ? 'empty choices array'
+            : parsed.error.issues.map((issue) => issue.path.join('.')).join(', ');
+          console.error('[suggested-questions] unusable API response', { detail });
+          return { ...API_ERROR, ...spendFields(attempt, usage) };
         }
 
-        const firstChoice = parsed.data.choices[0];
-        if (firstChoice === undefined) {
-          console.error('[suggested-questions] empty choices array in response');
-          return API_ERROR;
-        }
+        usage = accumulateUsage(
+          usage,
+          toSuggestionUsage(
+            parsed.data.model,
+            parsed.data.usage.prompt_tokens,
+            parsed.data.usage.completion_tokens,
+            parsed.data.usage.cost,
+          ),
+        );
 
         const outcome = validateSuggestionSet(firstChoice.message.content);
         if (outcome.ok) {
-          const inputTokens = parsed.data.usage.prompt_tokens;
-          const outputTokens = parsed.data.usage.completion_tokens;
           return {
             success: true,
             questions: outcome.questions,
             model: parsed.data.model,
             provider: 'openrouter',
-            usage: {
-              inputTokens,
-              outputTokens,
-              cacheCreationTokens: 0,
-              cacheReadTokens: 0,
-              ...computeOpenRouterCost(
-                parsed.data.model,
-                inputTokens,
-                outputTokens,
-                parsed.data.usage.cost,
-              ),
-            },
+            usage,
           };
         }
 
+        lastRule = outcome.rule;
         lastFailure = {
           success: false,
           category: outcome.category,
           message: `Suggestion set failed validation at ${outcome.rule}.`,
+          rule: outcome.rule,
+          provider: 'openrouter',
+          model: parsed.data.model,
+          ...spendFields(attempt, usage),
         };
         if (attempt === MAX_SUGGESTION_ATTEMPTS) return lastFailure;
         console.warn(
@@ -111,13 +126,14 @@ export class SuggestedQuestions {
             success: false,
             category: 'network',
             message: 'Unable to reach the suggestion service.',
+            ...spendFields(attempt, usage),
           };
         }
         console.error(
           '[suggested-questions] unexpected error',
           error instanceof Error ? error.message : 'Unknown error',
         );
-        return API_ERROR;
+        return { ...API_ERROR, ...spendFields(attempt, usage) };
       }
     }
 

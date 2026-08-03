@@ -8,13 +8,6 @@ export interface SuggestedQuestionsProps {
   onSelect: (question: string) => void;
 }
 
-/**
- * The chip row under the opening message (`.kx-chat-chips` 715–738).
- *
- * A meeting either has three generated questions or none. With none, the row and
- * its eyebrow disappear entirely — no placeholder and no generic fallback, since
- * a chip written for a different meeting is worse than no chip at all.
- */
 export function SuggestedQuestions({ questions, onSelect }: SuggestedQuestionsProps) {
   if (questions.length !== SUGGESTED_QUESTION_COUNT) return null;
 

@@ -58,8 +58,6 @@ export async function updateTranscript(record: MeetingRecord): Promise<MeetingRe
 
 export async function deleteTranscript(id: string): Promise<{ ok: boolean }> {
   try {
-    // No conversation may outlive its meeting. Cross-collection coordination
-    // belongs here at the action layer, not inside either repository.
     const [ok] = await Promise.all([
       transcriptRepository.delete(id),
       chatExchangeRepository.deleteByTranscript(id),

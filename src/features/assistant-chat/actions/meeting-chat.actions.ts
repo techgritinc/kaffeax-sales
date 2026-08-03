@@ -28,13 +28,6 @@ function failure(category: ChatErrorCategory): MeetingChatResponse {
   };
 }
 
-/**
- * Answer one question about one meeting.
- *
- * There is deliberately no history parameter. FR-031 requires that stored
- * exchanges never influence an answer, and a signature with nowhere to put
- * history makes that structurally true rather than a rule to remember.
- */
 export async function askAboutMeeting(input: {
   transcriptId: string;
   question: string;
@@ -105,17 +98,6 @@ export async function askAboutMeeting(input: {
   }
 }
 
-/**
- * Record a completed exchange. Best-effort by design (FR-032): a storage failure
- * must never turn a delivered answer into an error for the user, so the error is
- * logged with context and swallowed. The consequence — the exchange may be absent
- * when they return — is the better trade.
- *
- * Only answers and refusals are stored. Operational failures are shown live and
- * never persisted: a restored "service is busy" bubble from three days ago is
- * noise, and storing the question without its answer would leave a dangling
- * bubble that reads as a bug.
- */
 async function persistExchange(
   transcriptId: string,
   question: string,
@@ -138,13 +120,6 @@ async function persistExchange(
   }
 }
 
-/**
- * A meeting's stored conversation, oldest first.
- *
- * Returns `[]` for both an empty and a missing meeting — the distinction does not
- * matter here, since either way there is nothing to show, and asking a question
- * against a bad id still fails loudly through `askAboutMeeting`.
- */
 export async function getMeetingConversation(transcriptId: string): Promise<StoredChatExchange[]> {
   try {
     const parsed = transcriptIdSchema.safeParse(transcriptId);

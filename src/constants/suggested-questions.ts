@@ -1,47 +1,22 @@
-// ─── Limits ───────────────────────────────────────────────────────────────────
+import type { SuggestionValidationRule } from '@/types/suggested-questions.types';
 
-/** Chips in the row. Fixed by the panel's design, not configurable. */
+
 export const SUGGESTED_QUESTION_COUNT = 3;
 
-/**
- * Longest accepted question, derived from the narrowest chat column so a chip's
- * text never wraps inside the pill:
- *
- *   300px column (≤bp1100, see shell-cols.ts)
- *   − 36px panel padding (p-[20px_18px])
- *   − 42px chip row offset (ml-[42px])
- *   − 26px chip padding + border (px-[12px] + 1px)
- *   = 196px ÷ ~5.5px per char (Figtree semibold, 11.5px) ≈ 35 chars
- *
- * For calibration, the hard-coded chips this replaced were 30, 26, and 20
- * characters — this is the existing design measured, not a new constraint.
- * Recheck the arithmetic if the chat column width or chip padding changes.
- */
-export const MAX_SUGGESTION_CHARS = 34;
+export const MAX_SUGGESTION_CHARS = 48;
 
-/**
- * Attempts per meeting when the model returns an unusable or non-compliant set.
- * One retry, not zero: a failure means no chips for that meeting permanently
- * (there is no backfill), and the retry only fires in the rare case.
- */
 export const MAX_SUGGESTION_ATTEMPTS = 2;
 
-// ─── Model parameters ─────────────────────────────────────────────────────────
-
-/** Output is ~150 characters of JSON; the remaining headroom caps thinking. */
 export const SUGGESTION_MAX_TOKENS = 512;
 
-/** Picking three questions from material already in context is retrieval work. */
 export const SUGGESTION_EFFORT = 'low' as const;
 
-// ─── Task framing ─────────────────────────────────────────────────────────────
+export const SUGGESTION_RETRY_TEMPERATURE = 0.7;
 
 export const SUGGESTION_PERSONA =
   `You write the three suggested questions that appear in the follow-up panel of Kaffea-X, a B2B specialty coffee marketplace connecting roasters, distributors, and small-lot producers with buyers.\n\n` +
   `A member of the sales team has just had one sales call analysed and is looking at its summary. Your three questions are the chips they can tap instead of typing. Each one is sent, exactly as you write it, to an assistant that can only answer from this meeting's transcript and analysis — the same two sources you are given below.\n\n` +
   `You are not answering anything. You are choosing the three most useful things this person could ask about this call.`;
-
-// ─── What makes a good question ───────────────────────────────────────────────
 
 export const SUGGESTION_RULES = `## Rules
 
@@ -53,7 +28,7 @@ export const SUGGESTION_RULES = `## Rules
 
 4. **Specific to this call.** A question that would fit any sales call has failed. Prefer the concrete noun the meeting actually used ("the Shopify migration", "the June launch", "the 200kg order") over the generic category ("their systems", "the timeline", "the volume"). If a stranger could have written your question without reading this transcript, replace it.
 
-5. **At most ${MAX_SUGGESTION_CHARS} characters.** Roughly six words. These are chips in a narrow panel, not sentences. A longer question is discarded by the software before anyone sees it, so length is a hard limit rather than a preference.
+5. **At most ${MAX_SUGGESTION_CHARS} characters.** Roughly eight words. These are chips in a narrow panel, not sentences. A longer question is discarded by the software before anyone sees it, so length is a hard limit rather than a preference. When a question runs long, shorten it by dropping the lead-in — "What did they say about the Q3 pilot?" becomes "What about the Q3 pilot?" — never by removing the specific noun, because that fails rule 4.
 
 6. **Natural voice.** Write the way a salesperson glancing at the summary would ask. A question or a short imperative both work. No formal register, no "Could you please elaborate on", no preamble.
 
@@ -75,31 +50,33 @@ Exactly ${SUGGESTED_QUESTION_COUNT} entries. Not two, not four. A set with the w
 
 // ─── Worked examples ──────────────────────────────────────────────────────────
 
-const EXAMPLE_GOOD = `Example — a good set (32, 30, and 29 characters):
+const EXAMPLE_GOOD = `Example — an accepted set (37, 35, and 35 characters):
 
 {
   "questions": [
-    "What did they say about pricing?",
-    "Who owns the Q3 pilot rollout?",
-    "Why did the June launch slip?"
+    "What did they say about the Q3 pilot?",
+    "Why did the June launch slip to Q4?",
+    "Who owns the 200kg order follow-up?"
   ]
 }
 
-Each is answerable from the call, each covers a different aspect — an objection, an owner, a timeline — and each stands on its own.`;
+Each one is answerable from the call, each covers a different aspect — an objection, a timeline, an owner — and each stands on its own.
 
-const EXAMPLE_TOO_LONG = `Example — rejected for length. The second question is 45 characters, over the ${MAX_SUGGESTION_CHARS}-character limit, so this whole set is discarded and the reader sees nothing:
+CRITICAL: the nouns above ("Q3 pilot", "June launch", "200kg order") belong to a different meeting. Never reuse them, and never emit placeholder text or angle brackets. Every question you write MUST use the concrete nouns, figures, names, or dates that appear in THIS meeting's transcript and summary.`;
+
+const EXAMPLE_TOO_LONG = `Example — rejected for length. The second question is 55 characters, over the ${MAX_SUGGESTION_CHARS}-character limit, so the whole set is discarded and the reader sees no suggestions at all:
 
 {
   "questions": [
     "Who owns the pilot?",
-    "What pricing concerns did the customer raise?",
+    "What did they say about the Shopify migration timeline?",
     "When do they decide?"
   ]
 }
 
-Written as "What did they push back on in pricing?" it would still be too long. "What pricing did they push back on?" is 34 and fits.`;
+The fix is to drop the lead-in, not the noun: "Why did the Shopify migration slip?" is 35 characters and keeps what makes the question specific.`;
 
-const EXAMPLE_TOO_GENERIC = `Example — rejected by rule 4. Every one of these could have been written without reading the transcript:
+const EXAMPLE_TOO_GENERIC = `Example — rejected for being generic. Questions that do not name specific meeting details are discarded:
 
 {
   "questions": [
@@ -115,6 +92,17 @@ export const SUGGESTION_OUTPUT_EXAMPLES = [
   EXAMPLE_TOO_GENERIC,
 ].join('\n\n');
 
-// ─── User turn ────────────────────────────────────────────────────────────────
-
 export const SUGGESTION_USER_INSTRUCTION = `Write the ${SUGGESTED_QUESTION_COUNT} suggested questions for this meeting.`;
+
+// ─── Retry feedback ───────────────────────────────────────────────────────────
+
+export const SUGGESTION_RETRY_PREFIX =
+  'Your previous set was discarded before anyone saw it. Unless this attempt succeeds the reader gets no suggestions at all.';
+
+export const SUGGESTION_RETRY_NOTES: Record<SuggestionValidationRule, string> = {
+  V1: 'It was not valid JSON. Return only the JSON object — no prose, no explanation, no code fences.',
+  V2: `It did not match the required shape. Return exactly {"questions": [...]} with ${SUGGESTED_QUESTION_COUNT} strings and no other keys.`,
+  V3: `It did not contain exactly ${SUGGESTED_QUESTION_COUNT} questions. Return exactly ${SUGGESTED_QUESTION_COUNT}, none of them empty.`,
+  V4: `At least one question was longer than ${MAX_SUGGESTION_CHARS} characters. Shorten every question by dropping its lead-in and keeping the specific noun. Do not go generic to save characters — a generic question is rejected too.`,
+  V5: 'Two questions were duplicates of each other. All three must ask about a different aspect of this meeting.',
+};

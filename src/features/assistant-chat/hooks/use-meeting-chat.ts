@@ -9,31 +9,17 @@ import { askAboutMeeting, getMeetingConversation } from '../actions/meeting-chat
 import { toChatMessages } from '../utils/chat-message.mapper';
 
 export interface UseMeetingChatOptions {
-  /** The meeting the panel is currently showing, or null when none is open. */
   transcriptId: string | null;
-  /** Greeting seeded as the first bubble when the conversation is empty. */
   openingMessage: string;
 }
 
 export interface UseMeetingChatResult {
   messages: ChatMessage[];
   pending: boolean;
-  /** True while a meeting's stored conversation is being loaded. */
   restoring: boolean;
   send: (question: string) => void;
 }
 
-/**
- * Owns the panel's conversation state for one meeting.
- *
- * A monotonic generation counter guards every async result: it is bumped on each
- * send and whenever the open meeting changes, and a resolved response is only
- * applied while its generation still matches. An AbortController alone would not
- * be enough — a server action that has already completed can still resolve into a
- * component whose meeting changed underneath it, so the guard has to sit on the
- * apply side. A plain id comparison would not be enough either: switching away
- * and back would let a stale response through.
- */
 export function useMeetingChat({
   transcriptId,
   openingMessage,
@@ -45,9 +31,6 @@ export function useMeetingChat({
   const generation = useRef(0);
   const nextId = useRef(0);
 
-  // Held in a ref so that editing the meeting title in the review screen — which
-  // changes the greeting text — cannot reset a conversation in progress. Only the
-  // open meeting changing should do that.
   const openingRef = useRef(openingMessage);
   useEffect(() => {
     openingRef.current = openingMessage;
@@ -63,9 +46,6 @@ export function useMeetingChat({
     [],
   );
 
-  // Adjusting state during render when a prop changes, rather than in an effect:
-  // the panel never paints one meeting's messages under another meeting's header
-  // (FR-013), and there is no cascading re-render.
   if (shownMeeting !== transcriptId) {
     setShownMeeting(transcriptId);
     setMessages([]);
@@ -82,16 +62,11 @@ export function useMeetingChat({
       .then((exchanges) => {
         if (gen !== generation.current) return;
         const restored = toChatMessages(exchanges);
-        // The greeting is seeded only for an empty conversation — a restored one
-        // must not be topped by a fresh greeting, and keeping it inside the
-        // message array is what lets the suggested chips keep attaching to
-        // bubble zero exactly as they do today.
         setMessages(restored.length > 0 ? restored : [openingBubble()]);
       })
       .catch((error: unknown) => {
         if (gen !== generation.current) return;
         console.error('[useMeetingChat] restore failed', error);
-        // A failed restore must not block asking new questions.
         setMessages([
           openingBubble(),
           { id: 'restore-error', role: 'ai', text: CHAT_RESTORE_ERROR, kind: 'failure' },

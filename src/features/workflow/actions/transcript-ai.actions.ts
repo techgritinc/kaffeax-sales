@@ -1,5 +1,10 @@
 'use server';
 
+import {
+  logSuggestionFailure,
+  logSuggestionStored,
+  logSuggestionUnstorable,
+} from '@/features/workflow/utils/suggestion-outcome.utils';
 import { toMeetingRecord } from '@/features/workflow/utils/transcript.mapper';
 import { getSuggestedQuestions } from '@/integrations/suggested-questions.factory';
 import { getTranscriptSummarizer } from '@/integrations/transcript-summarizer.factory';
@@ -25,14 +30,6 @@ async function markProcessingFailed(id: string): Promise<void> {
   }
 }
 
-/**
- * Generate and store this meeting's suggested chat questions.
- *
- * Called only after the analysis has already been written as successful, so
- * nothing here can undo it. Every failure path returns the record it was given:
- * the meeting keeps its summary and simply has no chips, which is the specified
- * behaviour rather than a degradation to apologise for.
- */
 async function storeSuggestedQuestions(
   id: string,
   stored: StoredTranscript,
@@ -41,50 +38,29 @@ async function storeSuggestedQuestions(
     const result = await suggestedQuestions.generate(buildGroundingContext(stored));
 
     if (!result.success) {
-      console.warn('[transcript-ai.actions] suggested questions unavailable', {
-        transcriptId: id,
-        category: result.category,
-        detail: result.message,
-      });
+      logSuggestionFailure(id, result);
+      if (result.usage && result.provider && result.model) {
+        await transcriptRepository.update(id, {
+          suggestionUsage: { model: result.model, provider: result.provider, ...result.usage },
+        });
+      }
       return stored;
     }
 
     const patched = await transcriptRepository.update(id, {
       suggestedQuestions: result.questions,
-      suggestionUsage: {
-        model: result.model,
-        provider: result.provider,
-        ...result.usage,
-      },
+      suggestionUsage: { model: result.model, provider: result.provider, ...result.usage },
     });
 
     if (!patched) {
-      console.warn('[transcript-ai.actions] transcript missing when storing suggestions', {
-        transcriptId: id,
-      });
+      logSuggestionUnstorable(id, 'transcript missing on write');
       return stored;
     }
 
-    // Counts and lengths, never the questions themselves — they are derived from
-    // the transcript and inherit its handling.
-    console.info('[transcript-ai.actions] suggested questions stored', {
-      transcriptId: id,
-      provider: result.provider,
-      model: result.model,
-      count: result.questions.length,
-      lengths: result.questions.map((question) => question.length),
-      inputTokens: result.usage.inputTokens,
-      outputTokens: result.usage.outputTokens,
-      totalCostUsd: result.usage.totalCostUsd,
-    });
+    logSuggestionStored(id, result);
     return patched;
   } catch (error) {
-    // Swallowed deliberately, and only here: the analysis is committed and a
-    // failed suggestion must stay invisible to the user (FR-022, FR-023).
-    console.error('[transcript-ai.actions] suggestion generation failed', {
-      transcriptId: id,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
+    logSuggestionUnstorable(id, error instanceof Error ? error.message : 'Unknown error');
     return stored;
   }
 }
@@ -103,14 +79,10 @@ export async function runAiSummarization(input: {
       throw new Error(`Transcript ${id} not found`);
     }
 
-    if (stored.fields.aiProcessingStatus !== 'pending') {
-      // Suggestions are cleared here rather than on the way out, so a re-run whose
-      // generation later fails leaves none instead of the previous analysis's set.
-      await transcriptRepository.update(id, {
-        aiProcessingStatus: 'pending',
-        suggestedQuestions: [],
-      });
-    }
+    await transcriptRepository.update(id, {
+      aiProcessingStatus: 'pending',
+      suggestedQuestions: [],
+    });
 
     const result = await transcriptSummarizer.summarize(stored.fields.cleanedTranscript, {
       signals: parsed.signals,
@@ -146,8 +118,6 @@ export async function runAiSummarization(input: {
     if (!updated) {
       throw new Error(`Transcript ${id} not found after update`);
     }
-
-    // The analysis is durable from here on. Suggestions are a best-effort addition.
     const withSuggestions = await storeSuggestedQuestions(id, updated);
 
     return { success: true, record: toMeetingRecord(withSuggestions, await currentRubric()) };

@@ -1,14 +1,3 @@
-// ─── Limits ───────────────────────────────────────────────────────────────────
-
-/**
- * Ceiling on the combined length of the grounding material. Over this, the
- * request is refused with `context_too_large` rather than silently truncated —
- * answering from a truncated transcript while implying full coverage is the one
- * outcome the spec forbids outright.
- *
- * Characters are a coarse proxy for tokens; that is acceptable because the
- * threshold only needs to sit safely below the context window, not be exact.
- */
 export const MAX_GROUNDING_CHARS = 400_000;
 
 /** Longest accepted question. Beyond this the request is rejected, never trimmed. */
@@ -17,16 +6,10 @@ export const MAX_QUESTION_CHARS = 1_000;
 /** Attempts per question when the model returns unusable output. */
 export const MAX_CHAT_ATTEMPTS = 2;
 
-// ─── Model parameters ─────────────────────────────────────────────────────────
-
 /** Output cap. Fits an answer plus its evidence spans; caps thinking too. */
 export const CHAT_MAX_TOKENS = 1_024;
 
-/**
- * A grounded lookup over material already in context is not deep-reasoning
- * work, and 95% of answers must land within 10 seconds. Raise to 'medium' only
- * if evaluation shows shallow reads on multi-part questions.
- */
+// A grounded lookup over material already in context is not deep-reasoning
 export const CHAT_EFFORT = 'low' as const;
 
 // ─── Grounding block delimiters ───────────────────────────────────────────────
@@ -41,7 +24,6 @@ export const ANALYSIS_DELIMITER_CLOSE = '=== END GENERATED ANALYSIS ===';
 
 /**
  * Rendered in place of an empty analysis section, never omitted — the model
- * must be able to tell "not discussed" from "not given to me".
  */
 export const EMPTY_SECTION_PLACEHOLDER = '(none)';
 

@@ -7,15 +7,11 @@ export interface AiUsage {
   provider: AiProvider;
   inputTokens: number;
   outputTokens: number;
-  /** Prompt-cache write tokens (Anthropic only; 0 for OpenRouter). */
   cacheCreationTokens: number;
-  /** Prompt-cache read tokens (Anthropic only; 0 for OpenRouter). */
   cacheReadTokens: number;
   inputCostUsd: number;
   outputCostUsd: number;
-  /** Cost of prompt-cache writes (0 when unused). */
   cacheCreationCostUsd: number;
-  /** Cost of prompt-cache reads (0 when unused). */
   cacheReadCostUsd: number;
   totalCostUsd: number;
 }
@@ -85,17 +81,10 @@ export interface TranscriptFields {
   recapEmail: string | null;
   zohoLeadId: string | null;
   aiUsage?: AiUsage;
-  /**
-   * The chat panel's suggested question chips, generated once per analysis.
-   * Always 0 or exactly 3 entries — a partial set is never stored, because two
-   * chips where three are expected reads as a bug rather than a shorter list.
-   */
   suggestedQuestions: string[];
-  /** Cost of the suggestion call, kept separate from `aiUsage` so each call stays attributable. */
   suggestionUsage?: AiUsage;
 }
 
-/** A transcript record as persisted in the store, keyed by id. */
 export interface StoredTranscript {
   id: string;
   fields: TranscriptFields;

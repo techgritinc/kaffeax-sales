@@ -23,9 +23,6 @@ export class MeetingChat {
           output_config: { effort: CHAT_EFFORT },
           system: [
             { type: 'text', text: guardrail },
-            // Cache breakpoint: everything above plus the grounding material is
-            // identical for every question about this meeting, so follow-ups
-            // read the transcript at cache-read rates instead of full price.
             { type: 'text', text: grounding, cache_control: { type: 'ephemeral' } },
           ],
           messages: [{ role: 'user', content: question }],

@@ -20,14 +20,6 @@ const bullets = (items: string[]): string =>
 const orNone = (lines: string[]): string =>
   lines.length === 0 ? EMPTY_SECTION_PLACEHOLDER : lines.join('\n');
 
-/**
- * The analysis rendered as human-readable lines rather than JSON. The model
- * quotes from this, and JSON serialisation would put braces and escapes inside
- * evidence spans and make verification brittle.
- *
- * Empty sections are rendered as `(none)` rather than omitted, so the model can
- * tell "not discussed" from "not given to me".
- */
 export function renderAnalysis(context: GroundingContext): string {
   const { meetingTitle, summary, leadScore } = context;
   const actionItems = summary.actionItems.map(
@@ -61,11 +53,6 @@ export function normaliseForMatch(text: string): string {
   return text.replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
-/**
- * Everything an evidence span is allowed to have come from: the transcript plus
- * the rendered analysis. Rendering rather than raw values means a span copied
- * verbatim from what the model was shown always verifies, labels included.
- */
 export function buildGroundingHaystack(context: GroundingContext): string {
   return normaliseForMatch(`${context.cleanedTranscript}\n${renderAnalysis(context)}`);
 }

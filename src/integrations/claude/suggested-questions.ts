@@ -10,16 +10,22 @@ import { computeAnthropicCost } from '@/lib/utils/ai-cost.utils';
 import { groundingSize } from '@/lib/utils/grounding.utils';
 import { buildSuggestedQuestionsPrompt } from '@/lib/utils/suggested-questions-prompt.utils';
 import { validateSuggestionSet } from '@/lib/utils/suggested-questions.utils';
-import type { GroundingContext } from '@/types/chat.types';
+import {
+  accumulateUsage,
+  buildCorrectiveNote,
+  emptyUsage,
+  spendFields,
+} from '@/lib/utils/suggestion-attempts.utils';
+import type { ChatTokenUsage, GroundingContext } from '@/types/chat.types';
 import type {
   SuggestedQuestionsFailure,
   SuggestedQuestionsResponse,
+  SuggestionValidationRule,
 } from '@/types/suggested-questions.types';
 
 import client from './client';
 import { handleSdkError } from './sdk-error.utils';
 
-/** Messages here are log-only — no suggestion failure reaches a user (FR-023). */
 const API_ERROR: SuggestedQuestionsFailure = {
   success: false,
   category: 'api_error',
@@ -28,8 +34,6 @@ const API_ERROR: SuggestedQuestionsFailure = {
 
 export class SuggestedQuestions {
   async generate(context: GroundingContext): Promise<SuggestedQuestionsResponse> {
-    // Checked before the call, not after a truncation: suggestions drawn from a
-    // partially-read transcript would look identical to good ones.
     if (groundingSize(context) > MAX_GROUNDING_CHARS) {
       return {
         success: false,
@@ -39,19 +43,20 @@ export class SuggestedQuestions {
     }
 
     const { system, user } = buildSuggestedQuestionsPrompt(context);
+    let lastRule: SuggestionValidationRule | null = null;
     let lastFailure: SuggestedQuestionsFailure | null = null;
+    let usage: ChatTokenUsage = emptyUsage();
 
     for (let attempt = 1; attempt <= MAX_SUGGESTION_ATTEMPTS; attempt++) {
       try {
-        // No cache_control: a meeting gets exactly one suggestion call, so a
-        // cache write here would cost 1.25x and never be read.
+        const userTurn = lastRule === null ? user : buildCorrectiveNote(user, lastRule);
         const response = await client.messages.create({
           model: env.CLAUDE_DEFAULT_MODEL,
           max_tokens: SUGGESTION_MAX_TOKENS,
           thinking: { type: 'adaptive' },
           output_config: { effort: SUGGESTION_EFFORT },
           system,
-          messages: [{ role: 'user', content: user }],
+          messages: [{ role: 'user', content: userTurn }],
         });
 
         const rawText = response.content.reduce<string>(
@@ -59,37 +64,45 @@ export class SuggestedQuestions {
           '',
         );
 
+        // Every attempt's spend counts, not just the winning one (FR-025).
+        const inputTokens = response.usage.input_tokens;
+        const outputTokens = response.usage.output_tokens;
+        const cacheCreationTokens = response.usage.cache_creation_input_tokens ?? 0;
+        const cacheReadTokens = response.usage.cache_read_input_tokens ?? 0;
+        usage = accumulateUsage(usage, {
+          inputTokens,
+          outputTokens,
+          cacheCreationTokens,
+          cacheReadTokens,
+          ...computeAnthropicCost(
+            response.model,
+            inputTokens,
+            outputTokens,
+            cacheCreationTokens,
+            cacheReadTokens,
+          ),
+        });
+
         const outcome = validateSuggestionSet(rawText);
         if (outcome.ok) {
-          const inputTokens = response.usage.input_tokens;
-          const outputTokens = response.usage.output_tokens;
-          const cacheCreationTokens = response.usage.cache_creation_input_tokens ?? 0;
-          const cacheReadTokens = response.usage.cache_read_input_tokens ?? 0;
           return {
             success: true,
             questions: outcome.questions,
             model: response.model,
             provider: 'anthropic',
-            usage: {
-              inputTokens,
-              outputTokens,
-              cacheCreationTokens,
-              cacheReadTokens,
-              ...computeAnthropicCost(
-                response.model,
-                inputTokens,
-                outputTokens,
-                cacheCreationTokens,
-                cacheReadTokens,
-              ),
-            },
+            usage,
           };
         }
 
+        lastRule = outcome.rule;
         lastFailure = {
           success: false,
           category: outcome.category,
           message: `Suggestion set failed validation at ${outcome.rule}.`,
+          rule: outcome.rule,
+          provider: 'anthropic',
+          model: response.model,
+          ...spendFields(attempt, usage),
         };
         if (attempt === MAX_SUGGESTION_ATTEMPTS) return lastFailure;
         console.warn(
@@ -98,7 +111,12 @@ export class SuggestedQuestions {
         );
       } catch (error) {
         const failure = handleSdkError(error);
-        return { success: false, category: failure.category, message: failure.message };
+        return {
+          success: false,
+          category: failure.category,
+          message: failure.message,
+          ...spendFields(attempt, usage),
+        };
       }
     }
 
