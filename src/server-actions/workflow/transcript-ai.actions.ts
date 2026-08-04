@@ -1,5 +1,7 @@
 'use server';
 
+import { after } from 'next/server';
+
 import { getSuggestedQuestions } from '@/integrations/suggested-questions.factory';
 import { getTranscriptSummarizer } from '@/integrations/transcript-summarizer.factory';
 import { buildGroundingContext } from '@/lib/utils/grounding.utils';
@@ -144,4 +146,36 @@ export async function runAiSummarization(input: {
     if (id) await markProcessingFailed(id);
     logAndThrow('runAiSummarization', error, AI_SUMMARIZATION_ERROR);
   }
+}
+
+export async function runAiSummarizationInBackground(input: {
+  id: string;
+  signals: SimplifiedSignal[];
+}): Promise<{ started: true } | { started: false; reason: 'already_processing' | 'not_found' }> {
+  const parsed = runAiSummarizationSchema.parse(input);
+  const { id, signals } = parsed;
+
+  const stored = await transcriptRepository.findById(id);
+  if (!stored) {
+    return { started: false, reason: 'not_found' };
+  }
+  if (stored.fields.aiProcessingStatus === 'processing') {
+    return { started: false, reason: 'already_processing' };
+  }
+
+  await transcriptRepository.update(id, {
+    aiProcessingStatus: 'processing',
+    suggestedQuestions: [],
+  });
+
+  after(async () => {
+    try {
+      await generateSummary(id, signals, stored);
+    } catch (error) {
+      await markProcessingFailed(id);
+      console.error('[transcript-ai.actions] background summarization failed', { id, error });
+    }
+  });
+
+  return { started: true };
 }
