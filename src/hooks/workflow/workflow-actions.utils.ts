@@ -1,3 +1,4 @@
+import { ACTIVE_FOREGROUND_GENERATION_KEY } from '@/constants/workflow';
 import { AI_SUMMARIZATION_ERROR } from '@/constants/workflow/action.constants';
 import { RECENT_STATUS } from '@/constants/workflow/recents.constants';
 import { toSimplifiedSignals } from '@/lib/utils/workflow/rubric.mapper';
@@ -53,6 +54,7 @@ export async function runSummarize(deps: WorkflowActionDeps): Promise<void> {
       });
     }
 
+    sessionStorage.setItem(ACTIVE_FOREGROUND_GENERATION_KEY, id);
     setProcStage('processing');
     const result = await runAiSummarization({ id, signals: toSimplifiedSignals(signals) });
 
@@ -76,6 +78,7 @@ export async function runSummarize(deps: WorkflowActionDeps): Promise<void> {
     setError(AI_SUMMARIZATION_ERROR);
     setStatus('error');
   } finally {
+    sessionStorage.removeItem(ACTIVE_FOREGROUND_GENERATION_KEY);
     setProcStage('idle');
   }
 }
