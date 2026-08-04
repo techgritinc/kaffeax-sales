@@ -1,11 +1,14 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
-import { SIDEBAR_OPEN_MIN_WIDTH } from '@/constants/workflow';
+import { BACKGROUND_POLL_INTERVAL_MS, SIDEBAR_OPEN_MIN_WIDTH } from '@/constants/workflow';
+import { RECENTS_PAGE_SIZE } from '@/constants/workflow/recents.constants';
 import { useWorkflowActions } from '@/hooks/workflow/use-workflow-actions';
+import { toRecentItem } from '@/lib/utils/workflow/transcript.mapper';
 import { useRecents } from '@/providers/recents/recents-context';
 import { useRubricSignals } from '@/providers/rubric-signals/rubric-signals-context';
+import { getTranscriptPage } from '@/server-actions/workflow/transcript.actions';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { Step, Toast, WorkflowStatus } from '@/types/workflow.types';
 import type { ProcessingStage } from '@/types/workflow/processing.types';
@@ -20,7 +23,7 @@ export interface WorkflowProviderProps {
 /** Owns the capture-session state and exposes it via {@link WorkflowContext}. */
 export function WorkflowProvider({ children, initialSample }: WorkflowProviderProps) {
   const { signals } = useRubricSignals();
-  const { prependRecent, updateRecent, refreshRecents } = useRecents();
+  const { recents, prependRecent, updateRecent, refreshRecents } = useRecents();
 
   const [transcript, setTranscript] = useState<string>(initialSample);
   const [status, setStatus] = useState<WorkflowStatus>('idle');
@@ -64,6 +67,43 @@ export function WorkflowProvider({ children, initialSample }: WorkflowProviderPr
     setProcStage,
     setIsCommitting,
   });
+
+  const recentsRef = useRef<typeof recents>(recents);
+  useEffect(() => {
+    recentsRef.current = recents;
+  });
+
+  const hasProcessing = recents.some((r) => r.aiProcessingStatus === 'processing');
+  useEffect(() => {
+    if (!hasProcessing) return;
+    const pollId = setInterval(() => {
+      void (async () => {
+        try {
+          const result = await getTranscriptPage(1, RECENTS_PAGE_SIZE);
+          const freshItems = result.items.map(toRecentItem);
+          for (const fresh of freshItems) {
+            const prev = recentsRef.current.find((r) => r.id === fresh.id);
+            if (
+              prev?.aiProcessingStatus === 'processing' &&
+              fresh.aiProcessingStatus === 'success'
+            ) {
+              actions.notify('Summary generation is successful', 'success');
+            }
+            if (prev && prev.aiProcessingStatus !== fresh.aiProcessingStatus) {
+              updateRecent(fresh.id, {
+                aiProcessingStatus: fresh.aiProcessingStatus,
+                title: fresh.title,
+                badge: fresh.badge,
+              });
+            }
+          }
+        } catch (err) {
+          console.error('[WorkflowProvider] background poll failed', err);
+        }
+      })();
+    }, BACKGROUND_POLL_INTERVAL_MS);
+    return () => clearInterval(pollId);
+  }, [hasProcessing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const value: WorkflowContextValue = {
     transcript,
