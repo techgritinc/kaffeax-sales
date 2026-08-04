@@ -68,6 +68,55 @@ async function storeSuggestedQuestions(
   }
 }
 
+async function generateSummary(
+  id: string,
+  signals: SimplifiedSignal[],
+  stored: StoredTranscript,
+): Promise<{ success: true; record: MeetingRecord } | { success: false; error: string }> {
+  await transcriptRepository.update(id, {
+    aiProcessingStatus: 'processing',
+    suggestedQuestions: [],
+  });
+
+  const result = await transcriptSummarizer.summarize(stored.fields.cleanedTranscript, {
+    signals,
+  });
+
+  if (!result.success) {
+    await transcriptRepository.update(id, { aiProcessingStatus: 'failed' });
+    return { success: false, error: result.message };
+  }
+  if (!('summary' in result)) {
+    throw new Error('Summarizer returned an unstructured response for a structured request');
+  }
+
+  const updated = await transcriptRepository.update(id, {
+    title: result.meetingTitle,
+    summary: result.summary,
+    leadScore: result.leadScore,
+    aiProcessingStatus: 'success',
+    aiUsage: {
+      model: result.model,
+      provider: result.provider,
+      inputTokens: result.usage.inputTokens,
+      outputTokens: result.usage.outputTokens,
+      cacheCreationTokens: result.usage.cacheCreationTokens,
+      cacheReadTokens: result.usage.cacheReadTokens,
+      inputCostUsd: result.usage.inputCostUsd,
+      outputCostUsd: result.usage.outputCostUsd,
+      cacheCreationCostUsd: result.usage.cacheCreationCostUsd,
+      cacheReadCostUsd: result.usage.cacheReadCostUsd,
+      totalCostUsd: result.usage.totalCostUsd,
+    },
+  });
+  if (!updated) {
+    throw new Error(`Transcript ${id} not found after update`);
+  }
+  const withSuggestions = await storeSuggestedQuestions(id, updated);
+
+  return { success: true, record: toMeetingRecord(withSuggestions, await currentRubric()) };
+}
+
 export async function runAiSummarization(input: {
   id: string;
   signals: SimplifiedSignal[];
@@ -90,48 +139,7 @@ export async function runAiSummarization(input: {
       return { success: false, error: ALREADY_PROCESSING_ERROR, alreadyProcessing: true };
     }
 
-    await transcriptRepository.update(id, {
-      aiProcessingStatus: 'processing',
-      suggestedQuestions: [],
-    });
-
-    const result = await transcriptSummarizer.summarize(stored.fields.cleanedTranscript, {
-      signals: parsed.signals,
-    });
-
-    if (!result.success) {
-      await transcriptRepository.update(id, { aiProcessingStatus: 'failed' });
-      return { success: false, error: result.message };
-    }
-    if (!('summary' in result)) {
-      throw new Error('Summarizer returned an unstructured response for a structured request');
-    }
-
-    const updated = await transcriptRepository.update(id, {
-      title: result.meetingTitle,
-      summary: result.summary,
-      leadScore: result.leadScore,
-      aiProcessingStatus: 'success',
-      aiUsage: {
-        model: result.model,
-        provider: result.provider,
-        inputTokens: result.usage.inputTokens,
-        outputTokens: result.usage.outputTokens,
-        cacheCreationTokens: result.usage.cacheCreationTokens,
-        cacheReadTokens: result.usage.cacheReadTokens,
-        inputCostUsd: result.usage.inputCostUsd,
-        outputCostUsd: result.usage.outputCostUsd,
-        cacheCreationCostUsd: result.usage.cacheCreationCostUsd,
-        cacheReadCostUsd: result.usage.cacheReadCostUsd,
-        totalCostUsd: result.usage.totalCostUsd,
-      },
-    });
-    if (!updated) {
-      throw new Error(`Transcript ${id} not found after update`);
-    }
-    const withSuggestions = await storeSuggestedQuestions(id, updated);
-
-    return { success: true, record: toMeetingRecord(withSuggestions, await currentRubric()) };
+    return await generateSummary(id, parsed.signals, stored);
   } catch (error) {
     if (id) await markProcessingFailed(id);
     logAndThrow('runAiSummarization', error, AI_SUMMARIZATION_ERROR);
