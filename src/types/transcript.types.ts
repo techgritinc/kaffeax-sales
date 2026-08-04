@@ -20,7 +20,13 @@ export const TRANSCRIPT_STATUSES = ['draft', 'saved'] as const;
 export const TRANSCRIPT_SOURCES = ['manual', 'zoom', 'ms_teams', 'google_meet'] as const;
 export const ATTENDEE_SIDES = ['kaffeax', 'prospect'] as const;
 export const LEAD_SCORE_BANDS = ['hot', 'warm', 'cold'] as const;
-export const AI_PROCESSING_STATUSES = ['pending', 'success', 'failed'] as const;
+export const AI_PROCESSING_STATUSES = [
+  'pending',
+  'processing',
+  'success',
+  'failed',
+  'cancelled',
+] as const;
 
 export type TranscriptStatus = (typeof TRANSCRIPT_STATUSES)[number];
 export type TranscriptSource = (typeof TRANSCRIPT_SOURCES)[number];
