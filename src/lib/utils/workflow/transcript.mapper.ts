@@ -43,6 +43,7 @@ export function toMeetingRecord(stored: StoredTranscript, rubric: Rubric): Meeti
     committed: fields.status === 'saved',
     band,
     aiProcessingStatus: fields.aiProcessingStatus,
+    originalTranscript: fields.originalTranscript,
     contact: {
       name: { value: '', confidence: 'low' },
       company: { value: '', confidence: 'low' },
