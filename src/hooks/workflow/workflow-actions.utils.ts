@@ -5,7 +5,10 @@ import { toSimplifiedSignals } from '@/lib/utils/workflow/rubric.mapper';
 import { formatWhen } from '@/lib/utils/workflow/transcript.mapper';
 import type { RecentItem } from '@/providers/recents/recents-context';
 import { commitToCrm } from '@/server-actions/crm-commit/commit-to-crm';
-import { runAiSummarization } from '@/server-actions/workflow/transcript-ai.actions';
+import {
+  runAiSummarization,
+  runAiSummarizationInBackground,
+} from '@/server-actions/workflow/transcript-ai.actions';
 import {
   createDraftTranscript,
   deleteTranscript,
@@ -81,6 +84,14 @@ export async function runSummarize(deps: WorkflowActionDeps): Promise<void> {
     sessionStorage.removeItem(ACTIVE_FOREGROUND_GENERATION_KEY);
     setProcStage('idle');
   }
+}
+
+export async function runSummarizeInBackground(deps: WorkflowActionDeps): Promise<void> {
+  const { activeId, signals, updateRecent } = deps;
+  if (!activeId) return;
+
+  await runAiSummarizationInBackground({ id: activeId, signals: toSimplifiedSignals(signals) });
+  updateRecent(activeId, { aiProcessingStatus: 'processing' });
 }
 
 export async function runApprove(deps: WorkflowActionDeps, notify: NotifyFn): Promise<void> {
