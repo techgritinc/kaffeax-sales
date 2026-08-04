@@ -16,7 +16,10 @@ import type { MeetingRecord } from '@/types/meeting.types';
 import type { SimplifiedSignal } from '@/types/rubric-signal.types';
 import type { StoredTranscript } from '@/types/transcript.types';
 
-import { AI_SUMMARIZATION_ERROR } from '../../constants/workflow/action.constants';
+import {
+  AI_SUMMARIZATION_ERROR,
+  ALREADY_PROCESSING_ERROR,
+} from '../../constants/workflow/action.constants';
 import { currentRubric } from './transcript.actions';
 
 const transcriptSummarizer = getTranscriptSummarizer();
@@ -68,7 +71,11 @@ async function storeSuggestedQuestions(
 export async function runAiSummarization(input: {
   id: string;
   signals: SimplifiedSignal[];
-}): Promise<{ success: true; record: MeetingRecord } | { success: false; error: string }> {
+}): Promise<
+  | { success: true; record: MeetingRecord }
+  | { success: false; error: string }
+  | { success: false; error: string; alreadyProcessing: true }
+> {
   let id: string | undefined;
   try {
     const parsed = runAiSummarizationSchema.parse(input);
@@ -79,8 +86,12 @@ export async function runAiSummarization(input: {
       throw new Error(`Transcript ${id} not found`);
     }
 
+    if (stored.fields.aiProcessingStatus === 'processing') {
+      return { success: false, error: ALREADY_PROCESSING_ERROR, alreadyProcessing: true };
+    }
+
     await transcriptRepository.update(id, {
-      aiProcessingStatus: 'pending',
+      aiProcessingStatus: 'processing',
       suggestedQuestions: [],
     });
 
