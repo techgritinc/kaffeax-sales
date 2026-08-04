@@ -104,6 +104,9 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
       setDraft(record);
       setActiveId(record.id);
       setError('');
+      if (record.aiProcessingStatus !== 'success') {
+        setTranscript(record.originalTranscript);
+      }
       setStep(record.aiProcessingStatus === 'success' ? 'review' : 'capture');
     } catch (err) {
       console.error('[useWorkflowActions] openFromRecent failed', err);
