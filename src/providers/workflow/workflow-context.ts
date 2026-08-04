@@ -36,6 +36,7 @@ export interface WorkflowContextValue {
   notify: (message: string, tone?: ToastTone) => void;
   openFromRecent: (id: string) => Promise<void>;
   summarize: () => Promise<void>;
+  summarizeInBackground: () => Promise<void>;
   approve: () => Promise<void>;
   reject: () => Promise<void>;
   setSidebarOpen: (open: boolean) => void;

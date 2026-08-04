@@ -67,7 +67,12 @@ export function AppShell() {
           </div>
 
           <div className="max-bp900:p-[10px_20px_28px] max-bp560:p-[8px_14px_24px] min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-[12px_40px_40px]">
-            {wf.procStage !== 'idle' && <ProcessingModal procStage={wf.procStage} />}
+            {wf.procStage !== 'idle' && (
+              <ProcessingModal
+                procStage={wf.procStage}
+                onRunInBackground={() => void wf.summarizeInBackground()}
+              />
+            )}
             {wf.isCommitting && <LoadingOverlay />}
 
             {wf.step === 'capture' && wf.procStage === 'idle' && (

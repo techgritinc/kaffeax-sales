@@ -8,7 +8,12 @@ import type { MeetingRecord } from '@/types/meeting.types';
 import type { Step, ToastTone } from '@/types/workflow.types';
 
 import type { WorkflowActionDeps } from '../../types/workflow/workflow-action-deps.types';
-import { runApprove, runReject, runSummarize } from './workflow-actions.utils';
+import {
+  runApprove,
+  runReject,
+  runSummarize,
+  runSummarizeInBackground,
+} from './workflow-actions.utils';
 
 export type { WorkflowActionDeps } from '../../types/workflow/workflow-action-deps.types';
 
@@ -107,6 +112,12 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
     setStep('capture');
   }
 
+  async function summarizeInBackground() {
+    deps.setProcStage('idle');
+    deps.setStatus('idle');
+    await runSummarizeInBackground(deps);
+  }
+
   return {
     setTranscript: setTranscriptSafe,
     loadSample,
@@ -117,6 +128,7 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
     notify,
     openFromRecent,
     summarize: () => runSummarize(deps),
+    summarizeInBackground,
     approve: () => runApprove(deps, notify),
     reject: () => runReject(deps, notify),
   };
