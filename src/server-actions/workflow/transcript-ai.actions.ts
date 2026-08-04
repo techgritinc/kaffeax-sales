@@ -179,3 +179,20 @@ export async function runAiSummarizationInBackground(input: {
 
   return { started: true };
 }
+
+export async function cancelProcessing(id: string): Promise<{ cancelled: boolean }> {
+  const stored = await transcriptRepository.findById(id);
+  if (!stored) {
+    return { cancelled: false };
+  }
+
+  if (
+    stored.fields.aiProcessingStatus !== 'pending' &&
+    stored.fields.aiProcessingStatus !== 'processing'
+  ) {
+    return { cancelled: false };
+  }
+
+  await transcriptRepository.update(id, { aiProcessingStatus: 'cancelled' });
+  return { cancelled: true };
+}
