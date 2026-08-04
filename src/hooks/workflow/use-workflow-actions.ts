@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 
-import { TOAST_DURATION_MS } from '@/constants/workflow';
+import { ACTIVE_FOREGROUND_GENERATION_KEY, TOAST_DURATION_MS } from '@/constants/workflow';
+import { cancelProcessing } from '@/server-actions/workflow/transcript-ai.actions';
 import { getTranscriptById } from '@/server-actions/workflow/transcript.actions';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { Step, ToastTone } from '@/types/workflow.types';
@@ -38,6 +39,13 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
     },
     [],
   );
+
+  useEffect(() => {
+    const id = sessionStorage.getItem(ACTIVE_FOREGROUND_GENERATION_KEY);
+    if (!id) return;
+    sessionStorage.removeItem(ACTIVE_FOREGROUND_GENERATION_KEY);
+    void cancelProcessing(id);
+  }, []);
 
   function notify(message: string, tone: ToastTone = 'success') {
     setToast({ message, tone });
