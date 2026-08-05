@@ -43,7 +43,7 @@ export class TranscriptSummarizer {
       const stream = client.messages.stream({
         model: options?.model ?? env.CLAUDE_DEFAULT_MODEL,
         max_tokens: options?.maxTokens ?? env.CLAUDE_MAX_TOKENS,
-        thinking: { type: 'adaptive' },
+
         messages: [{ role: 'user', content: transcript }],
       });
 
@@ -98,7 +98,7 @@ export class TranscriptSummarizer {
         model: options.model ?? env.CLAUDE_DEFAULT_MODEL,
         max_tokens: options.maxTokens ?? env.CLAUDE_MAX_TOKENS,
         system,
-        thinking: { type: 'adaptive' },
+
         messages: [{ role: 'user', content: transcript }],
       });
 

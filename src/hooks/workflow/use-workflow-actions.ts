@@ -10,10 +10,10 @@ import type { Step, ToastTone } from '@/types/workflow.types';
 
 import type { WorkflowActionDeps } from '../../types/workflow/workflow-action-deps.types';
 import {
+  abandonForegroundGeneration,
   runApprove,
   runReject,
   runSummarize,
-  runSummarizeInBackground,
 } from './workflow-actions.utils';
 
 export type { WorkflowActionDeps } from '../../types/workflow/workflow-action-deps.types';
@@ -108,6 +108,14 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
         setTranscript(record.originalTranscript);
       }
       setStep(record.aiProcessingStatus === 'success' ? 'review' : 'capture');
+      deps.updateRecent(id, {
+        aiProcessingStatus: record.aiProcessingStatus,
+        title: record.summary?.meetingTitle ?? undefined,
+        badge:
+          record.aiProcessingStatus === 'success'
+            ? (record.leadScore.band.toUpperCase() as 'HOT' | 'WARM' | 'COLD')
+            : undefined,
+      });
     } catch (err) {
       console.error('[useWorkflowActions] openFromRecent failed', err);
       notify('Unable to load that summary. Please try again.', 'reject');
@@ -123,10 +131,15 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
     setStep('capture');
   }
 
-  async function summarizeInBackground() {
+  function summarizeInBackground() {
+    abandonForegroundGeneration();
+    sessionStorage.removeItem(ACTIVE_FOREGROUND_GENERATION_KEY);
     deps.setProcStage('idle');
     deps.setStatus('idle');
-    await runSummarizeInBackground(deps);
+    deps.setStep('capture');
+    if (deps.activeId) {
+      deps.updateRecent(deps.activeId, { aiProcessingStatus: 'processing' });
+    }
   }
 
   return {

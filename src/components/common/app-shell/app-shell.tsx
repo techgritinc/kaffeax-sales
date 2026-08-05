@@ -70,7 +70,7 @@ export function AppShell() {
             {wf.procStage !== 'idle' && (
               <ProcessingModal
                 procStage={wf.procStage}
-                onRunInBackground={() => void wf.summarizeInBackground()}
+                onRunInBackground={() => wf.summarizeInBackground()}
               />
             )}
             {wf.isCommitting && <LoadingOverlay />}
@@ -81,11 +81,15 @@ export function AppShell() {
                 wordCount={wf.wordCount}
                 status={wf.status}
                 error={wf.error}
+                aiProcessingStatus={wf.activeAiProcessingStatus}
                 onTranscriptChange={wf.setTranscript}
                 onFile={wf.handleFile}
                 onLoadSample={wf.loadSample}
                 onClear={() => wf.setTranscript('')}
                 onSummarise={() => void wf.summarize()}
+                onReview={() => {
+                  if (wf.activeId) void wf.openFromRecent(wf.activeId);
+                }}
                 onOpenRubric={() => wf.setRubricOpen(true)}
               />
             )}

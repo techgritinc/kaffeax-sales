@@ -3,6 +3,9 @@ import type { ProcessingStep } from '@/types/workflow/processing.types';
 /** Toast auto-dismiss delay (ms). */
 export const TOAST_DURATION_MS = 3200;
 
+/** Interval (ms) between foreground poll ticks while the user watches the processing modal. */
+export const FOREGROUND_POLL_INTERVAL_MS = 3000;
+
 /** Interval (ms) between background-generation completion polls. */
 export const BACKGROUND_POLL_INTERVAL_MS = 5000;
 

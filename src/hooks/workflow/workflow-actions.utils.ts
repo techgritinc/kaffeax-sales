@@ -1,22 +1,51 @@
-import { ACTIVE_FOREGROUND_GENERATION_KEY } from '@/constants/workflow';
-import { AI_SUMMARIZATION_ERROR } from '@/constants/workflow/action.constants';
+import {
+  ACTIVE_FOREGROUND_GENERATION_KEY,
+  FOREGROUND_POLL_INTERVAL_MS,
+} from '@/constants/workflow';
+import {
+  AI_SUMMARIZATION_ERROR,
+  ALREADY_PROCESSING_ERROR,
+} from '@/constants/workflow/action.constants';
 import { RECENT_STATUS } from '@/constants/workflow/recents.constants';
 import { toSimplifiedSignals } from '@/lib/utils/workflow/rubric.mapper';
 import { formatWhen } from '@/lib/utils/workflow/transcript.mapper';
 import type { RecentItem } from '@/providers/recents/recents-context';
 import { commitToCrm } from '@/server-actions/crm-commit/commit-to-crm';
-import {
-  runAiSummarization,
-  runAiSummarizationInBackground,
-} from '@/server-actions/workflow/transcript-ai.actions';
+import { runAiSummarizationInBackground } from '@/server-actions/workflow/transcript-ai.actions';
 import {
   createDraftTranscript,
   deleteTranscript,
   getTranscriptById,
   updateTranscriptEmail,
 } from '@/server-actions/workflow/transcript.actions';
+import type { MeetingRecord } from '@/types/meeting.types';
 
 import type { NotifyFn, WorkflowActionDeps } from '../../types/workflow/workflow-action-deps.types';
+
+let generationNonce = 0;
+
+export function abandonForegroundGeneration(): void {
+  generationNonce++;
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function pollForCompletion(id: string, nonce: number): Promise<MeetingRecord | null> {
+  while (nonce === generationNonce) {
+    await delay(FOREGROUND_POLL_INTERVAL_MS);
+    if (nonce !== generationNonce) return null;
+
+    const record = await getTranscriptById(id);
+    if (!record) return null;
+
+    if (record.aiProcessingStatus === 'success' || record.aiProcessingStatus === 'failed') {
+      return record;
+    }
+  }
+  return null;
+}
 
 export async function runSummarize(deps: WorkflowActionDeps): Promise<void> {
   const {
@@ -35,6 +64,8 @@ export async function runSummarize(deps: WorkflowActionDeps): Promise<void> {
 
   const rawTranscript = transcript.trim();
   if (!rawTranscript) return;
+
+  const myNonce = ++generationNonce;
 
   setStatus('processing');
   setError('');
@@ -57,41 +88,58 @@ export async function runSummarize(deps: WorkflowActionDeps): Promise<void> {
       });
     }
 
+    const bgResult = await runAiSummarizationInBackground({
+      id,
+      signals: toSimplifiedSignals(signals),
+    });
+
+    if (myNonce !== generationNonce) return;
+
+    if (!bgResult.started) {
+      updateRecent(id, { aiProcessingStatus: 'failed' });
+      setError(
+        bgResult.reason === 'already_processing'
+          ? ALREADY_PROCESSING_ERROR
+          : AI_SUMMARIZATION_ERROR,
+      );
+      setStatus('error');
+      return;
+    }
+
     sessionStorage.setItem(ACTIVE_FOREGROUND_GENERATION_KEY, id);
     setProcStage('processing');
-    const result = await runAiSummarization({ id, signals: toSimplifiedSignals(signals) });
+    updateRecent(id, { aiProcessingStatus: 'processing' });
 
-    if (result.success) {
+    const record = await pollForCompletion(id, myNonce);
+
+    if (myNonce !== generationNonce || !record) return;
+
+    if (record.aiProcessingStatus === 'success') {
       setProcStage('extracting');
       updateRecent(id, {
-        title: result.record.summary.meetingTitle,
+        title: record.summary.meetingTitle,
         aiProcessingStatus: 'success',
-        badge: result.record.leadScore.band.toUpperCase() as RecentItem['badge'],
+        badge: record.leadScore.band.toUpperCase() as RecentItem['badge'],
       });
-      setDraft(result.record);
+      setDraft(record);
       setStatus('idle');
       setStep('review');
     } else {
       updateRecent(id, { aiProcessingStatus: 'failed' });
-      setError(result.error);
+      setError(AI_SUMMARIZATION_ERROR);
       setStatus('error');
     }
   } catch {
+    if (myNonce !== generationNonce) return;
     if (id) updateRecent(id, { aiProcessingStatus: 'failed' });
     setError(AI_SUMMARIZATION_ERROR);
     setStatus('error');
   } finally {
-    sessionStorage.removeItem(ACTIVE_FOREGROUND_GENERATION_KEY);
-    setProcStage('idle');
+    if (myNonce === generationNonce) {
+      sessionStorage.removeItem(ACTIVE_FOREGROUND_GENERATION_KEY);
+      setProcStage('idle');
+    }
   }
-}
-
-export async function runSummarizeInBackground(deps: WorkflowActionDeps): Promise<void> {
-  const { activeId, signals, updateRecent } = deps;
-  if (!activeId) return;
-
-  await runAiSummarizationInBackground({ id: activeId, signals: toSimplifiedSignals(signals) });
-  updateRecent(activeId, { aiProcessingStatus: 'processing' });
 }
 
 export async function runApprove(deps: WorkflowActionDeps, notify: NotifyFn): Promise<void> {

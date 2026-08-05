@@ -53,6 +53,7 @@ export function ReviewScreen({
         email={draft.contact.email.value}
         onEmailChange={(v) => onPatch('contact.email.value', v)}
         disabled={committed}
+        durationSeconds={draft.durationSeconds}
       />
       <SummaryBlock narrative={draft.summary.narrative} />
       <HeardGrid

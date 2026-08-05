@@ -44,6 +44,7 @@ export function toMeetingRecord(stored: StoredTranscript, rubric: Rubric): Meeti
     band,
     aiProcessingStatus: fields.aiProcessingStatus,
     originalTranscript: fields.originalTranscript,
+    durationSeconds: fields.durationSeconds,
     contact: {
       name: { value: '', confidence: 'low' },
       company: { value: '', confidence: 'low' },

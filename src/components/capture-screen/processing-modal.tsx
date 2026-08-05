@@ -100,8 +100,8 @@ export function ProcessingModal({ procStage, className, onRunInBackground }: Pro
         })}
 
         {showBackground && (
-          <div className="border-border mt-[24px] flex justify-center border-t pt-[20px]">
-            <Button variant="ghost" size="sm" onClick={onRunInBackground}>
+          <div className="mt-[24px] flex justify-end">
+            <Button variant="primary" onClick={onRunInBackground}>
               Run in background
             </Button>
           </div>

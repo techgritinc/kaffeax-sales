@@ -105,6 +105,10 @@ export function WorkflowProvider({ children, initialSample }: WorkflowProviderPr
     return () => clearInterval(pollId);
   }, [hasProcessing]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const activeAiProcessingStatus = activeId
+    ? recents.find((r) => r.id === activeId)?.aiProcessingStatus
+    : undefined;
+
   const value: WorkflowContextValue = {
     transcript,
     status,
@@ -118,6 +122,7 @@ export function WorkflowProvider({ children, initialSample }: WorkflowProviderPr
     rubricOpen,
     chatOpen,
     isCommitting,
+    activeAiProcessingStatus,
     isCommitted,
     score,
     emailMissing,

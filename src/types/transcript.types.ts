@@ -81,6 +81,8 @@ export interface TranscriptFields {
   webhookPayload: unknown;
   originalTranscript: string;
   cleanedTranscript: string;
+  /** Length of the call in seconds. Omitted/`undefined` when unknown — never `0` as a sentinel. */
+  durationSeconds?: number;
   summary: TranscriptSummary;
   contact: TranscriptContact;
   leadScore: TranscriptLeadScore;

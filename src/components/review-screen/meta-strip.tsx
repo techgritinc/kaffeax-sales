@@ -1,6 +1,7 @@
 import { Icon } from '@/components/ui/icon/icon';
 import { InlineInput } from '@/components/ui/input/inline-input';
 import { MEETING_DATE } from '@/constants/workflow';
+import { formatCallDuration } from '@/lib/utils/workflow/duration.utils';
 import type { Attendee } from '@/types/meeting.types';
 
 export interface MetaStripProps {
@@ -8,6 +9,7 @@ export interface MetaStripProps {
   email: string;
   onEmailChange: (value: string) => void;
   disabled?: boolean;
+  durationSeconds?: number;
 }
 
 const MetaDot = () => (
@@ -15,8 +17,15 @@ const MetaDot = () => (
 );
 
 /** Attendees · date · required prospect-email strip beneath the review hero. The email is the only editable field. */
-export function MetaStrip({ attendees, email, onEmailChange, disabled = false }: MetaStripProps) {
+export function MetaStrip({
+  attendees,
+  email,
+  onEmailChange,
+  disabled = false,
+  durationSeconds,
+}: MetaStripProps) {
   const names = attendees.map((a) => a.name).join(', ');
+  const duration = formatCallDuration(durationSeconds);
   return (
     <div className="text-muted m-[8px_0_14px] flex flex-wrap items-center gap-[10px_12px] font-sans text-[13px]">
       {attendees.length > 0 && (
@@ -29,6 +38,15 @@ export function MetaStrip({ attendees, email, onEmailChange, disabled = false }:
         </>
       )}
       <span className="inline-flex items-center gap-[6px]">{MEETING_DATE}</span>
+      {duration !== null && (
+        <>
+          <MetaDot />
+          <span className="inline-flex items-center gap-[6px]" title="Call duration">
+            <Icon name="Clock" size={13} className="text-muted shrink-0" />
+            <span className="text-muted">{duration}</span>
+          </span>
+        </>
+      )}
       <MetaDot />
       <span
         className="inline-flex items-center gap-[5px]"

@@ -75,6 +75,11 @@ async function generateSummary(
   signals: SimplifiedSignal[],
   stored: StoredTranscript,
 ): Promise<{ success: true; record: MeetingRecord } | { success: false; error: string }> {
+  const current = await transcriptRepository.findById(id);
+  if (current?.fields.aiProcessingStatus === 'cancelled') {
+    return { success: false, error: 'Generation was cancelled.' };
+  }
+
   await transcriptRepository.update(id, {
     aiProcessingStatus: 'processing',
     suggestedQuestions: [],

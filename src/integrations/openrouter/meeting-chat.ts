@@ -42,6 +42,7 @@ export class MeetingChat {
         }
 
         const json: unknown = await response.json();
+        console.log('[meeting-chat] raw API response', json);
         const parsed = openRouterResponseSchema.safeParse(json);
         if (!parsed.success) {
           console.error('[meeting-chat] malformed API response', parsed.error.message);

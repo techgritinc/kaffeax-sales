@@ -14,8 +14,11 @@ import type {
 import type { SimplifiedSignal } from '@/types/rubric-signal.types';
 
 import { chatCompletion } from './client';
-import { mapHttpError } from './http-error.utils';
-import { openRouterResponseSchema } from './openrouter-response.schema';
+import { mapHttpError, mapProviderErrorEnvelope } from './http-error.utils';
+import {
+  openRouterErrorEnvelopeSchema,
+  openRouterResponseSchema,
+} from './openrouter-response.schema';
 
 export async function summarizeStructured(
   transcript: string,
@@ -44,9 +47,27 @@ export async function summarizeStructured(
       }
 
       const json: unknown = await response.json();
+
+      const envelope = openRouterErrorEnvelopeSchema.safeParse(json);
+      if (envelope.success) {
+        const mapped = mapProviderErrorEnvelope(
+          envelope.data.error.code,
+          envelope.data.error.message,
+        );
+        lastResult = mapped;
+        if (mapped.category === 'network' && attempt < MAX_STRUCTURED_ATTEMPTS) {
+          console.warn(
+            `[TranscriptSummarizer] Provider error, retrying (attempt ${attempt + 1}/${MAX_STRUCTURED_ATTEMPTS})`,
+          );
+          continue;
+        }
+        return mapped;
+      }
+
       const parsed = openRouterResponseSchema.safeParse(json);
       if (!parsed.success) {
         console.error('[TranscriptSummarizer] Malformed API response', parsed.error.message);
+        console.error('[TranscriptSummarizer] Raw response body', JSON.stringify(json));
         return {
           success: false,
           category: 'api_error',
