@@ -1,17 +1,21 @@
+import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 import { env } from '@env';
 
 import { CHAT_EFFORT, CHAT_MAX_TOKENS, MAX_CHAT_ATTEMPTS } from '@/constants/grounded-chat';
 import { computeAnthropicCost } from '@/lib/utils/ai-cost.utils';
 import { buildGroundedChatPrompt } from '@/lib/utils/grounded-chat-prompt.utils';
 import { processChatResponse } from '@/lib/utils/grounded-chat-response.utils';
+import { ChatAnswerSchema } from '@/schemas/chat-answer.schema';
 import type { GroundingContext, MeetingChatResponse } from '@/types/chat.types';
 
 import client from './client';
+import { resolveModelCapabilities } from './model-capabilities';
 import { handleSdkError } from './sdk-error.utils';
 
 export class MeetingChat {
   async ask(context: GroundingContext, question: string): Promise<MeetingChatResponse> {
     const { guardrail, grounding } = buildGroundedChatPrompt(context);
+    const capabilities = resolveModelCapabilities(env.CLAUDE_DEFAULT_MODEL);
     let lastFailure: MeetingChatResponse | null = null;
 
     for (let attempt = 1; attempt <= MAX_CHAT_ATTEMPTS; attempt++) {
@@ -19,8 +23,13 @@ export class MeetingChat {
         const response = await client.messages.create({
           model: env.CLAUDE_DEFAULT_MODEL,
           max_tokens: CHAT_MAX_TOKENS,
-          thinking: { type: 'adaptive' },
-          output_config: { effort: CHAT_EFFORT },
+          ...(capabilities.supportsAdaptiveThinking
+            ? { thinking: { type: 'adaptive' as const } }
+            : {}),
+          output_config: {
+            format: zodOutputFormat(ChatAnswerSchema),
+            ...(capabilities.supportsEffort ? { effort: CHAT_EFFORT } : {}),
+          },
           system: [
             { type: 'text', text: guardrail },
             { type: 'text', text: grounding, cache_control: { type: 'ephemeral' } },

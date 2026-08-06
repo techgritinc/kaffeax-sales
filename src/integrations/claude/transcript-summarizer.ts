@@ -1,3 +1,4 @@
+import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 import { env } from '@env';
 import { z } from 'zod';
 
@@ -7,6 +8,7 @@ import {
   buildSummarizationPrompt,
   processStructuredResponse,
 } from '@/lib/utils/structured-analysis.utils';
+import { AiSummaryResponseSchema } from '@/schemas/ai-summary-response.schema';
 import type {
   StructuredSummarizationResult,
   SummarizationOptions,
@@ -98,7 +100,7 @@ export class TranscriptSummarizer {
         model: options.model ?? env.CLAUDE_DEFAULT_MODEL,
         max_tokens: options.maxTokens ?? env.CLAUDE_MAX_TOKENS,
         system,
-
+        output_config: { format: zodOutputFormat(AiSummaryResponseSchema) },
         messages: [{ role: 'user', content: transcript }],
       });
 

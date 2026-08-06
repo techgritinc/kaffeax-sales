@@ -1,3 +1,4 @@
+import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 import { env } from '@env';
 
 import { MAX_GROUNDING_CHARS } from '@/constants/grounded-chat';
@@ -16,6 +17,7 @@ import {
   emptyUsage,
   spendFields,
 } from '@/lib/utils/suggestion-attempts.utils';
+import { SuggestedQuestionsSchema } from '@/schemas/suggested-questions.schema';
 import type { ChatTokenUsage, GroundingContext } from '@/types/chat.types';
 import type {
   SuggestedQuestionsFailure,
@@ -24,6 +26,7 @@ import type {
 } from '@/types/suggested-questions.types';
 
 import client from './client';
+import { resolveModelCapabilities } from './model-capabilities';
 import { handleSdkError } from './sdk-error.utils';
 
 const API_ERROR: SuggestedQuestionsFailure = {
@@ -43,6 +46,7 @@ export class SuggestedQuestions {
     }
 
     const { system, user } = buildSuggestedQuestionsPrompt(context);
+    const capabilities = resolveModelCapabilities(env.CLAUDE_DEFAULT_MODEL);
     let lastRule: SuggestionValidationRule | null = null;
     let lastFailure: SuggestedQuestionsFailure | null = null;
     let usage: ChatTokenUsage = emptyUsage();
@@ -53,8 +57,13 @@ export class SuggestedQuestions {
         const response = await client.messages.create({
           model: env.CLAUDE_DEFAULT_MODEL,
           max_tokens: SUGGESTION_MAX_TOKENS,
-          thinking: { type: 'adaptive' },
-          output_config: { effort: SUGGESTION_EFFORT },
+          ...(capabilities.supportsAdaptiveThinking
+            ? { thinking: { type: 'adaptive' as const } }
+            : {}),
+          output_config: {
+            format: zodOutputFormat(SuggestedQuestionsSchema),
+            ...(capabilities.supportsEffort ? { effort: SUGGESTION_EFFORT } : {}),
+          },
           system,
           messages: [{ role: 'user', content: userTurn }],
         });
