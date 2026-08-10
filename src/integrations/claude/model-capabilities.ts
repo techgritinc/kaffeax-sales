@@ -4,14 +4,6 @@ export interface ModelCapabilityProfile {
   supportsEffort: boolean;
 }
 
-/**
- * Matched by prefix, not exact equality, so dated snapshot IDs (e.g.
- * `claude-haiku-4-5-20251001`) resolve to the same profile as the bare alias.
- * Only models confirmed to support `thinking: { type: 'adaptive' }` combined
- * with `output_config.effort` are listed — everything else (including Haiku
- * 4.5, Sonnet 4.5, and any model not yet added here) falls through to the
- * unsupported default below, per the "omit unless known-supported" rule.
- */
 const ADAPTIVE_THINKING_AND_EFFORT_MODEL_PREFIXES = [
   'claude-fable-5',
   'claude-mythos-5',
