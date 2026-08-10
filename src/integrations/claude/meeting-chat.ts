@@ -1,5 +1,6 @@
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
-import { env } from '@env';
+
+// import { env } from '@env';
 
 import { CHAT_EFFORT, CHAT_MAX_TOKENS, MAX_CHAT_ATTEMPTS } from '@/constants/grounded-chat';
 import { computeAnthropicCost } from '@/lib/utils/ai-cost.utils';
@@ -15,13 +16,15 @@ import { handleSdkError } from './sdk-error.utils';
 export class MeetingChat {
   async ask(context: GroundingContext, question: string): Promise<MeetingChatResponse> {
     const { guardrail, grounding } = buildGroundedChatPrompt(context);
-    const capabilities = resolveModelCapabilities(env.CLAUDE_DEFAULT_MODEL);
+    // const capabilities = resolveModelCapabilities(env.CLAUDE_DEFAULT_MODEL);
+    const capabilities = resolveModelCapabilities('claude-haiku-4.5');
     let lastFailure: MeetingChatResponse | null = null;
 
     for (let attempt = 1; attempt <= MAX_CHAT_ATTEMPTS; attempt++) {
       try {
         const response = await client.messages.create({
-          model: env.CLAUDE_DEFAULT_MODEL,
+          // model: env.CLAUDE_DEFAULT_MODEL,
+          model: 'claude-haiku-4.5',
           max_tokens: CHAT_MAX_TOKENS,
           ...(capabilities.supportsAdaptiveThinking
             ? { thinking: { type: 'adaptive' as const } }

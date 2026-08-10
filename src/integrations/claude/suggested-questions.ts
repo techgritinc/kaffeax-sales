@@ -1,5 +1,6 @@
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
-import { env } from '@env';
+
+// import { env } from '@env';
 
 import { MAX_GROUNDING_CHARS } from '@/constants/grounded-chat';
 import {
@@ -46,7 +47,8 @@ export class SuggestedQuestions {
     }
 
     const { system, user } = buildSuggestedQuestionsPrompt(context);
-    const capabilities = resolveModelCapabilities(env.CLAUDE_DEFAULT_MODEL);
+    // const capabilities = resolveModelCapabilities(env.CLAUDE_DEFAULT_MODEL);
+    const capabilities = resolveModelCapabilities('claude-haiku-4.5');
     let lastRule: SuggestionValidationRule | null = null;
     let lastFailure: SuggestedQuestionsFailure | null = null;
     let usage: ChatTokenUsage = emptyUsage();
@@ -55,7 +57,8 @@ export class SuggestedQuestions {
       try {
         const userTurn = lastRule === null ? user : buildCorrectiveNote(user, lastRule);
         const response = await client.messages.create({
-          model: env.CLAUDE_DEFAULT_MODEL,
+          // model: env.CLAUDE_DEFAULT_MODEL,
+          model: 'claude-haiku-4.5',
           max_tokens: SUGGESTION_MAX_TOKENS,
           ...(capabilities.supportsAdaptiveThinking
             ? { thinking: { type: 'adaptive' as const } }

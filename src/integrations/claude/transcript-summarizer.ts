@@ -1,5 +1,5 @@
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
-import { env } from '@env';
+// import { env } from '@env';
 import { z } from 'zod';
 
 import { computeAnthropicCost } from '@/lib/utils/ai-cost.utils';
@@ -43,8 +43,10 @@ export class TranscriptSummarizer {
       }
 
       const stream = client.messages.stream({
-        model: options?.model ?? env.CLAUDE_DEFAULT_MODEL,
-        max_tokens: options?.maxTokens ?? env.CLAUDE_MAX_TOKENS,
+        // model: options?.model ?? env.CLAUDE_DEFAULT_MODEL,
+        model: options?.model ?? 'claude-haiku-4.5',
+        // max_tokens: options?.maxTokens ?? env.CLAUDE_MAX_TOKENS,
+        max_tokens: options?.maxTokens ?? 16384,
 
         messages: [{ role: 'user', content: transcript }],
       });
@@ -97,8 +99,10 @@ export class TranscriptSummarizer {
 
     for (let attempt = 1; attempt <= MAX_STRUCTURED_ATTEMPTS; attempt++) {
       const stream = client.messages.stream({
-        model: options.model ?? env.CLAUDE_DEFAULT_MODEL,
-        max_tokens: options.maxTokens ?? env.CLAUDE_MAX_TOKENS,
+        // model: options.model ?? env.CLAUDE_DEFAULT_MODEL,
+        model: options.model ?? 'claude-haiku-4.5',
+        // max_tokens: options.maxTokens ?? env.CLAUDE_MAX_TOKENS,
+        max_tokens: options.maxTokens ?? 16384,
         system,
         output_config: { format: zodOutputFormat(AiSummaryResponseSchema) },
         messages: [{ role: 'user', content: transcript }],
