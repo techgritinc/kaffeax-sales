@@ -25,7 +25,7 @@ export function WorkflowProvider({ children, initialSample }: WorkflowProviderPr
   const { signals } = useRubricSignals();
   const { recents, prependRecent, updateRecent, refreshRecents } = useRecents();
 
-  const [transcript, setTranscript] = useState<string>(initialSample);
+  const [transcript, setTranscript] = useState<string>('');
   const [status, setStatus] = useState<WorkflowStatus>('idle');
   const [draft, setDraft] = useState<MeetingRecord | null>(null);
   const [error, setError] = useState<string>('');
