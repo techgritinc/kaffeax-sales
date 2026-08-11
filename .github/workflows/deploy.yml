@@ -1,0 +1,102 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    environment: KaffeaX-Dev
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Write env files
+        env:
+          KAFFEAX_APP_URL: ${{ secrets.KAFFEAX_APP_URL }}
+          KAFFEAX_MONGO_URI: ${{ secrets.KAFFEAX_MONGO_URI }}
+          KAFFEAX_CLAUDE_API_KEY: ${{ secrets.KAFFEAX_CLAUDE_API_KEY }}
+          KAFFEAX_CLAUDE_DEFAULT_MODEL: ${{ secrets.KAFFEAX_CLAUDE_DEFAULT_MODEL }}
+          KAFFEAX_CLAUDE_MAX_TOKENS: ${{ secrets.KAFFEAX_CLAUDE_MAX_TOKENS }}
+          KAFFEAX_OPENROUTER_API_KEY: ${{ secrets.KAFFEAX_OPENROUTER_API_KEY }}
+          KAFFEAX_OPENROUTER_DEFAULT_MODEL: ${{ secrets.KAFFEAX_OPENROUTER_DEFAULT_MODEL }}
+          KAFFEAX_OPENROUTER_MAX_TOKENS: ${{ secrets.KAFFEAX_OPENROUTER_MAX_TOKENS }}
+          KAFFEAX_ZOHO_CLIENT_ID: ${{ secrets.KAFFEAX_ZOHO_CLIENT_ID }}
+          KAFFEAX_ZOHO_CLIENT_SECRET: ${{ secrets.KAFFEAX_ZOHO_CLIENT_SECRET }}
+          KAFFEAX_ZOHO_REFRESH_TOKEN: ${{ secrets.KAFFEAX_ZOHO_REFRESH_TOKEN }}
+          KAFFEAX_ZOHO_TOKEN_URL: ${{ secrets.KAFFEAX_ZOHO_TOKEN_URL }}
+          KAFFEAX_ZOHO_CRM_API_BASE_URL: ${{ secrets.KAFFEAX_ZOHO_CRM_API_BASE_URL }}
+        run: |
+          {
+            echo "NEXT_PUBLIC_APP_ENV=development"
+            echo "NEXT_PUBLIC_APP_URL=$KAFFEAX_APP_URL"
+            echo "MONGO_URI=$KAFFEAX_MONGO_URI"
+            echo "CLAUDE_API_KEY=$KAFFEAX_CLAUDE_API_KEY"
+            echo "CLAUDE_DEFAULT_MODEL=$KAFFEAX_CLAUDE_DEFAULT_MODEL"
+            echo "CLAUDE_MAX_TOKENS=$KAFFEAX_CLAUDE_MAX_TOKENS"
+            echo "OPENROUTER_API_KEY=$KAFFEAX_OPENROUTER_API_KEY"
+            echo "OPENROUTER_DEFAULT_MODEL=$KAFFEAX_OPENROUTER_DEFAULT_MODEL"
+            echo "OPENROUTER_MAX_TOKENS=$KAFFEAX_OPENROUTER_MAX_TOKENS"
+            echo "ZOHO_CLIENT_ID=$KAFFEAX_ZOHO_CLIENT_ID"
+            echo "ZOHO_CLIENT_SECRET=$KAFFEAX_ZOHO_CLIENT_SECRET"
+            echo "ZOHO_REFRESH_TOKEN=$KAFFEAX_ZOHO_REFRESH_TOKEN"
+            echo "ZOHO_TOKEN_URL=$KAFFEAX_ZOHO_TOKEN_URL"
+            echo "ZOHO_CRM_API_BASE_URL=$KAFFEAX_ZOHO_CRM_API_BASE_URL"
+          } > .env.development
+          cp .env.development .env.local
+
+      - name: Build
+        run: npm run build:dev
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Clean previous deployment on EC2
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+            "sudo rm -rf /var/www/kaffeax-sales && sudo mkdir -p /var/www/kaffeax-sales && sudo chown ubuntu:ubuntu /var/www/kaffeax-sales"
+
+      - name: Rsync standalone build to EC2
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            .next/standalone/ \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/var/www/kaffeax-sales/
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            .next/static/ \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/var/www/kaffeax-sales/.next/static/
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            public/ \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/var/www/kaffeax-sales/public/
+          rsync -az \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            .env.local ecosystem.config.cjs \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/var/www/kaffeax-sales/
+
+      - name: Restart PM2
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
+          pm2 delete kaffeax-sales || true
+          pm2 start /var/www/kaffeax-sales/ecosystem.config.cjs
+          pm2 save
+          pm2 flush
+          ENDSSH
