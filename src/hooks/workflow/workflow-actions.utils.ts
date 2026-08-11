@@ -199,5 +199,5 @@ export async function runReject(deps: WorkflowActionDeps, notify: NotifyFn): Pro
   setStatus('idle');
   setError('');
   setStep('capture');
-  notify('Draft rejected · no CRM write.', 'reject');
+  notify('Draft rejected', 'reject');
 }
