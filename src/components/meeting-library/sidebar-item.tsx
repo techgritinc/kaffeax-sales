@@ -17,17 +17,20 @@ export function SidebarItem({ item, active, onSelect }: SidebarItemProps): JSX.E
   const { badge } = item;
   const succeeded = item.aiProcessingStatus === 'success' && badge !== undefined;
   const failed = item.aiProcessingStatus === 'failed';
+  const cancelled = item.aiProcessingStatus === 'cancelled';
 
   const meta = succeeded
     ? `${badge} · ${item.when}`
     : failed
       ? `Failed — reopen to retry · ${item.when}`
-      : `Processing… · ${item.when}`;
+      : cancelled
+        ? `Cancelled — reopen to retry · ${item.when}`
+        : `Processing… · ${item.when}`;
 
   const dotClass =
     item.aiProcessingStatus === 'success' && badge !== undefined
       ? BAND_SIDEBAR_DOT_CLASS[badge.toLowerCase() as Band]
-      : failed
+      : failed || cancelled
         ? 'bg-rust text-rust'
         : 'bg-sidebar-muted text-sidebar-muted animate-pulse';
 
@@ -45,7 +48,7 @@ export function SidebarItem({ item, active, onSelect }: SidebarItemProps): JSX.E
         className={cn(
           'mt-[5px] h-2 w-2 shrink-0 self-center rounded-full',
           dotClass,
-          active && (succeeded || failed) && 'shadow-[0_0_8px_currentColor]',
+          active && (succeeded || failed || cancelled) && 'shadow-[0_0_8px_currentColor]',
         )}
       />
       <div className="min-w-0 flex-1">

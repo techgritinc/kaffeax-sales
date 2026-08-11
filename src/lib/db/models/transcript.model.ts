@@ -107,6 +107,7 @@ const transcriptSchema = new Schema<TranscriptSchemaFields>(
     webhookPayload: { type: Schema.Types.Mixed, default: null },
     originalTranscript: { type: String, required: true },
     cleanedTranscript: { type: String, default: '' },
+    durationSeconds: { type: Number, required: false },
     summary: { type: summarySchema, default: {} },
     contact: { type: contactSchema, default: {} },
     leadScore: { type: leadScoreSchema, default: {} },

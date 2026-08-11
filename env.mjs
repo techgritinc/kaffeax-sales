@@ -11,9 +11,9 @@ export const env = createEnv({
     MONGO_URI: z.string().min(1),
 
     // CLAUDE
-    CLAUDE_API_KEY: z.string().min(1),
-    CLAUDE_DEFAULT_MODEL: z.string().min(1),
-    CLAUDE_MAX_TOKENS: z.coerce.number().int().positive(),
+    // CLAUDE_API_KEY: z.string().min(1),
+    // CLAUDE_DEFAULT_MODEL: z.string().min(1),
+    // CLAUDE_MAX_TOKENS: z.coerce.number().int().positive(),
 
     // OPEROUTER
     OPENROUTER_API_KEY: z.string().min(1),
@@ -35,9 +35,9 @@ export const env = createEnv({
     MONGO_URI: process.env.MONGO_URI,
 
     // CLAUDE
-    CLAUDE_API_KEY: process.env.CLAUDE_API_KEY,
-    CLAUDE_DEFAULT_MODEL: process.env.CLAUDE_DEFAULT_MODEL,
-    CLAUDE_MAX_TOKENS: process.env.CLAUDE_MAX_TOKENS,
+    // CLAUDE_API_KEY: process.env.CLAUDE_API_KEY,
+    // CLAUDE_DEFAULT_MODEL: process.env.CLAUDE_DEFAULT_MODEL,
+    // CLAUDE_MAX_TOKENS: process.env.CLAUDE_MAX_TOKENS,
 
     // OPENROUTER
     OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,

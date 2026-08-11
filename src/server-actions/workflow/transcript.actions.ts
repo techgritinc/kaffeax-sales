@@ -4,6 +4,7 @@ import { DEFAULT_USER_ID } from '@/constants/user';
 import { RECENTS_PAGE_SIZE } from '@/constants/workflow/recents.constants';
 import { logAndThrow } from '@/lib/utils/server-action.utils';
 import { cleanTranscript } from '@/lib/utils/transcript-cleaner.utils';
+import { extractDurationSecondsFromTranscript } from '@/lib/utils/workflow/duration.utils';
 import { toRubric } from '@/lib/utils/workflow/rubric.mapper';
 import {
   formatWhen,
@@ -98,6 +99,7 @@ export async function createDraftTranscript(input: {
       source: 'manual',
       originalTranscript: rawTranscript,
       cleanedTranscript: cleanTranscript(rawTranscript),
+      durationSeconds: extractDurationSecondsFromTranscript(rawTranscript),
     });
     return { id: stored.id };
   } catch (error) {

@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
 
+import { Button } from '@/components/ui/button/button';
 import { Icon, type IconName } from '@/components/ui/icon/icon';
 import { Shimmer } from '@/components/ui/shimmer/shimmer';
 import { AccentBar } from '@/components/ui/typography/accent-bar';
@@ -12,6 +13,7 @@ import type { ProcessingStage } from '@/types/workflow/processing.types';
 export interface ProcessingModalProps {
   procStage: ProcessingStage;
   className?: string;
+  onRunInBackground: () => void;
 }
 
 type StepState = 'pending' | 'active' | 'done';
@@ -38,8 +40,9 @@ const LABEL_LOOK: Record<StepState, string> = {
 };
 
 /** Full-screen processing overlay — prototype `ProcessingModal` (3289–3339). */
-export function ProcessingModal({ procStage, className }: ProcessingModalProps) {
+export function ProcessingModal({ procStage, className, onRunInBackground }: ProcessingModalProps) {
   const activeIdx = STAGE_INDEX[procStage];
+  const showBackground = procStage === 'preparing' || procStage === 'processing';
 
   return (
     <div
@@ -95,6 +98,14 @@ export function ProcessingModal({ procStage, className }: ProcessingModalProps) 
             </Fragment>
           );
         })}
+
+        {showBackground && (
+          <div className="mt-[24px] flex justify-end">
+            <Button variant="primary" onClick={onRunInBackground}>
+              Run in background
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

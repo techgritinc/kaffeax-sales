@@ -9,6 +9,7 @@ import { Spinner } from '@/components/ui/spinner/spinner';
 import { Eyebrow } from '@/components/ui/typography/eyebrow';
 import { TRANSCRIPT_FILE_ACCEPT } from '@/constants/workflow';
 import { cn } from '@/lib/utils/cn';
+import type { AiProcessingStatus } from '@/types/transcript.types';
 import type { WorkflowStatus } from '@/types/workflow.types';
 
 export interface TranscriptCardProps {
@@ -16,11 +17,15 @@ export interface TranscriptCardProps {
   wordCount: number;
   status: WorkflowStatus;
   error: string;
+  /** Status of the currently-open draft's own generation, independent of this screen's local `status` — covers a "Run in background" generation that is still running after the modal was dismissed. */
+  aiProcessingStatus?: AiProcessingStatus;
   onTranscriptChange: (text: string) => void;
   onFile: (file: File) => void;
   onLoadSample: () => void;
   onClear: () => void;
   onSummarise: () => void;
+  /** Navigates to the Review screen for the already-successful draft instead of re-running summarization. */
+  onReview: () => void;
   className?: string;
 }
 
@@ -30,11 +35,13 @@ export function TranscriptCard({
   wordCount,
   status,
   error,
+  aiProcessingStatus,
   onTranscriptChange,
   onFile,
   onLoadSample,
   onClear,
   onSummarise,
+  onReview,
   className,
 }: TranscriptCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -51,7 +58,8 @@ export function TranscriptCard({
     e.target.value = '';
   };
 
-  const processing = status === 'processing';
+  const processing = status === 'processing' || aiProcessingStatus === 'processing';
+  const readyForReview = aiProcessingStatus === 'success';
 
   return (
     <Card
@@ -69,11 +77,18 @@ export function TranscriptCard({
             variant="ghost"
             iconStart="UploadCloud"
             iconSize={13}
+            disabled={processing}
             onClick={() => fileInputRef.current?.click()}
           >
             Attach file
           </Button>
-          <Button variant="ghost" iconStart="FileText" iconSize={13} onClick={onLoadSample}>
+          <Button
+            variant="ghost"
+            iconStart="FileText"
+            iconSize={13}
+            disabled={processing}
+            onClick={onLoadSample}
+          >
             Load sample
           </Button>
         </div>
@@ -103,7 +118,7 @@ export function TranscriptCard({
         <div className="inline-flex items-center gap-[10px]">
           <Button
             variant="ghost"
-            disabled={!transcript}
+            disabled={!transcript || processing}
             onClick={onClear}
             className="px-[18px]! py-[10px]! text-[12px] font-semibold! tracking-[0.04em] uppercase"
           >
@@ -111,11 +126,15 @@ export function TranscriptCard({
           </Button>
           <Button
             variant="primary"
-            disabled={!transcript.trim() || processing}
-            onClick={onSummarise}
+            disabled={!readyForReview && (!transcript.trim() || processing)}
+            onClick={readyForReview ? onReview : onSummarise}
           >
-            {processing ? <Spinner size={16} /> : <Icon name="Sparkles" size={16} />}
-            Summarise
+            {processing ? (
+              <Spinner size={16} />
+            ) : (
+              <Icon name={readyForReview ? 'CheckCircle2' : 'Sparkles'} size={16} />
+            )}
+            {readyForReview ? 'Review' : 'Summarise'}
           </Button>
         </div>
       </div>

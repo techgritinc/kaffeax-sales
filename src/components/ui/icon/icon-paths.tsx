@@ -29,7 +29,8 @@ export type IconName =
   | 'ChevronLeft'
   | 'ChevronRight'
   | 'MessageSquare'
-  | 'PanelLeft';
+  | 'PanelLeft'
+  | 'Clock';
 
 /** SVG children for each icon (24×24 viewBox, stroke = currentColor). */
 export const ICON_PATHS: Record<IconName, ReactNode> = {
@@ -193,6 +194,12 @@ export const ICON_PATHS: Record<IconName, ReactNode> = {
     <>
       <rect x="3" y="4" width="18" height="16" rx="2" />
       <line x1="9" y1="4" x2="9" y2="20" />
+    </>
+  ),
+  Clock: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3.5 2" />
     </>
   ),
 };

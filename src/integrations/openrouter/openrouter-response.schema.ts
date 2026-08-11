@@ -11,3 +11,10 @@ export const openRouterResponseSchema = z.object({
 });
 
 export type OpenRouterResponse = z.infer<typeof openRouterResponseSchema>;
+
+export const openRouterErrorEnvelopeSchema = z.object({
+  error: z.object({
+    message: z.string(),
+    code: z.number(),
+  }),
+});

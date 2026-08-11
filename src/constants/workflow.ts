@@ -3,6 +3,12 @@ import type { ProcessingStep } from '@/types/workflow/processing.types';
 /** Toast auto-dismiss delay (ms). */
 export const TOAST_DURATION_MS = 3200;
 
+/** Interval (ms) between foreground poll ticks while the user watches the processing modal. */
+export const FOREGROUND_POLL_INTERVAL_MS = 3000;
+
+/** Interval (ms) between background-generation completion polls. */
+export const BACKGROUND_POLL_INTERVAL_MS = 5000;
+
 /** Pipeline stages displayed in the processing modal during summarization. */
 export const PROCESSING_STEPS: ProcessingStep[] = [
   { label: 'Preparing Transcript', stage: 'preparing' },
@@ -24,6 +30,9 @@ export const USER_INITIALS = process.env.NEXT_PUBLIC_USER_INITIALS || 'MR';
 
 /** Hardcoded meeting date reproduced verbatim from the prototype. */
 export const MEETING_DATE = 'June 24, 2026';
+
+/** sessionStorage key marking an in-flight synchronous (blocking) generation, used to detect refresh/cancel. */
+export const ACTIVE_FOREGROUND_GENERATION_KEY = 'kx.activeForegroundGenerationId';
 
 /** Accepted transcript upload extensions. */
 export const TRANSCRIPT_FILE_ACCEPT = '.txt,.md,.vtt,.srt';

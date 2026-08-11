@@ -9,8 +9,11 @@ import type {
 } from '@/types/claude.types';
 
 import { chatCompletion } from './client';
-import { mapHttpError } from './http-error.utils';
-import { openRouterResponseSchema } from './openrouter-response.schema';
+import { mapHttpError, mapProviderErrorEnvelope } from './http-error.utils';
+import {
+  openRouterErrorEnvelopeSchema,
+  openRouterResponseSchema,
+} from './openrouter-response.schema';
 import { summarizeStructured } from './structured-summarizer';
 
 const transcriptSchema = z.string().min(1);
@@ -46,9 +49,16 @@ export class TranscriptSummarizer {
       }
 
       const json: unknown = await response.json();
+
+      const envelope = openRouterErrorEnvelopeSchema.safeParse(json);
+      if (envelope.success) {
+        return mapProviderErrorEnvelope(envelope.data.error.code, envelope.data.error.message);
+      }
+
       const parsed = openRouterResponseSchema.safeParse(json);
       if (!parsed.success) {
         console.error('[TranscriptSummarizer] Malformed API response', parsed.error.message);
+        console.error('[TranscriptSummarizer] Raw response body', JSON.stringify(json));
         return {
           success: false,
           category: 'api_error',

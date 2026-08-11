@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react';
 
 import type { MeetingRecord } from '@/types/meeting.types';
+import type { AiProcessingStatus } from '@/types/transcript.types';
 import type { Step, Toast, ToastTone, WorkflowStatus } from '@/types/workflow.types';
 import type { ProcessingStage } from '@/types/workflow/processing.types';
 
@@ -20,6 +21,9 @@ export interface WorkflowContextValue {
   chatOpen: boolean;
   isCommitting: boolean;
 
+  /** The active draft's own generation status, sourced from the recents list (covers a still-running "Run in background" generation). */
+  activeAiProcessingStatus?: AiProcessingStatus;
+
   // --- Derived (computed in render) ---
   isCommitted: boolean;
   score: number;
@@ -36,6 +40,7 @@ export interface WorkflowContextValue {
   notify: (message: string, tone?: ToastTone) => void;
   openFromRecent: (id: string) => Promise<void>;
   summarize: () => Promise<void>;
+  summarizeInBackground: () => void;
   approve: () => Promise<void>;
   reject: () => Promise<void>;
   setSidebarOpen: (open: boolean) => void;

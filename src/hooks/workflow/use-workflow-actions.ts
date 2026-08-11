@@ -2,13 +2,19 @@
 
 import { useEffect, useRef } from 'react';
 
-import { TOAST_DURATION_MS } from '@/constants/workflow';
+import { ACTIVE_FOREGROUND_GENERATION_KEY, TOAST_DURATION_MS } from '@/constants/workflow';
+import { cancelProcessing } from '@/server-actions/workflow/transcript-ai.actions';
 import { getTranscriptById } from '@/server-actions/workflow/transcript.actions';
 import type { MeetingRecord } from '@/types/meeting.types';
 import type { Step, ToastTone } from '@/types/workflow.types';
 
 import type { WorkflowActionDeps } from '../../types/workflow/workflow-action-deps.types';
-import { runApprove, runReject, runSummarize } from './workflow-actions.utils';
+import {
+  abandonForegroundGeneration,
+  runApprove,
+  runReject,
+  runSummarize,
+} from './workflow-actions.utils';
 
 export type { WorkflowActionDeps } from '../../types/workflow/workflow-action-deps.types';
 
@@ -33,6 +39,13 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
     },
     [],
   );
+
+  useEffect(() => {
+    const id = sessionStorage.getItem(ACTIVE_FOREGROUND_GENERATION_KEY);
+    if (!id) return;
+    sessionStorage.removeItem(ACTIVE_FOREGROUND_GENERATION_KEY);
+    void cancelProcessing(id);
+  }, []);
 
   function notify(message: string, tone: ToastTone = 'success') {
     setToast({ message, tone });
@@ -91,7 +104,18 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
       setDraft(record);
       setActiveId(record.id);
       setError('');
+      if (record.aiProcessingStatus !== 'success') {
+        setTranscript(record.originalTranscript);
+      }
       setStep(record.aiProcessingStatus === 'success' ? 'review' : 'capture');
+      deps.updateRecent(id, {
+        aiProcessingStatus: record.aiProcessingStatus,
+        title: record.summary?.meetingTitle ?? undefined,
+        badge:
+          record.aiProcessingStatus === 'success'
+            ? (record.leadScore.band.toUpperCase() as 'HOT' | 'WARM' | 'COLD')
+            : undefined,
+      });
     } catch (err) {
       console.error('[useWorkflowActions] openFromRecent failed', err);
       notify('Unable to load that summary. Please try again.', 'reject');
@@ -107,6 +131,17 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
     setStep('capture');
   }
 
+  function summarizeInBackground() {
+    abandonForegroundGeneration();
+    sessionStorage.removeItem(ACTIVE_FOREGROUND_GENERATION_KEY);
+    deps.setProcStage('idle');
+    deps.setStatus('idle');
+    deps.setStep('capture');
+    if (deps.activeId) {
+      deps.updateRecent(deps.activeId, { aiProcessingStatus: 'processing' });
+    }
+  }
+
   return {
     setTranscript: setTranscriptSafe,
     loadSample,
@@ -117,6 +152,7 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
     notify,
     openFromRecent,
     summarize: () => runSummarize(deps),
+    summarizeInBackground,
     approve: () => runApprove(deps, notify),
     reject: () => runReject(deps, notify),
   };

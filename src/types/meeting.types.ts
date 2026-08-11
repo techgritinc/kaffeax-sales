@@ -62,6 +62,8 @@ export interface MeetingRecord {
   committed: boolean;
   band: Band;
   aiProcessingStatus: AiProcessingStatus;
+  originalTranscript: string;
+  durationSeconds?: number;
   contact: Contact;
   summary: Summary;
   leadScore: LeadScore;

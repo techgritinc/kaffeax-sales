@@ -1,16 +1,46 @@
 import type { SummarizationError } from '@/types/claude.types';
 
-export async function mapHttpError(response: Response): Promise<SummarizationError> {
-  const { status } = response;
+type Categorized = Pick<SummarizationError, 'category' | 'message'>;
 
-  if (status === 401 || status === 403) {
+/** Maps an HTTP-style status/error code to the response category and user-facing message shared by both a real non-2xx HTTP status and OpenRouter's embedded-error envelope. */
+function categorizeCode(code: number): Categorized {
+  if (code === 401 || code === 403) {
     return {
-      success: false,
       category: 'authentication',
       message: 'API authentication failed. Contact your administrator.',
-      retryAfterMs: null,
     };
   }
+
+  if (code === 429) {
+    return {
+      category: 'rate_limit',
+      message: 'Service is temporarily busy. Please try again shortly.',
+    };
+  }
+
+  if (code === 400) {
+    return {
+      category: 'invalid_request',
+      message: 'The request could not be processed. The transcript may be too long.',
+    };
+  }
+
+  if (code === 408 || code === 504) {
+    return {
+      category: 'network',
+      message:
+        'The summarization service (AI provider) took too long to respond. Please try again.',
+    };
+  }
+
+  return {
+    category: 'api_error',
+    message: 'An unexpected error occurred. Please try again.',
+  };
+}
+
+export async function mapHttpError(response: Response): Promise<SummarizationError> {
+  const { status } = response;
 
   if (status === 429) {
     const retryAfter = response.headers.get('retry-after');
@@ -19,35 +49,32 @@ export async function mapHttpError(response: Response): Promise<SummarizationErr
     console.error('[TranscriptSummarizer] Rate limited', { retryAfter, body });
     return {
       success: false,
-      category: 'rate_limit',
-      message: 'Service is temporarily busy. Please try again shortly.',
+      ...categorizeCode(status),
       retryAfterMs: isNaN(seconds) ? null : seconds * 1000,
     };
   }
 
-  if (status === 400) {
-    return {
-      success: false,
-      category: 'invalid_request',
-      message: 'The request could not be processed. The transcript may be too long.',
-      retryAfterMs: null,
-    };
+  if (status !== 401 && status !== 403 && status !== 400 && status !== 408 && status !== 504) {
+    console.error('[TranscriptSummarizer] API error', status);
   }
 
-  if (status === 408 || status === 504) {
-    return {
-      success: false,
-      category: 'network',
-      message: 'Unable to reach the summarization service. Check your connection.',
-      retryAfterMs: null,
-    };
-  }
-
-  console.error('[TranscriptSummarizer] API error', status);
   return {
     success: false,
-    category: 'api_error',
-    message: 'An unexpected error occurred. Please try again.',
+    ...categorizeCode(status),
+    retryAfterMs: null,
+  };
+}
+
+/**
+ * Maps OpenRouter's embedded `{ error: { code, message } }` envelope — returned with an HTTP 200
+ * status when the upstream provider itself fails (e.g. a timeout) — using the same category/message
+ * mapping as a real HTTP error status, so callers handle both channels identically.
+ */
+export function mapProviderErrorEnvelope(code: number, message: string): SummarizationError {
+  console.error('[TranscriptSummarizer] Provider-embedded error', { code, message });
+  return {
+    success: false,
+    ...categorizeCode(code),
     retryAfterMs: null,
   };
 }

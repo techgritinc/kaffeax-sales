@@ -5,3 +5,4 @@ export const RUBRIC_LOAD_ERROR = 'Unable to load the scoring rubric. Please try 
 export const RUBRIC_SAVE_ERROR = 'Unable to save the rubric change. Please try again.';
 export const DRAFT_CREATE_ERROR = 'Unable to save the transcript. Please try again.';
 export const AI_SUMMARIZATION_ERROR = 'Unable to process the transcript. Please try again.';
+export const ALREADY_PROCESSING_ERROR = 'A summary is already being generated for this meeting.';
