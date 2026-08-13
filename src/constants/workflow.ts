@@ -34,8 +34,23 @@ export const MEETING_DATE = 'June 24, 2026';
 /** sessionStorage key marking an in-flight synchronous (blocking) generation, used to detect refresh/cancel. */
 export const ACTIVE_FOREGROUND_GENERATION_KEY = 'kx.activeForegroundGenerationId';
 
-/** Accepted transcript upload extensions. */
-export const TRANSCRIPT_FILE_ACCEPT = '.txt,.md,.vtt,.srt';
+/** Extensions read as plain text — matched against `reader.readAsText`. */
+export const TRANSCRIPT_TEXT_EXTENSIONS = ['.txt', '.md', '.vtt', '.srt'] as const;
+
+/** Extensions that require parsing before their text can be extracted. */
+export const TRANSCRIPT_DOCX_EXTENSION = '.docx';
+
+/** All accepted transcript upload extensions. */
+export const TRANSCRIPT_FILE_EXTENSIONS = [
+  ...TRANSCRIPT_TEXT_EXTENSIONS,
+  TRANSCRIPT_DOCX_EXTENSION,
+] as const;
+
+/** `accept` value for the transcript file input. */
+export const TRANSCRIPT_FILE_ACCEPT = TRANSCRIPT_FILE_EXTENSIONS.join(',');
+
+/** Largest transcript file the capture screen will attempt to read (bytes). */
+export const MAX_TRANSCRIPT_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
 /** ID prefix for rubric signals created by the user (not sourced from the client). */
 export const CUSTOM_SIGNAL_ID_PREFIX = 'custom_';

@@ -104,7 +104,7 @@ export function TranscriptCard({
         value={transcript}
         onChange={(e) => onTranscriptChange(e.target.value)}
         spellCheck={false}
-        placeholder="Paste a meeting transcript, drop a .txt/.vtt file, or attach one…"
+        placeholder="Paste a meeting transcript, drop a .txt/.vtt/.docx file, or attach one…"
         className="rounded-btn border-border bg-transcript-bg text-text focus:border-green max-bp560:p-[12px] max-bp560:text-[12px] min-h-0 min-h-[180px] w-full min-w-0 flex-1 resize-none border p-[16px] font-mono text-[12.5px] leading-[1.6] transition-colors outline-none focus:bg-white"
       />
       {status === 'error' && (
