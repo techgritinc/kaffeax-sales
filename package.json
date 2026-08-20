@@ -29,6 +29,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.113.0",
     "@t3-oss/env-nextjs": "^0.13.11",
+    "mammoth": "^1.12.1",
     "mongoose": "^9.8.0",
     "next": "16.2.10",
     "react": "19.2.4",

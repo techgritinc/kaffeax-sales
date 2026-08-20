@@ -2,7 +2,15 @@
 
 import { useEffect, useRef } from 'react';
 
-import { ACTIVE_FOREGROUND_GENERATION_KEY, TOAST_DURATION_MS } from '@/constants/workflow';
+import mammoth from 'mammoth';
+
+import {
+  ACTIVE_FOREGROUND_GENERATION_KEY,
+  MAX_TRANSCRIPT_FILE_SIZE_BYTES,
+  TOAST_DURATION_MS,
+  TRANSCRIPT_DOCX_EXTENSION,
+  TRANSCRIPT_FILE_EXTENSIONS,
+} from '@/constants/workflow';
 import { cancelProcessing } from '@/server-actions/workflow/transcript-ai.actions';
 import { getTranscriptById } from '@/server-actions/workflow/transcript.actions';
 import type { MeetingRecord } from '@/types/meeting.types';
@@ -63,6 +71,39 @@ export function useWorkflowActions(deps: WorkflowActionDeps) {
   }
 
   function handleFile(file: File) {
+    const extension = `.${file.name.split('.').pop()?.toLowerCase() ?? ''}`;
+
+    if (
+      !TRANSCRIPT_FILE_EXTENSIONS.includes(extension as (typeof TRANSCRIPT_FILE_EXTENSIONS)[number])
+    ) {
+      setStatus('error');
+      setError(`Unsupported file type. Attach a ${TRANSCRIPT_FILE_EXTENSIONS.join(', ')} file.`);
+      return;
+    }
+
+    if (file.size > MAX_TRANSCRIPT_FILE_SIZE_BYTES) {
+      setStatus('error');
+      setError('That file is too large. Attach a transcript under 10MB.');
+      return;
+    }
+
+    if (extension === TRANSCRIPT_DOCX_EXTENSION) {
+      setStatus('processing');
+      file
+        .arrayBuffer()
+        .then((buffer) => mammoth.extractRawText({ arrayBuffer: buffer }))
+        .then(({ value }) => {
+          setTranscriptSafe(value.trim());
+          setStatus('idle');
+        })
+        .catch((err: unknown) => {
+          console.error('[useWorkflowActions] docx parse failed', err);
+          setStatus('error');
+          setError('Could not read that Word document. Make sure it is a valid .docx file.');
+        });
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = () => setTranscript(String(reader.result ?? ''));
     reader.onerror = () => {
